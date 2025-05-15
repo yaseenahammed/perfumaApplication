@@ -1,0 +1,152 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simple Signup Page</title>
+  <link rel="stylesheet" href="assets/css/userSignup.css">
+
+  <style>
+.error.message{
+  color: red;
+  font-size: 0.70rem;
+  display: none;
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Sign Up</h2>
+    <form id="signform" action="/signup" method="post">
+     <div class="form-group">
+      <input id="name" type="text" name="name" placeholder="name" required>
+      <div id="error1" class="error.message"></div>
+    </div> 
+      <div class="form-group">
+        <input id="email" type="email" name="email" placeholder="Email" required>
+        <div id="error2" class="error.message"></div>
+      </div>
+      <div class="form-group">
+        <input id="password" type="password" name="password" placeholder="Password" required>
+        <div id="error3" class="error.message"></div>
+      </div>
+       
+      <div class="form-group">
+        <input id="confirmPassword" type="password" name="confirmPassword" placeholder="Confirm Password" required>
+        <div id="error4" class="error.message"></div>
+
+      </div>
+        <% if (locals.message && locals.message.length > 0) { %>
+              <div class="alert alert-danger text-center">
+                <%= locals.message %>
+              </div>
+              <% } %>
+     
+      <button type="submit" class="btn">Sign Up</button>
+       <div class="form-group">
+    <a href="/auth/google" class="google-btn">
+      <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo" style="width:20px; margin-right:8px;">
+      Sign in with Google
+    </a>
+     
+    </form>
+  </div>
+
+</body>
+</html>
+
+
+
+  
+
+  <script>
+
+  const nameid = document.getElementById('name');
+  const emailid = document.getElementById('email');
+  const passid = document.getElementById('password');
+  const cpassid = document.getElementById('confirmPassword');
+  const error1 = document.getElementById('error1');
+  const error2 = document.getElementById('error2');
+  const error3 = document.getElementById('error3');
+  const error4 = document.getElementById('error4');
+  const signform = document.getElementById('signform');
+
+  document.addEventListener('DOMContentLoaded', function () {
+    signform.addEventListener("submit", function (e) {
+
+      let hasError = false;
+
+      // Name Validation
+      const nameVal = nameid.value;
+      const namePattern = /^[A-Za-z ]{3,10}$/;
+      if (nameVal.trim() === "") {
+        error1.style.display = "block";
+        error1.innerHTML = 'Enter a valid name';
+        hasError = true;
+      } else if (!namePattern.test(nameVal)) {
+        error1.style.display = "block";
+        error1.innerHTML = "Only alphabets and spaces (3-10 characters)";
+        hasError = true;
+      } else {
+        error1.style.display = "none";
+        error1.innerHTML = "";
+      }
+
+      // Email Validation
+      const emailVal = emailid.value;
+      const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (emailVal.trim() === "" || !emailPattern.test(emailVal)) {
+        error2.style.display = "block";
+        error2.innerHTML = "Invalid email format";
+        hasError = true;
+      } else {
+        error2.style.display = "none";
+        error2.innerHTML = "";
+      }
+
+      // Password Validation
+      const passVal = passid.value;
+      const cpassVal = cpassid.value;
+      const hasAlphabet = /[A-Za-z]/.test(passVal);
+      const hasDigit = /[0-9]/.test(passVal);
+
+      if (passVal.length < 6) {
+        error3.style.display = "block";
+        error3.innerHTML = "Password should be at least 6 characters";
+        hasError = true;
+      } else if (!hasAlphabet || !hasDigit) {
+        error3.style.display = "block";
+        error3.innerHTML = "Password must contain letters and numbers";
+        hasError = true;
+      } else {
+        error3.style.display = "none";
+        error3.innerHTML = "";
+      }
+
+      // Confirm Password Validation
+      if (passVal !== cpassVal) {
+        error4.style.display = "block";
+        error4.innerHTML = "Passwords do not match";
+        hasError = true;
+      } else {
+        error4.style.display = "none";
+        error4.innerHTML = "";
+      }
+
+      // Prevent submission if any validation failed
+      if (hasError) {
+        e.preventDefault();
+      }
+
+    });
+  });
+</script>
+
+   
+
+

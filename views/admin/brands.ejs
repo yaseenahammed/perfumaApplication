@@ -1,0 +1,205 @@
+<%- include("../../views/partials/admin/header") %>
+<style>
+  /* Center the table inside its container */
+.table-responsive {
+  margin: 0 auto;
+  max-width: 100%;
+  padding: 20px;
+}
+
+/* Style for the table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+/* Table header style */
+.table th {
+  text-align: center;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #ddd;
+}
+
+/* Table body style */
+.table td {
+  text-align: center;
+  padding: 10px;
+}
+
+/* Align form fields and upload input */
+.form-control {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* Upload section styling */
+.input-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.input-upload img {
+  max-width: 100px;
+  height: auto;
+  margin-right: 10px;
+}
+
+/* Form container column adjustment */
+.col-md-3 {
+  padding-right: 30px;
+}
+
+.col-md-7 {
+  padding-left: 30px;
+}
+
+/* Button styling */
+.btn {
+  width: 100%; /* Full width for the "Add Brand" button */
+  margin-top: 15px;
+}
+
+/* Adjust "Add Brand" button specifically */
+.btn-primary {
+  width: 100%;  /* Set to full width to fill the column */
+  padding: 12px;
+}
+
+/* Adjust buttons in the table row */
+.table td .btn {
+  width: 80px; /* Keep buttons compact */
+  margin: 5px 0;
+}
+
+/* Align pagination container */
+.pagination-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.pagination {
+  display: inline-block;
+}
+
+.pagination a,
+.pagination .current-page {
+  display: inline-block;
+  padding: 6px 12px;
+  margin: 0 5px;
+  border: 1px solid #ddd;
+  text-decoration: none;
+  color: #333;
+}
+
+.pagination a:hover {
+  background-color: #f5f5f5;
+}
+
+/* Error message styling */
+.error-message {
+  color: red;
+}
+
+/* Align status badges in the table */
+.table td .badge {
+  margin: 0 5px;
+  display: inline-block;
+}
+
+</style>
+<section class="content-main">
+  <div class="content-header">
+    <div>
+      <h2 class="content-title card-title">Brands</h2>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-3">
+          <form method="post" action="/admin/addBrand" enctype="multipart/form-data">
+            <div class="mb-4">
+              <label for="product_name" class="form-label">Brand Name</label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Type here"
+                class="form-control"
+              />
+            </div>
+            <label for="product_name" class="form-label">Brand Image</label>
+            <div class="input-upload">
+              <img src="" alt=""/>
+              <input class="form-control border" name="image" type="file" />
+            </div>
+            <div class="d-grid">
+              <button class="btn btn-primary mt-20" type="submit">
+                Add Brand
+              </button>
+            </div>
+          </form>
+        </div>
+        <div class="col-md-7 ml-105">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Brand</th>
+                  <th>Logo</th>
+                  <th>Status</th>
+                  <th>Block/Unblock/Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+  <% data.reverse().forEach((brand) => { %>
+  <tr>
+    <td><%= brand.name %></td>
+    <td>
+      <img src="/uploads/re-image/<%= brand.brandImage %>" alt="<%= brand.name %>" width="40" />
+    </td>
+    <td>
+      <% if (brand.isBlocked) { %>
+        <span class="badge alert-danger">Blocked</span>
+      <% } else { %>
+        <span class="badge alert-success">Active</span>
+      <% } %>
+    </td>
+    <td>
+      <% if (!brand.isBlocked) { %>
+        
+
+       <a href="/admin/blockBrand?id=<%= brand._id %>" class="btn btn-danger">Block</a>
+      <% } else { %>
+       <a href="/admin/unblockBrand?id=<%= brand._id %>" class="btn btn-success">Unblock</a>
+      <% } %>
+     <a href="/admin/deleteBrand?id=<%= brand._id %>" class="btn btn-danger "  style="padding-left: 15px;"   onclick="return confirm('Delete this brand?')">Delete</a>
+    </td>
+  </tr>
+<% }) %>
+
+</tbody>
+
+
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pagination-container">
+</div>
+</section>
+
+<script>
+   function confirmDelete(){
+        return confirm("Are you sure want to delete this brand")
+    }
+
+
+</script>
+<%- include("../../views/partials/admin/footer") %>
+
