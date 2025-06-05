@@ -16,7 +16,7 @@ const getBrandPage = async (req, res) => {
 
     res.render('brands', {
       data: brandData.reverse(),
-      currentpage: page,
+      currentPage: page,
       totalPages,
       totalBrands,
     });
@@ -27,25 +27,42 @@ const getBrandPage = async (req, res) => {
 
 const addBrand = async (req, res) => {
   try {
-    const brandName = req.body.name;
-    const findBrand = await Brand.findOne({ name: brandName });
 
-    if (!findBrand) {
-      const image = req.file.filename;
-      const newBrand = new Brand({
-        name: brandName,
-        brandImage: image,
-      });
-      await newBrand.save();
-      res.redirect('/admin/brands');
-    } else {
-      res.send("Brand already exists");
+    let { name } = req.body;
+
+   
+    const brandName = name.trim().toLowerCase();
+
+   
+    const findBrand = await Brand.findOne({ name: { $regex: `^${brandName}$`, $options: 'i' } });
+
+    if (findBrand) {
+      return res.status(400).json({ error: "Brand already exists" });
     }
+
+   
+    const image = req.file?.filename;
+
+    if (!image || !brandName) {
+      return res.status(400).json({ error: "Name and image are required" });
+    }
+
+  
+    const newBrand = new Brand({
+      name: brandName,
+      brandImage: image,
+    });
+
+    await newBrand.save();
+    return res.status(200).json({ message: "Brand added successfully" });
+
   } catch (error) {
-    console.log(error);
-    res.redirect('/admin/pageError');
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
 
 const blockBrand = async (req, res) => {
   try {

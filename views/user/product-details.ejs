@@ -1,0 +1,447 @@
+<%- include("../partials/user/header") %>
+
+
+
+
+<main class="main">
+  <% if (error) { %>
+    <div class="alert alert-danger" style="text-align: center; padding: 10px; background: #ffdddd; color: #b00020; border: 1px solid #ffbbbb; margin: 20px auto; max-width: 600px; border-radius: 5px;">
+      <%= error %>
+    </div>
+  <% } %>
+
+  <section class="breadcrumb-section" style="background-image: url('/images/banner.jpg'); padding: 40px 0; background-size: cover; background-position: center;">
+    <div class="container text-center text-white">
+      <h2 class="breadcrumb-title" style="font-size: 2.2rem; font-weight: 700;"><%= product.name %></h2>
+      <nav class="breadcrumb-text mt-2" style="font-size: 1rem;">
+        <a href="/" class="text" style="text-decoration: none;">Home</a>
+        <span class="mx-2">/</span>
+        <a href="/shop" class="text" style="text-decoration: none;">shop</a>
+        <span class="mx-2">/</span>
+        <span><%= product.name %></span>
+      </nav>
+
+    </div>
+  </section>
+
+ 
+</main>
+
+<!-- CSS for breadcrumb -->
+<style>
+  .breadcrumb-section {
+    background-size: cover;
+    background-position: center;
+    color:gray;
+  }
+
+  .breadcrumb-section .breadcrumb-title {
+    font-size: 2.2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .breadcrumb-section .breadcrumb-text a {
+    color:gray;
+    text-decoration: none;
+  }
+
+  .breadcrumb-section .breadcrumb-text span {
+    color:gray;
+  }
+</style>
+
+
+
+
+
+
+
+
+
+
+<main class="main">
+  <section class="mt-50 mb-50">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-9">
+          <div class="product-detail accordion-detail">
+            <div class="row mb-50">
+              <div class="col-md-6 col-sm-12 col-xs-12">
+                <div class="detail-gallery">
+                  <span class="zoom-icon"><i class="fi-rs-search"></i></span>
+                  <!-- Main Image -->
+                  <div class="main-product-image" style="position: relative;">
+                    <figure class="border-radius-10">
+                      <img
+                        id="mainImage"
+                        class="zoom-image"
+                        src="<%= product.productImages && product.productImages.length > 0 ? product.productImages[0] : '/Uploads/product-images/default.jpg' %>"
+                        alt="<%= product.name %>"
+                        style="width: 100%; height: auto; max-height: 500px; object-fit: cover; border-radius: 10px;"
+                      >
+                      <div id="zoomLens" class="zoom-lens"></div>
+                      <div id="zoomResult" class="zoom-result"></div>
+                    </figure>
+                  </div>
+                  <!-- Thumbnail Gallery -->
+                  <div class="thumbnail-gallery">
+                    <% if (product.productImages && product.productImages.length > 0) { %>
+                      <% product.productImages.forEach((img, index) => { %>
+                        <div class="thumbnail-item <%= index === 0 ? 'active' : '' %>">
+                          <img
+                            src="<%= img %>"
+                            alt="<%= product.name %> Thumbnail <%= index + 1 %>"
+                            onclick="changeMainImage('<%= img %>', this)"
+                            style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px;"
+                          >
+                        </div>
+                      <% }) %>
+                    <% } else { %>
+                      <div class="thumbnail-item active">
+                        <img
+                          src="/Uploads/product-images/default.jpg"
+                          alt="No Image"
+                          onclick="changeMainImage('/Uploads/product-images/default.jpg', this)"
+                          style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px;"
+                        >
+                      </div>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-sm-12 col-xs-12">
+                <div class="detail-info">
+                  <h2 class="title-detail"><%= product.name %></h2>
+                  <div class="product-detail-rating">
+                    <div class="pro-details-brand">
+                      <span>Brand: <a href="#"><%= product.brand?.name || 'Unknown' %></a></span>
+                    </div>
+                    <div class="product-rate-cover text-end">
+                      <div class="product-rate d-inline-block">
+                        <div class="product-rating" style="width:90%"></div>
+                      </div>
+                      <span class="font-small ml-5 text-muted">(25 reviews)</span>
+                    </div>
+                  </div>
+
+                  <div class="clearfix product-price-cover">
+                    <div class="product-price primary-color float-left">
+                      <ins>
+                        <span class="text-brand">₹<%= product.salePrice || product.regularPrice %></span>
+                      </ins>
+                      <% if (product.salePrice && product.salePrice < product.regularPrice) { %>
+                        <ins>
+                          <span class="old-price font-md ml-15">₹<%= product.regularPrice %></span>
+                        </ins>
+                        <span class="save-price font-md color3 ml-15">
+                          <%= totalOffer > 0 ? totalOffer + '% Off' : 'Save ₹' + (product.regularPrice - product.salePrice) %>
+                        </span>
+                      <% } %>
+                    </div>
+                  </div>
+
+                  <div class="bt-1 border-color-1 mt-15 mb-15"></div>
+                  <div class="short-desc mb-30">
+                    <p><%= product.description || 'No description available.' %></p>
+                  </div>
+
+                  <div class="product_sort_info font-xs mb-30">
+                    <ul>
+                      <li class="mb-10"><i class="fi-rs-crown mr-5"></i> 1 Year Brand Warranty</li>
+                      <li class="mb-10"><i class="fi-rs-refresh mr-5"></i> 30 Day Return Policy</li>
+                      <li><i class="fi-rs-credit-card mr-5"></i> Cash on Delivery available</li>
+                    </ul>
+                  </div>
+
+                  <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+
+                  <div class="detail-extralink">
+                    <div class="detail-qty border radius">
+                      <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"></i></a>
+                      <span class="qty-val" id="quantity">1</span>
+                      <a href="#" class="qty-up"><i class="fi-rs-angle-small-up"></i></a>
+                    </div>
+                    <div class="product-extra-link2">
+                      <button type="submit" class="button button-add-to-cart" onclick="addToCart('<%= product._id %>')">Add to cart</button>
+                      <a aria-label="Add To Wishlist" class="action-btn hover-up" onclick="addToWishlist('<%= product._id %>')"><i class="fi-rs-heart"></i></a>
+                    </div>
+                  </div>
+
+                  <ul class="product-meta font-xs color-grey mt-50">
+                    <li class="mb-5">Stock Code: <%= product._id %></li>
+                    <li class="mb-5">Tags:
+                      <a href="#" rel="tag"><%= product.category?.name || 'No Category' %></a>
+                    </li>
+                    <li>Availability: <span class="in-stock text-success ml-5">
+                      <%= product.status === 'available' || product.status === 'discounted' ? 'In Stock' : 'Out of Stock' %>
+                    </span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Similar Products Section -->
+  <section class="mt-150 mb-50">
+    <div class="container">
+      <h3 class="section-title" style="font-size: 24px; font-weight: 600; margin-bottom: 30px; color: #333 !important; display: block !important; opacity: 1 !important; text-align: left;">Similar Products</h3>
+      <div class="row">
+        <% if (similarProducts && similarProducts.length > 0) { %>
+          <% similarProducts.forEach(similarProduct => { %>
+            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-30">
+              <div class="product-cart-wrap" style="border: 1px solid #e5e5e5; border-radius: 10px; padding: 15px; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                <div class="product-img-action-wrap">
+                  <div class="product-img">
+                    <a href="/productDetails?id=<%= similarProduct._id %>">
+                      <img
+                        src="<%= similarProduct.productImages && similarProduct.productImages.length > 0 ? similarProduct.productImages[0] : '/Uploads/product-images/default.jpg' %>"
+                        alt="<%= similarProduct.name %>"
+                        style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;"
+                      >
+                    </a>
+                  </div>
+                </div>
+                <div class="product-content-wrap">
+                  <h2 style="font-size: 16px; font-weight: 500; margin-bottom: 10px; color: #333; height: 40px; overflow: hidden; text-transform: uppercase;">
+                    <a href="/products/<%= similarProduct._id %>" style="text-decoration: none; color: inherit;"><%= similarProduct.name %></a>
+                  </h2>
+                  <div class="product-price" style="margin-bottom: 15px;">
+                    <span class="text-brand" style="font-size: 18px; font-weight: 600; color: #ff6b6b;">₹<%= similarProduct.salePrice || similarProduct.regularPrice %></span>
+                    <% if (similarProduct.salePrice && similarProduct.salePrice < similarProduct.regularPrice) { %>
+                      <span class="old-price" style="font-size: 14px; color: #999; text-decoration: line-through; margin-left: 10px;">₹<%= similarProduct.regularPrice %></span>
+                    <% } %>
+                  </div>
+                  <div class="product-action-1" style="display: flex; justify-content: center; gap: 10px;">
+                    <a aria-label="Add To Cart" class="action-btn" onclick="addToCart('<%= similarProduct._id %>')" style="display: inline-block; padding: 8px; background: #f5f5f5; border-radius: 50%; transition: background 0.3s ease;">
+                      <i class="fi-rs-shopping-cart" style="font-size: 16px; color: #333;"></i>
+                    </a>
+                    <a aria-label="Add To Wishlist" class="action-btn" onclick="addToWishlist('<%= similarProduct._id %>')" style="display: inline-block; padding: 8px; background: #f5f5f5; border-radius: 50%; transition: background 0.3s ease;">
+                      <i class="fi-rs-heart" style="font-size: 16px; color: #333;"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <style>
+                .product-cart-wrap:hover {
+                  transform: translateY(-5px);
+                  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                }
+                .product-action-1 a:hover {
+                  background: #ff6b6b !important;
+                  color: #fff !important;
+                }
+                .product-action-1 a:hover i {
+                  color: #fff !important;
+                }
+              </style>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div class="col-12">
+            <p style="font-size: 16px; color: #666; text-align: center;">No similar products found in this category.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </section>
+</main>
+<!-- Updated Custom CSS -->
+<style>
+
+
+
+
+  .detail-gallery {
+    position: relative;
+  }
+
+  .main-product-image {
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .zoom-lens {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 2px solid #d3a07b;
+    background: rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    display: none;
+    border-radius: 50%;
+    z-index: 100;
+  }
+
+  .zoom-result {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border: 2px solid #d3a07b;
+    background-repeat: no-repeat;
+    display: none;
+    z-index: 100;
+    top: 0;
+    left: 520px; /* Adjust based on layout */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .thumbnail-gallery {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    overflow-x: auto;
+  }
+
+  .thumbnail-item {
+    flex: 0 0 auto;
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    transition: border 0.3s ease;
+  }
+
+  .thumbnail-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 5px;
+  }
+
+  .thumbnail-item.active,
+  .thumbnail-item:hover {
+    border: 2px solid #d3a07b;
+  }
+
+  .zoom-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    color: #d3a07b;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .zoom-result {
+      display: none; /* Disable zoom result on mobile for simplicity */
+    }
+    .zoom-lens {
+      display: none; /* Disable lens on mobile */
+    }
+    .main-product-image img {
+      max-height: 400px;
+    }
+  }
+</style>
+
+<!-- Updated JavaScript for Zoom and Touch Support -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const zoomContainer = document.querySelector('.main-product-image');
+    const zoomImage = document.getElementById('mainImage');
+    const zoomLens = document.getElementById('zoomLens');
+    const zoomResult = document.getElementById('zoomResult');
+
+    let zoomLevel = 2.5; // Adjust zoom level
+    let isTouching = false;
+
+    // Helper function to handle zoom positioning
+    function updateZoom(e, clientX, clientY) {
+      const rect = zoomImage.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+
+      // Position the lens
+      const lensWidth = zoomLens.offsetWidth;
+      const lensHeight = zoomLens.offsetHeight;
+      let lensX = x - lensWidth / 2;
+      let lensY = y - lensHeight / 2;
+
+      // Keep lens within image bounds
+      lensX = Math.max(0, Math.min(lensX, rect.width - lensWidth));
+      lensY = Math.max(0, Math.min(lensY, rect.height - lensHeight));
+
+      zoomLens.style.left = `${lensX}px`;
+      zoomLens.style.top = `${lensY}px`;
+
+      // Update zoom result background
+      zoomResult.style.backgroundImage = `url(${zoomImage.src})`;
+      zoomResult.style.backgroundSize = `${rect.width * zoomLevel}px ${rect.height * zoomLevel}px`;
+      zoomResult.style.backgroundPosition = `-${lensX * zoomLevel}px -${lensY * zoomLevel}px`;
+    }
+
+    // Mouse events for desktop
+    zoomContainer.addEventListener('mouseenter', () => {
+      if (window.innerWidth > 768) { // Only enable on non-mobile
+        zoomLens.style.display = 'block';
+        zoomResult.style.display = 'block';
+      }
+    });
+
+    zoomContainer.addEventListener('mouseleave', () => {
+      zoomLens.style.display = 'none';
+      zoomResult.style.display = 'none';
+    });
+
+    zoomContainer.addEventListener('mousemove', (e) => {
+      if (window.innerWidth > 768) { // Only enable on non-mobile
+        updateZoom(e, e.clientX, e.clientY);
+      }
+    });
+
+    // Touch events for mobile
+    zoomContainer.addEventListener('touchstart', (e) => {
+      e.preventDefault(); // Prevent scrolling
+      if (window.innerWidth <= 768) { // Only enable on mobile
+        isTouching = true;
+        zoomLens.style.display = 'block';
+        zoomResult.style.display = 'block';
+        const touch = e.touches[0];
+        updateZoom(e, touch.clientX, touch.clientY);
+      }
+    });
+
+    zoomContainer.addEventListener('touchmove', (e) => {
+      if (isTouching && window.innerWidth <= 768) {
+        e.preventDefault(); // Prevent scrolling
+        const touch = e.touches[0];
+        updateZoom(e, touch.clientX, touch.clientY);
+      }
+    });
+
+    zoomContainer.addEventListener('touchend', () => {
+      isTouching = false;
+      zoomLens.style.display = 'none';
+      zoomResult.style.display = 'none';
+    });
+
+    // Thumbnail switching
+    window.changeMainImage = function (imageSrc, element) {
+      zoomImage.src = imageSrc;
+      zoomResult.style.backgroundImage = `url(${imageSrc})`;
+      document.querySelectorAll('.thumbnail-item').forEach((thumb) => {
+        thumb.classList.remove('active');
+        thumb.classList.remove('border-blue-500');
+        thumb.classList.add('border-gray-200');
+      });
+      element.parentElement.classList.add('active');
+      element.parentElement.classList.add('border-blue-500');
+      element.parentElement.classList.remove('border-gray-200');
+    };
+  });
+</script>
+
+<script src="/js/product-scripts.js"></script>
+<%- include("../partials/user/footer") %>

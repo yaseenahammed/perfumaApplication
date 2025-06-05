@@ -44,11 +44,16 @@ const categoryInfo = async (req, res) => {
 
 
 
+const addCategory = async (req, res) => {
+    let { name, description } = req.body;
 
-  const addCategory = async (req, res) => {
-    const { name, description } = req.body;
     try {
-        const existingCategory = await Category.findOne({ name });
+        // Normalize the name to lowercase and trim it
+        name = name.trim().toLowerCase();
+
+        // Check if category with same name exists (case-insensitive)
+        const existingCategory = await Category.findOne({ name: { $regex: `^${name}$`, $options: 'i' } });
+
         if (existingCategory) {
             return res.status(400).json({ error: "Category already exists" });
         }
@@ -66,11 +71,12 @@ const categoryInfo = async (req, res) => {
 
 
 
+
 const addOffer = async (req, res) => {
   try {
     const { categoryId, offer } = req.body;
 
-    if (!offer || offer <= 0 || offer > 100) {
+    if (!offer || offer <= 0 || offer >= 100) {
       return res.status(400).json({ error: "Invalid offer percentage" });
     }
 
@@ -84,7 +90,7 @@ const addOffer = async (req, res) => {
       return res.status(404).json({ error: "Category not found" });
     }
 
-    return res.json({ message: "Offer added successfully", category }); // ✅ Return updated data
+    return res.json({ message: "Offer added successfully", category }); 
   } catch (error) {
     console.error("Error adding offer:", error);
     return res.status(500).json({ error: "Internal server error" });

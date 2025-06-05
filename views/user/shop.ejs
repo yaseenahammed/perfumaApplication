@@ -1,0 +1,454 @@
+<%- include("../../views/partials/user/header") %>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  .main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-top: 80px;
+  }
+  .shop-page {
+    width: 100%;
+  }
+  .shop-topbar {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    min-height: 50px !important;
+    width: 100% !important;
+    position: relative;
+    z-index: 10;
+    background-color: #fff;
+    padding: 10px;
+    overflow: visible !important;
+  }
+  .search-bar {
+    flex: 1;
+    max-width: 400px;
+  }
+  .search-form {
+    display: flex !important;
+    align-items: center;
+    background-color: #f1f1f1;
+    border-radius: 25px;
+    overflow: visible !important;
+    max-width: 400px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+  }
+  .search-input {
+    flex: 1;
+    padding: 10px 15px;
+    font-size: 14px;
+    border: none;
+    outline: none;
+    background-color: transparent;
+  }
+  .search-button,
+  .clear-button {
+    padding: 10px 20px;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 15px;
+    margin-right: 5px;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  .search-button {
+    background-color: #000;
+  }
+  .clear-button {
+    background-color: #dc3545;
+  }
+  .search-button:hover {
+    background-color: #333;
+    transform: scale(1.05);
+  }
+  .clear-button:hover {
+    background-color: #c82333;
+    transform: scale(1.05);
+  }
+  .sort-container {
+    display: flex !important;
+    align-items: center;
+  }
+  .sort-container select {
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+  }
+  .sidebar {
+    padding: 20px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    width: 250px;
+    text-align: left;
+  }
+  .filter-section {
+    margin-bottom: 20px;
+  }
+  .filter-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #333;
+    text-transform: uppercase;
+  }
+  .filter-item {
+    margin: 5px 0;
+  }
+  .filter-item label {
+    display: flex;
+    align-items: center;
+    color: #333;
+    cursor: pointer;
+  }
+  .filter-item input[type="checkbox"] {
+    margin-right: 5px;
+  }
+  .product-list-container {
+    display: flex;
+    gap: 20px;
+  }
+  .product-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    width: calc(100% - 270px);
+  }
+  .product-card {
+    width: calc(33.333% - 20px);
+    border: 1px solid #e0e0e0;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+  }
+  .product-card:hover {
+    transform: translateY(-5px);
+  }
+  .product-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+  .product-card h4 {
+    font-size: 16px;
+    margin: 10px 0;
+    color: #333;
+  }
+  .product-meta {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 5px;
+  }
+  .category-name,
+  .brand-name {
+    font-size: 12px;
+    color: #666;
+    font-weight: normal;
+  }
+  .category-name::after {
+    content: ' | ';
+    color: #999;
+  }
+  .brand-name::after {
+    content: '';
+  }
+  .product-card p {
+    font-size: 14px;
+    color: #dc3545;
+    font-weight: bold;
+    margin: 5px 0;
+  }
+  .product-card .original-price {
+    color: #999;
+    font-size: 12px;
+    text-decoration: line-through;
+    margin-left: 5px;
+  }
+  .wishlist-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #ff0000;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .add-to-cart-btn {
+    background-color: #000;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+  }
+  .add-to-cart-btn:hover {
+    background-color: #333;
+  }
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .pagination a {
+    padding: 8px 12px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    color: #333;
+    text-decoration: none;
+    border-radius: 5px;
+  }
+  .pagination .active {
+    background-color: #007bff;
+    color: #fff;
+  }
+  .price-filter {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin-top: 20px;
+  }
+  .price-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .price-button {
+    padding: 12px 20px;
+    background-color: #f1f1f1;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    text-align: center;
+    font-size: 14px;
+  }
+  .price-button:hover {
+    background-color: #007bff;
+    color: white;
+    transform: scale(1.05);
+  }
+  .price-button:active {
+    transform: scale(0.95);
+  }
+</style>
+
+<div class="main-container">
+  <section class="shop-page container">
+    <div class="shop-topbar">
+      <div class="search-bar">
+        <form action="/shop/search" method="POST" class="search-form">
+          <input
+            type="text"
+            name="query"
+            placeholder="Search..."
+            class="search-input"
+            value="<%= searchQuery || '' %>"
+          />
+          <!-- Hidden inputs to preserve category and brand selections -->
+          <% categoryId.forEach(id => { %>
+            <input type="hidden" name="category" value="<%= id %>">
+          <% }) %>
+          <% brandId.forEach(id => { %>
+            <input type="hidden" name="brand" value="<%= id %>">
+          <% }) %>
+          <input type="hidden" name="sort" value="<%= sort || 'default' %>">
+          <input type="hidden" name="price" value="<%= priceRange || '' %>">
+          <button type="submit" class="search-button">Search</button>
+          <a href="/shop"><button type="button" class="clear-button">Clear</button></a>
+        </form>
+      </div>
+      <div class="sort-container">
+        <select onchange="updateSort(this.value)">
+          <option value="default" <%= sort === 'default' ? 'selected' : '' %>>Default</option>
+          <option value="priceLowToHigh" <%= sort === 'priceLowToHigh' ? 'selected' : '' %>>Price: Low to High</option>
+          <option value="priceHighToLow" <%= sort === 'priceHighToLow' ? 'selected' : '' %>>Price: High to Low</option>
+          <option value="nameAsc" <%= sort === 'nameAsc' ? 'selected' : '' %>>A - Z</option>
+          <option value="nameDesc" <%= sort === 'nameDesc' ? 'selected' : '' %>>Z - A</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="product-list-container">
+      <aside class="sidebar">
+        <div class="filter-section">
+          <div class="filter-title">Categories</div>
+          <div class="category-brand-container">
+            <ul>
+              <% categories.forEach(category => { %>
+                <li class="filter-item">
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="category"
+                      value="<%= category._id %>"
+                      <%= categoryId.includes(category._id.toString()) ? 'checked' : '' %>
+                      onchange="updateFilters()"
+                    />
+                    <%= category.name %>
+                  </label>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-title">Brands</div>
+          <div class="category-brand-container">
+            <ul>
+              <% brands.forEach(brand => { %>
+                <li class="filter-item">
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="brand"
+                      value="<%= brand._id %>"
+                      <%= brandId.includes(brand._id.toString()) ? 'checked' : '' %>
+                      onchange="updateFilters()"
+                    />
+                    <%= brand.name %>
+                  </label>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        </div>
+
+        <div class="price-filter">
+          <div class="filter-title">Filter by Price</div>
+          <div class="price-options">
+            <a href="/shop?price=under500&sort=<%= sort || 'default' %>&<%= categoryId.map(id => `category=${id}`).join('&') %>&<%= brandId.map(id => `brand=${id}`).join('&') %>&query=<%= encodeURIComponent(searchQuery || '') %>">
+              <button type="button" class="price-button">Under ₹500</button>
+            </a>
+            <a href="/shop?price=500-1000&sort=<%= sort || 'default' %>&<%= categoryId.map(id => `category=${id}`).join('&') %>&<%= brandId.map(id => `brand=${id}`).join('&') %>&query=<%= encodeURIComponent(searchQuery || '') %>">
+              <button type="button" class="price-button">₹500 - ₹1000</button>
+            </a>
+            <a href="/shop?price=1000-1500&sort=<%= sort || 'default' %>&<%= categoryId.map(id => `category=${id}`).join('&') %>&<%= brandId.map(id => `brand=${id}`).join('&') %>&query=<%= encodeURIComponent(searchQuery || '') %>">
+              <button type="button" class="price-button">₹1000 - ₹1500</button>
+            </a>
+            <a href="/shop?price=above1500&sort=<%= sort || 'default' %>&<%= categoryId.map(id => `category=${id}`).join('&') %>&<%= brandId.map(id => `brand=${id}`).join('&') %>&query=<%= encodeURIComponent(searchQuery || '') %>">
+              <button type="button" class="price-button">Above ₹1500</button>
+            </a>
+          </div>
+        </div>
+      </aside>
+
+      <main class="product-grid">
+        <% if (products.length === 0) { %>
+          <p>No products found.</p>
+        <% } else { %>
+          <% products.forEach(product => { %>
+            <div class="product-card">
+              <span class="wishlist-btn" onclick="addToWishlist('<%= product._id %>')">❤️</span>
+              <a href="/productDetails?id=<%= product._id %>">
+                <img src="<%= product.productImages[0] %>" alt="<%= product.name %>" />
+                <h4><%= product.name %></h4>
+                <div class="product-meta">
+                  <span class="category-name">
+                    <% const category = categories.find(cat => cat._id.toString() === (product.category ? product.category._id.toString() : '')); %>
+                    <%= category ? category.name : 'N/A' %>
+                  </span>
+                  <span class="brand-name">
+                    <% const brand = brands.find(b => b._id.toString() === (product.brand ? product.brand._id.toString() : '')); %>
+                    <%= brand ? brand.name : 'N/A' %>
+                  </span>
+                </div>
+                <p>
+                  ₹<%= product.salePrice || product.regularPrice %>
+                  <% if (product.regularPrice > product.salePrice) { %>
+                    <span class="original-price">₹<%= product.regularPrice %></span>
+                  <% } %>
+                </p>
+              </a>
+              <button class="add-to-cart-btn" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
+            </div>
+          <% }) %>
+        <% } %>
+      </main>
+    </div>
+
+    <div class="pagination">
+      <% if (currentPage > 1) { %>
+        <a href="/shop?page=<%= currentPage - 1 %>&sort=<%= sort || 'default' %>&<%= categoryId.map(id => `category=${id}`).join('&') %>&<%= brandId.map(id => `brand=${id}`).join('&') %>&price=<%= priceRange || '' %>&query=<%= encodeURIComponent(searchQuery || '') %>">Previous</a>
+      <% } %>
+      <% for (let i = 1; i <= totalPages; i++) { %>
+        <a href="/shop?page=<%= i %>&sort=<%= sort || 'default' %>&<%= categoryId.map(id => `category=${id}`).join('&') %>&<%= brandId.map(id => `brand=${id}`).join('&') %>&price=<%= priceRange || '' %>&query=<%= encodeURIComponent(searchQuery || '') %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+      <% } %>
+      <% if (currentPage < totalPages) { %>
+        <a href="/shop?page=<%= currentPage + 1 %>&sort=<%= sort || 'default' %>&<%= categoryId.map(id => `category=${id}`).join('&') %>&<%= brandId.map(id => `brand=${id}`).join('&') %>&price=<%= priceRange || '' %>&query=<%= encodeURIComponent(searchQuery || '') %>">Next</a>
+      <% } %>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+<script>
+  function addToWishlist(productId) {
+    console.log('Add to wishlist:', productId);
+  }
+
+  function addToCart(productId) {
+    console.log('Add to cart:', productId);
+  }
+
+  function updateFilters() {
+    const categories = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(input => input.value);
+    const brands = Array.from(document.querySelectorAll('input[name="brand"]:checked')).map(input => input.value);
+    const sort = document.querySelector('.sort-container select').value;
+    const price = '<%= priceRange || "" %>';
+    const query = '<%= encodeURIComponent(searchQuery || "") %>';
+
+    let url = '/shop?';
+    const params = [];
+    if (sort && sort !== 'default') params.push(`sort=${sort}`);
+    categories.forEach(cat => params.push(`category=${cat}`));
+    brands.forEach(brand => params.push(`brand=${brand}`));
+    if (price) params.push(`price=${price}`);
+    if (query) params.push(`query=${query}`);
+    url += params.join('&');
+
+    console.log('Navigating to:', url); // Debug URL
+    window.location.href = url;
+  }
+
+  function updateSort(sortValue) {
+    const categories = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(input => input.value);
+    const brands = Array.from(document.querySelectorAll('input[name="brand"]:checked')).map(input => input.value);
+    const price = '<%= priceRange || "" %>';
+    const query = '<%= encodeURIComponent(searchQuery || "") %>';
+
+    let url = '/shop?';
+    const params = [];
+    if (sortValue && sortValue !== 'default') params.push(`sort=${sortValue}`);
+    categories.forEach(cat => params.push(`category=${cat}`));
+    brands.forEach(brand => params.push(`brand=${brand}`));
+    if (price) params.push(`price=${price}`);
+    if (query) params.push(`query=${query}`);
+    url += params.join('&');
+
+    console.log('Navigating to (sort):', url); // Debug URL
+    window.location.href = url;
+  }
+</script>
+
+<%- include("../../views/partials/user/footer") %>

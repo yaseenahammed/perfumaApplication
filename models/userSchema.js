@@ -37,6 +37,16 @@ const userSchema=new Schema({
     type:Boolean,
     default:false
    },
+     otp: {
+    type: String,
+  },
+  otpExpires: {
+    type: Date,
+  },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
    cart:[{
     type:Schema.Types.ObjectId,
     ref:'Cart'

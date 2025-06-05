@@ -8,7 +8,7 @@ const adminController = require('../controller/admin/adminController');
 const customerController = require('../controller/admin/customerController');
 const categoryController = require('../controller/admin/categoryController');
 const brandController = require('../controller/admin/brandController'); 
-const productController=require('../controller/admin/productController')
+const productController = require('../controller/admin/productController');
 const { adminAuth } = require("../middlewares/auth");
 
 // Import storage from multer.js helper
@@ -48,11 +48,16 @@ router.get('/unblockBrand', adminAuth, brandController.unblockBrand);
 router.get('/deleteBrand', adminAuth, brandController.deleteBrand);
 
 // Product
-router.get('/addProducts', adminAuth, productController.getAddProductPage);
-
-
-
-
+router.get('/addProducts',productController.getAddProduct);
+router.post('/addProducts', uploads.array("productImages", 4), productController.addProduct);
+router.get('/products',  productController.getAllproducts);
+router.get('/editProduct/:id', productController.getEditProduct);
+router.post('/editProduct/:id',  uploads.array("productImages", 4), productController.postEditProduct);
+router.post('/products/:id/remove-image',  productController.removeProductImage);
+router.post('/products/:id/add-offer', productController.addOffer);
+router.post('/products/:id/remove-offer',  productController.removeOffer);
+router.get('/products/:id/block', productController.blockProduct);
+router.get('/products/:id/unblock',  productController.unblockProduct);
 
 
 

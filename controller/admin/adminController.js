@@ -33,14 +33,14 @@ const login = async (req, res) => {
     if (admin) {
       const passwordMatch = await bcrypt.compare(password, admin.password);
       if (passwordMatch) {
-        req.session.admin = true;
+        req.session.admin = admin._id; // ✅ Store admin ID
         return res.redirect('/admin');
       } else {
-        req.session.message="incorrect password"
+        req.session.message = "Incorrect password";
         return res.redirect('/admin/login');
       }
     } else {
-      req.session.message="Admin not found"
+      req.session.message = "Admin not found";
       return res.redirect('/admin/login');
     }
   } catch (error) {
@@ -60,6 +60,7 @@ const loadDashboard = async (req, res) => {
       }
     }
 };
+
 
 const logout=async(req,res)=>{
   try {
