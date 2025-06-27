@@ -41,11 +41,12 @@ const addBrand = async (req, res) => {
     }
 
    
-    const image = req.file?.filename;
+   const image = req.file?.path;
 
-    if (!image || !brandName) {
-      return res.status(400).json({ error: "Name and image are required" });
-    }
+if (!image || !brandName) {
+  return res.status(400).json({ error: "Name and image are required" });
+}
+
 
   
     const newBrand = new Brand({
@@ -53,8 +54,12 @@ const addBrand = async (req, res) => {
       brandImage: image,
     });
 
-    await newBrand.save();
-    return res.status(200).json({ message: "Brand added successfully" });
+   await newBrand.save();
+   return res.status(200).json({ 
+  message: "Brand added successfully", 
+  brand: newBrand   
+});
+
 
   } catch (error) {
     console.error(error);
@@ -66,34 +71,36 @@ const addBrand = async (req, res) => {
 
 const blockBrand = async (req, res) => {
   try {
-    const id = req.query.id;
-    await Brand.updateOne({ _id: id }, { $set: { isBlocked: true } });
-    res.redirect('/admin/brands');
+    const brandId = req.body.id;
+    await Brand.updateOne({ _id: brandId }, { $set: { isBlocked: true } });
+    res.json({ success: true, message: "Brand blocked successfully" });
   } catch (error) {
-    res.redirect('/admin/pageError');
+    res.status(500).json({ success: false, error: "Something went wrong" });
   }
 };
 
 const unblockBrand = async (req, res) => {
   try {
-    const id = req.query.id;
-    await Brand.updateOne({ _id: id }, { $set: { isBlocked: false } });
-    res.redirect('/admin/brands');
+    const brandId = req.body.id;
+    await Brand.updateOne({ _id: brandId }, { $set: { isBlocked: false } });
+    res.json({ success: true, message: "Brand unblocked successfully" });
   } catch (error) {
-    res.redirect('/admin/pageError');
+    res.status(500).json({ success: false, error: "Something went wrong" });
   }
 };
 
 const deleteBrand = async (req, res) => {
   try {
-    const brandId = req.query.id;
+    const brandId = req.body.id;
+    
     await Brand.deleteOne({ _id: brandId });
-    res.redirect('/admin/brands');
+    res.json({ success: true, message: "Brand deleted successfully" });
   } catch (error) {
-    console.log(error);
-    res.redirect('/admin/pageError');
+    res.status(500).json({ success: false, error: "Something went wrong" });
   }
 };
+
+
 
 module.exports = {
   getBrandPage,

@@ -1,62 +1,225 @@
 const Product = require('../../models/productSchema');
 const Category = require('../../models/categorySchema');
+const mongoose = require('mongoose');
 const User = require('../../models/userSchema');
+const Cart = require('../../models/cartSchema');
+const Wishlist = require('../../models/wishlistSchema');
 
 const productDetails = async (req, res) => {
   try {
-    const userId = req.session.user;
+    const userId = req.session.userId;
+    console.log('productDetails - Session:', req.session);
+    console.log('productDetails - userId:', userId || 'None');
+
     if (!userId) {
       req.flash('error', 'Please log in to view product details');
+      console.log('No userId, redirecting to /login');
       return res.redirect('/login');
     }
 
-    const userData = await User.findById(userId);
+    if (!mongoose.isValidObjectId(userId)) {
+      req.flash('error', 'Invalid session data');
+      console.log('Invalid userId:', userId);
+      return res.redirect('/login');
+    }
+
+    const userData = await User.findById(userId).lean();
+    console.log('User:', userData?.email || 'None');
+
     if (!userData) {
       req.flash('error', 'User not found');
+      console.log('User not found');
+      return res.redirect('/login');
+    }
+
+    if (userData.isBlocked) {
+      req.flash('error', 'User is blocked by admin');
+      console.log('User blocked:', userData.email);
       return res.redirect('/login');
     }
 
     const productId = req.query.id;
-    if (!productId) {
-      req.flash('error', 'Product ID is required');
+    console.log('Product ID:', productId);
+
+    if (!productId || !mongoose.isValidObjectId(productId)) {
+      req.flash('error', 'Invalid product ID');
+      console.log('Invalid product ID');
       return res.redirect('/shop');
     }
 
     const product = await Product.findById(productId)
       .populate('category')
-      .populate('brand');
+      .populate('brand')
+      .lean();
+    console.log('Product:', product?.name || 'None', 'Quantity:', product?.quantity, 'isListed:', product?.isListed, 'isBlocked:', product?.isBlocked);
+
     if (!product) {
       req.flash('error', 'Product not found');
+      console.log('Product not found');
       return res.redirect('/shop');
     }
 
-    // Fetch similar products after product is defined
     const similarProducts = await Product.find({
-      category: product.category._id, // Match products with the same category ID
-      _id: { $ne: product._id }, // Exclude the current product
-      status: { $in: ['available', 'discounted'] } // Only include available or discounted products
-    }).limit(4);
+      category: product.category._id,
+      _id: { $ne: product._id },
+      status: { $in: ['available', 'discounted'] },
+    }).limit(4).lean();
+    console.log('Similar products:', similarProducts.length);
 
     const findCategory = product.category;
     const categoryOffer = findCategory?.offer || 0;
     const productOffer = product.offer || 0;
     const totalOffer = categoryOffer + productOffer;
 
-    res.render('product-details', {
+    res.render('product-details', { 
       product,
       similarProducts,
       user: userData,
       quantity: product.quantity,
       totalOffer,
-      category: findCategory
+      category: findCategory,
+      error: req.flash('error'),
     });
   } catch (error) {
-    console.error('Error in productDetails:', error);
+    console.error('Error in productDetails:', error.stack);
     req.flash('error', 'Unable to load product details');
     res.redirect('/shop');
   }
 };
 
+const MAX_ALLOWED_QUANTITY = 5;
+
+// Add to Cart
+const addToCart = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const productId = req.params.productId;
+    const quantity = parseInt(req.body.quantity) || 1;
+
+    if (!userId || !mongoose.isValidObjectId(userId)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const product = await Product.findById(productId).populate('category');
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+
+    if (
+      product.isBlocked ||
+      !product.isListed ||
+      product.quantity <= 0 ||
+      product.category.isBlocked ||
+      !product.category.isListed
+    ) {
+      return res.status(400).json({ error: 'Product cannot be added to cart' });
+    }
+
+    if (quantity < 1 || quantity > product.quantity || quantity > MAX_ALLOWED_QUANTITY) {
+      return res.status(400).json({ error: 'Invalid quantity selected' });
+    }
+
+    const price = product.salePrice || product.regularPrice;
+    const totalPrice = price * quantity;
+
+    let cart = await Cart.findOne({ user: userId });
+    if (!cart) {
+      cart = new Cart({ user: userId, items: [] });
+    }
+
+    const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+    if (itemIndex > -1) {
+      const newQuantity = cart.items[itemIndex].quantity + quantity;
+      if (newQuantity > product.quantity || newQuantity > MAX_ALLOWED_QUANTITY) {
+        return res.status(400).json({ error: 'Maximum quantity reached' });
+      }
+      cart.items[itemIndex].quantity = newQuantity;
+      cart.items[itemIndex].totalPrice = newQuantity * cart.items[itemIndex].price;
+    } else {
+      cart.items.push({
+        product: productId,
+        quantity,
+        price,
+        totalPrice
+      });
+    }
+
+    await Wishlist.updateOne({ user: userId }, { $pull: { items: productId } });
+    await cart.save();
+
+    res.json({ success: true, message: 'Product added to cart' });
+  } catch (error) {
+    console.error('Error in addToCart:', error.stack);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+const incrementQuantity = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const productId = req.params.productId;
+
+    const cart = await Cart.findOne({ user: userId });
+    const product = await Product.findById(productId).populate('category');
+
+    if (!cart || !product) return res.status(404).json({ error: 'Not found' });
+
+    const item = cart.items.find(i => i.product.toString() === productId);
+    if (!item) return res.status(400).json({ error: 'Item not in cart' });
+
+    if (
+      product.isBlocked ||
+      !product.isListed ||
+      product.quantity <= 0 ||
+      product.category.isBlocked ||
+      !product.category.isListed
+    ) {
+      return res.status(400).json({ error: 'Product is not available' });
+    }
+
+    if (item.quantity >= product.quantity || item.quantity >= MAX_ALLOWED_QUANTITY) {
+      return res.status(400).json({ error: 'Maximum quantity reached' });
+    }
+
+    item.quantity += 1;
+    item.totalPrice = item.quantity * item.price;
+    await cart.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Increment error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+const decrementQuantity = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const productId = req.params.productId;
+
+    const cart = await Cart.findOne({ user: userId });
+    if (!cart) return res.status(404).json({ error: 'Cart not found' });
+
+    const item = cart.items.find(i => i.product.toString() === productId);
+    if (!item) return res.status(400).json({ error: 'Item not in cart' });
+
+    if (item.quantity <= 1) {
+      return res.status(400).json({ error: 'Minimum quantity is 1' });
+    }
+
+    item.quantity -= 1;
+    item.totalPrice = item.quantity * item.price;
+    await cart.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Decrement error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+
 module.exports = {
-  productDetails
+  productDetails,
+  addToCart,
+  incrementQuantity,
+  decrementQuantity
 };

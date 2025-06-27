@@ -54,13 +54,14 @@ app.use((req, res, next) => {
 
 app.use(passport.initialize());
 app.use(passport.session());
-// app.use((req, res, next) => {
-//     console.log('req.user:', req.user); // Debug
-//     res.locals.user = req.user || null;
-//     next();
-// });
 
-// Routes
+app.use((req, res, next) => {
+  res.locals.query = req.query;
+  next();
+});
+
+
+
 
 
 

@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
@@ -32,19 +31,20 @@ const productSchema = new Schema(
       min: 0,
       max: 100,
     },
-    salePrice: {
-      type: Number,
-    },
     offer: {
       type: Number,
       default: 0,
       min: 0,
       max: 100,
     },
+    salePrice: {
+      type: Number,
+    },
     quantity: {
       type: Number,
       required: true,
       min: 0,
+      default: 0, 
     },
     productImages: {
       type: [String],
@@ -52,9 +52,17 @@ const productSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["available", "not available", "discounted"],
+      enum: ["available", "not available"],
       required: true,
       default: "available",
+    },
+    isListed: {
+      type: Boolean,
+      default: true, 
+    },
+    isBlocked: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }
@@ -62,10 +70,8 @@ const productSchema = new Schema(
 
 // Pre-save hook to calculate salePrice based on discount or offer
 productSchema.pre('save', function (next) {
-  if (!this.salePrice) {
-    const effectiveDiscount = Math.max(this.discount, this.offer);
-    this.salePrice = this.regularPrice * (1 - effectiveDiscount / 100);
-  }
+  const effectiveDiscount = Math.max(this.discount, this.offer);
+  this.salePrice = this.regularPrice * (1 - effectiveDiscount / 100);
   next();
 });
 

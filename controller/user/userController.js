@@ -5,7 +5,7 @@ const User = require('../../models/userSchema');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 
-// Configure nodemailer for sending OTP emails (update with your email service credentials)
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -19,16 +19,11 @@ const transporter = nodemailer.createTransport({
 
 
 
-// Load Home Page
 const loadHome = async (req, res) => {
   try {
-    const user = req.session.user ? await User.findById(req.session.user).lean() : null;
-
-    // Debug: Log all categories to check available category names
+    const user = req.session.userId ? await User.findById(req.session.userId).lean() : null;
     const categories = await Category.find().lean();
-    console.log('Available categories:', categories.map(cat => cat.name));
 
-    // Fetch men's perfumes
     const menPerfumesCategory = await Category.findOne({ name: "Men" }).select('_id').lean();
     const menPerfumes = menPerfumesCategory
       ? await Product.find({
@@ -42,9 +37,8 @@ const loadHome = async (req, res) => {
         .lean()
         .exec()
       : [];
-    console.log('Men Perfumes:', menPerfumes);
+   
 
-    // Fetch women's perfumes
     const womenPerfumesCategory = await Category.findOne({ name: "Women" }).select('_id').lean();
     const womenPerfumes = womenPerfumesCategory
       ? await Product.find({
@@ -59,10 +53,8 @@ const loadHome = async (req, res) => {
         .exec()
       : [];
 
-    // console.log('Women Perfumes:', womenPerfumes);
-    // console.log('Rendering template: user/home');
-
-
+    console.log('Women Perfumes:', womenPerfumes);
+    console.log('men Perfumes:', menPerfumes);
     res.render('home', { user, title: 'Home Page', menPerfumes, womenPerfumes });
   } catch (error) {
     console.error('Error in loadHome:', error.stack);
@@ -70,7 +62,7 @@ const loadHome = async (req, res) => {
   }
 };
 
-// Load Signup Page
+
 const loadSignup = async (req, res) => {
   try {
     res.render('signup', { title: 'Sign Up', error: null });
@@ -80,7 +72,7 @@ const loadSignup = async (req, res) => {
   }
 };
 
-// Handle Signup
+
 const signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -95,7 +87,7 @@ const signup = async (req, res) => {
       }
 
     }
-
+    
     const existingUser = await User.findOne({ email }).lean();
     if (existingUser) {
       return res.render('signup', {
@@ -127,7 +119,7 @@ const signup = async (req, res) => {
 
     console.log('Your OTP is', otp);
 
-    //  Store userId in session 
+   
     req.session.userId = user._id;
 
     res.redirect('/verify-otp');
@@ -142,19 +134,19 @@ const signup = async (req, res) => {
 };
 
 
-// Function to generate OTP
 const generateOtp = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit string OTP
+  return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// Controller to verify OTP
+
 const verifyOtp = async (req, res) => {
   try {
     const otp = req.body?.otp?.toString();
     const userId = req.session.userId;
 
     console.log(" OTP from client:", otp);
-    console.log(" Session userId:", userId);
+    console.log('Session userId:', req.session.userId);
+
 
     if (!otp || !userId) {
       return res.status(400).json({
@@ -188,7 +180,6 @@ const verifyOtp = async (req, res) => {
       });
     }
 
-    // OTP is valid
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpires = undefined;
@@ -213,12 +204,12 @@ const verifyOtp = async (req, res) => {
 
 
 
-// Resend OTP
 const resendOtp = async (req, res) => {
   try {
     console.log("resendOtp function triggered");
+    console.log("Session data:", req.session);
 
-    const userId = req.session.userId || req.session.tempUser;
+    const userId = req.session.userId ;
     console.log("Session userId:", userId);
 
     if (!userId) {
@@ -233,7 +224,7 @@ const resendOtp = async (req, res) => {
     }
 
     const otp = generateOtp();
-    console.log('Generated OTP:', otp);  // <-- This should show up now
+    console.log('Generated OTP:', otp);
 
     user.otp = otp;
     user.otpExpires = Date.now() + 10 * 60 * 1000;
@@ -246,7 +237,6 @@ const resendOtp = async (req, res) => {
     });
 
     console.log("OTP email sent");
-
     return res.json({ success: true, message: "OTP resent successfully" });
 
   } catch (error) {
@@ -256,7 +246,8 @@ const resendOtp = async (req, res) => {
 };
 
 
-// Load Page Not Found
+
+
 const pageNotFound = async (req, res) => {
   try {
     res.status(404).render('pageNotFound', { title: 'Page Not Found' });
@@ -281,30 +272,80 @@ const loadLogin = async (req, res) => {
   }
 };
 
-// Handle Login
+
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({isAdmin:0,email:email });
-    if (!user || !user.isVerified) {
-      return res.render('login', { title: 'Login', error: 'Invalid email or user not verified' });
+    console.log('Login request body:', { email });
+
+  
+    if (!email || !password) {
+      return res.json({
+        success: false,
+        message: 'Email and password are required'
+      });
     }
+
+    const user = await User.findOne({ isAdmin: false, email }).lean();
+    console.log('User found:', user ? user.email : 'None'); 
+
+    if (!user) {
+      return res.json({
+        success: false,
+        message: 'Invalid email'
+      });
+    }
+
+    if (!user.isVerified) {
+      return res.json({
+        success: false,
+        message: 'User not verified. Please verify your OTP.'
+      });
+    }
+
+    if (user.isBlocked) {
+      return res.json({
+        success: false,
+        message: 'User is blocked by admin'
+      });
+    }
+
+   
+    if (!user.password) {
+      return res.json({
+        success: false,
+        message: 'This account uses Google login. Please use Google to log in.'
+      });
+    }
+
 
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password match:', isMatch); 
+
     if (!isMatch) {
-      return res.render('login', { title: 'Login', error: 'Invalid password' });
+      return res.json({
+        success: false,
+        message: 'Invalid password'
+      });
     }
 
-    req.session.user = user._id;
-    res.redirect('/');
+   
+    req.session.userId = user._id;
+    console.log('Session userId set:', req.session.userId); 
 
+    return res.json({
+      success: true,
+      redirectUrl: '/'
+    });
   } catch (error) {
-    console.error('Error in login:', error.stack);
-    res.render('login', { title: 'Login', error: 'Something went wrong' });
+    console.error('Error in login controller:', error.stack);
+    return res.json({
+      success: false,
+      message: 'Something went wrong. Please try again.'
+    });
   }
 };
 
-// Handle Logout
 const logout = async (req, res) => {
   try {
     req.session.destroy((err) => {
@@ -321,10 +362,11 @@ const logout = async (req, res) => {
   }
 };
 
-// Load Shop Page
+
 const loadShop = async (req, res) => {
   console.log('loadShop route accessed');
   try {
+  
     const page = parseInt(req.query.page) || 1;
     const limit = 9;
     const sort = req.query.sort || 'default';
@@ -333,12 +375,8 @@ const loadShop = async (req, res) => {
     const priceRange = req.query.price || '';
     const searchQuery = req.query.query || '';
 
-    // Ensure categoryId and brandId are arrays
     if (!Array.isArray(categoryId)) categoryId = categoryId ? [categoryId] : [];
     if (!Array.isArray(brandId)) brandId = brandId ? [brandId] : [];
-
-    console.log('loadShop - categoryId:', categoryId); // Debug
-    console.log('loadShop - brandId:', brandId); // Debug
 
     let query = { status: 'available', quantity: { $gte: 0 } };
     if (categoryId.length > 0) query.category = { $in: categoryId };
@@ -366,16 +404,16 @@ const loadShop = async (req, res) => {
       .limit(limit)
       .lean()
       .exec();
-    console.log('new products', products);
-    console.log('Products with images:', products.map(p => ({ name: p.name, productImages: p.productImages })));
+    console.log('Products fetched:', products.map(p => ({ name: p.name, category: p.category?.name })));
 
     const totalProducts = await Product.countDocuments(query);
     const totalPages = Math.ceil(totalProducts / limit);
+    console.log("Total Products:", totalProducts);
 
     const categories = await Category.find({ isListed: true }).lean();
     const brandIds = await Product.distinct('brand').lean();
     const brands = await Brand.find({ _id: { $in: brandIds } }).lean();
-    const user = req.session.user ? await User.findById(req.session.user).lean() : null;
+   const user = req.session.userId ? await User.findById(req.session.userId).lean() : null;
 
     res.render('shop', {
       user,
@@ -396,26 +434,26 @@ const loadShop = async (req, res) => {
   }
 };
 
-// Search Products
+
 const searchProducts = async (req, res) => {
   try {
     const { query, sort } = req.body;
-    let categoryId = req.body.category || []; // Expect category as an array
-    let brandId = req.body.brand || []; // Expect brand as an array
+    let categoryId = req.body.category || []; 
+    let brandId = req.body.brand || []; 
     const priceRange = req.body.price || '';
     const page = 1;
     const limit = 9;
 
-    // Ensure categoryId and brandId are arrays
+ 
     if (!Array.isArray(categoryId)) categoryId = categoryId ? [categoryId] : [];
     if (!Array.isArray(brandId)) brandId = brandId ? [brandId] : [];
 
-    console.log('searchProducts - categoryId:', categoryId); // Debug
-    console.log('searchProducts - brandId:', brandId); // Debug
+    console.log('searchProducts - categoryId:', categoryId); 
+    console.log('searchProducts - brandId:', brandId); 
 
     let searchQuery = { status: 'available', quantity: { $gte: 0 } };
-    if (categoryId.length > 0) searchQuery.category = { $in: categoryId }; // Use $in for multiple categories
-    if (brandId.length > 0) searchQuery.brand = { $in: brandId }; // Use $in for multiple brands
+    if (categoryId.length > 0) searchQuery.category = { $in: categoryId }; 
+    if (brandId.length > 0) searchQuery.brand = { $in: brandId }; 
     if (priceRange) {
       if (priceRange === 'under500') searchQuery.salePrice = { $lte: 500 };
       else if (priceRange === '500-1000') searchQuery.salePrice = { $gte: 500, $lte: 1000 };
@@ -456,8 +494,8 @@ const searchProducts = async (req, res) => {
       currentPage: page,
       totalPages,
       sort: sort || 'default',
-      categoryId, // Pass as array
-      brandId, // Pass as array
+      categoryId, 
+      brandId,
       priceRange,
       searchQuery: query || '',
     });

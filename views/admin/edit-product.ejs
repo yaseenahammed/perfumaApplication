@@ -150,10 +150,11 @@
                 <select class="form-select border" name="status">
                   <option value="available" <%= product.status === 'available' ? 'selected' : '' %>>Available</option>
                   <option value="not available" <%= product.status === 'not available' ? 'selected' : '' %>>Not Available</option>
-                  <option value="discounted" <%= product.status === 'discounted' ? 'selected' : '' %>>Discounted</option>
                 </select>
                 <div id="status-error" class="error-message"></div>
               </div>
+
+             
 
               <div class="card mb-4">
                 <div class="card-header">
@@ -288,7 +289,7 @@ function viewImage(event) {
   };
 }
 
-// New function to remove newly uploaded images
+
 function removeNewImage(thumbnailIndex, inputIndex) {
   Swal.fire({
     title: 'Are you sure?',
@@ -301,7 +302,7 @@ function removeNewImage(thumbnailIndex, inputIndex) {
       const thumbnail = document.getElementById(`thumbnail${thumbnailIndex}`);
       thumbnail.remove();
       const input = document.getElementById(`input${inputIndex}`);
-      input.value = ''; // Clear the file input
+      input.value = ''; 
       document.getElementById(`imgView${inputIndex}`).style.display = 'none';
       Swal.fire('Removed!', 'Image removed successfully.', 'success');
     }
@@ -329,8 +330,7 @@ function removeExistingImage(imagePath, productId, index) {
         } else {
           const thumbnail = document.getElementById(`thumbnail${index}`);
           thumbnail.remove();
-          existingImages = existingImages.filter(img => img !== imagePath);
-          // Update the hidden input with the new existingImages array
+          existingImages = existingImages.filter(img => img !== imagePath)
           document.getElementById('existingImages').value = JSON.stringify(existingImages);
           Swal.fire('Removed!', 'Image removed successfully.', 'success');
         }

@@ -79,6 +79,9 @@
   cursor: default;
 }
    
+.error-message{
+  color: red;
+}
 
     
   </style>
@@ -142,7 +145,8 @@
     <td><%= index + 1 %></td>
     <td class="text-start"><%= category.name %></td>
     <td class="text-start"><%= category.description %></td>
-    <td>
+
+    <td id="offer-<%=category._id%>">
       <% if (category.offer && category.offer > 0) { %>
         <%= category.offer %>% Off
       <% } else { %>
@@ -150,7 +154,7 @@
       <% } %>
     </td>
 
-    <td>
+    <td id="offer-btn-<%=category._id%>">
       <% if (category.offer && category.offer > 0) { %>
         <button class="btn btn-warning text-white" onclick="removeOffer('<%= category._id %>')">Remove Offer</button>
       <% } else { %>
@@ -158,15 +162,15 @@
       <% } %>
     </td>
 
-    <td>
+    <td id="list-btn-<%= category._id %>">
       <% if (category.isListed) { %>
-        <button class="btn btn-danger" onclick="toggleListing('<%= category._id %>', 'unlist')">Unlist</button>
+        <button class="btn btn-danger" onclick="Listing('<%= category._id %>', 'unlist')">Unlist</button>
       <% } else { %>
-        <button class="btn btn-success" onclick="toggleListing('<%= category._id %>', 'list')">List</button>
+        <button class="btn btn-success" onclick="Listing('<%= category._id %>', 'list')">List</button>
       <% } %>
     </td>
 
-    <td>
+    <td id="list-status-<%= category._id %>">
       <% if (category.isListed) { %>
         <span class="badge bg-success">Listed</span>
       <% } else { %>
@@ -198,7 +202,7 @@
       <% } else { %>
       <a href="?page=<%= i %>"><%= i %></a>
       <% } %> <% } %> <% if (currentPage < totalPages) { %>
-      <a href="?page=<%= currentPage + 1 %><">Next &raquo;</a>
+      <a href="?page=<%= currentPage + 1 %>">Next &raquo;</a>
       <% } %>
     </div>
     </section>
@@ -329,11 +333,21 @@
         },
       }).then((result) => {
         if (result.isConfirmed) {
-          Swal.fire("Success!", "Offer added successfully", "success").then(
-            () => {
-              location.reload();
-            }
-          );
+          Swal.fire("Success!",
+           "Offer added successfully",
+            "success"
+          )
+
+
+          const offerCell=document.getElementById(`offer-btn-${categoryId}`);
+                if(offerCell){
+                  offerCell.innerText=`${result.value}% off`
+                }
+                  const buttonCell=document.getElementById(`offer-btn-${categoryId}`)
+                  if(buttonCell){
+                    buttonCell.innerHTML= `
+                    <button class="btn btn-info text-white" onclick="removeOffer('${categoryId}')"> Remove Offer </button>`;
+                  }
         }
       });
     }
@@ -363,9 +377,19 @@
                   "Removed!",
                   "Offer has been removed.",
                   "success"
-                ).then(() => {
-                  location.reload();
-                });
+                )
+            
+                const offerCell=document.getElementById(`offer-${categoryId}`);
+                if(offerCell){
+                  offerCell.innerText="No offer"
+                }
+                  const buttonCell=document.getElementById(`offer-btn-${categoryId}`)
+                  if(buttonCell){
+                    buttonCell.innerHTML= `
+                    <button class="btn btn-info text-white" onclick="addOffer('${categoryId}')"> Add Offer </button>`;
+                  }
+                
+
               }
             })
             .catch((err) => {
@@ -375,9 +399,8 @@
       });
     }
 
-    function toggleListing(categoryId, action) {
-      const confirmText =
-        action === "list"
+    function Listing(categoryId, action) {
+      const confirmText = action === "list"
           ? "Are you sure you want to list this category?"
           : "Are you sure you want to unlist this category?";
       const endpoint = "/admin/list-category";
@@ -399,9 +422,23 @@
             .then((res) => res.json())
             .then((data) => {
               if (data.message) {
-                Swal.fire("Success", data.message, "success").then(() => {
-                  location.reload();
-                });
+                Swal.fire("Success", 
+                data.message,
+                 "success"
+                )
+
+                 const btnTd = document.getElementById(`list-btn-${categoryId}`);
+            const statusTd = document.getElementById(`list-status-${categoryId}`);
+
+            if (btnTd && statusTd) {
+              if (action === "list") {
+                btnTd.innerHTML = `<button class="btn btn-danger" onclick="Listing('${categoryId}', 'unlist')">Unlist</button>`;
+                statusTd.innerHTML = `<span class="badge bg-success">Listed</span>`;
+              } else {
+                btnTd.innerHTML = `<button class="btn btn-success" onclick="Listing('${categoryId}', 'list')">List</button>`;
+                statusTd.innerHTML = `<span class="badge bg-secondary">Unlisted</span>`;
+              }
+            }
               } else {
                 Swal.fire("Error", data.error || "Operation failed", "error");
               }

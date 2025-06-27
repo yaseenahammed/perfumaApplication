@@ -11,14 +11,7 @@ const userSchema=new Schema({
     required:true,
     unique:true
    },
-   phone:{
-    type:String,
-     required:false,
-    unique:false,
-    sparse:true,
-    default:null
-
-  },
+   
    googleId:{
     type:String,
     unique:true,
@@ -47,6 +40,18 @@ const userSchema=new Schema({
     type: Boolean,
     default: false,
   },
+  profileImage: {
+  type: String,
+  default: 'default.png'
+},
+  addresses: [{
+    street: String,
+    city: String,
+    state: String,
+    zip: String,
+    country: String
+  }],
+
    cart:[{
     type:Schema.Types.ObjectId,
     ref:'Cart'
@@ -77,9 +82,10 @@ const userSchema=new Schema({
         type:Date,
         default:Date.now
     }
-   }]
-
-})
+   }],
+},
+{timestamps:true}
+)
 
 const User=mongoose.model("User",userSchema)
 module.exports=User

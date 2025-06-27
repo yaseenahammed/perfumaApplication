@@ -54,7 +54,8 @@
       <div class="row">
         <div class="col-md-3">
        
-           <form id="addBrandForm" enctype="multipart/form-data">
+     <form id="addBrandForm" enctype="multipart/form-data" method="POST" action="/admin/addBrand">
+
   <div class="mb-4">
     <label for="product_name" class="form-label">Brand Name</label>
     <input type="text" name="name" placeholder="Type here" class="form-control" />
@@ -84,27 +85,33 @@
                 </tr>
               </thead>
               <% data.reverse().forEach((brand) => { %>
-  <tr>
+  <tr id="brand-row-<%= brand._id %>">
     <td><%= brand.name %></td>
     <td>
-      <img src="/uploads/re-image/<%= brand.brandImage %>" alt="<%= brand.name %>" width="40" />
+      <img src="<%= brand.brandImage.startsWith('http') ? brand.brandImage : '/uploads/re-image/' + brand.brandImage %>" alt="<%= brand.name %>" width="40" />
+
+
     </td>
-    <td>
+    <td id="blockBtn-<%=brand._id%>">
       <% if (brand.isBlocked) { %>
         <span class="badge bg-danger">Blocked</span>
       <% } else { %>
         <span class="badge bg-success">Active</span>
       <% } %>
     </td>
-    <td>
+    <td id="blockStatus-<%=brand._id%>">
       <% if (!brand.isBlocked) { %>
         
 
-       <a href="/admin/blockBrand?id=<%= brand._id %>" class="btn btn-danger">Block</a>
+       <button onclick="toggleBlockStatus('<%= brand._id %>', true)" class="btn btn-danger">Block</button>
+
       <% } else { %>
-       <a href="/admin/unblockBrand?id=<%= brand._id %>" class="btn btn-success">Unblock</a>
+       <button onclick="toggleBlockStatus('<%= brand._id %>', false)" class="btn btn-success">Unblock</button>
+
       <% } %>
-     <a href="/admin/deleteBrand?id=<%= brand._id %>" class="btn btn-danger "  style="padding-left: 15px;"   onclick="return confirm('Delete this brand?')">Delete</a>
+       <button onclick="deleteBrand('<%= brand._id %>')" class="btn btn-danger" style="padding-left: 15px;">Delete</button>
+       
+
     </td>
   </tr>
 <% }) %>
@@ -135,39 +142,167 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-  document.getElementById("addBrandForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
 
-    const form = e.target;
-    const formData = new FormData(form);
+
+  <script>
+document.getElementById('addBrandForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+  try {
+    const response = await fetch('/admin/addBrand', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Brand added',
+        text: result.message || 'Brand added successfully!',
+      });
+
+      const brand = result.brand;
+      const tableBody = document.querySelector('table tbody');
+      const newRow = document.createElement('tr');
+      newRow.id = `brand-row-${brand._id}`;
+
+      newRow.innerHTML = `
+        <td>${brand.name}</td>
+        <td>
+          <img src="${brand.brandImage.startsWith('http') ? brand.brandImage : '/uploads/re-image/' + brand.brandImage}" alt="${brand.name}" width="40" />
+        </td>
+        <td id="blockBtn-${brand._id}">
+          <span class="badge bg-success">Active</span>
+        </td>
+        <td id="blockStatus-${brand._id}">
+          <button onclick="toggleBlockStatus('${brand._id}', true)" class="btn btn-danger">Block</button>
+          <button onclick="deleteBrand('${brand._id}')" class="btn btn-danger" style="padding-left: 15px;">Delete</button>
+        </td>
+      `;
+
+      tableBody.prepend(newRow);
+      this.reset(); 
+
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: result.error || 'Something went wrong',
+      });
+    }
+
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.message || 'Something went wrong'
+    });
+  }
+});
+    
+  async function toggleBlockStatus(brandId, block) {
+    const confirmText = block
+      ? "Are you sure you want to block this brand?"
+      : "Are you sure you want to unblock this brand?";
+
+    const result = await Swal.fire({
+      title: confirmText,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
-      const response = await fetch("/admin/addBrand", {
+      const response = await fetch(`/admin/${block ? "blockBrand" : "unblockBrand"}`, {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: brandId }),
       });
 
       const data = await response.json();
 
-      if (!response.ok) throw new Error(data.error);
+      if (!response.ok) throw new Error(data.error || "Failed");
+
+    
+      const statusCell = document.getElementById(`blockBtn-${brandId}`);
+      const actionCell = document.getElementById(`blockStatus-${brandId}`);
+
+     if (block) {
+  statusCell.innerHTML = `<span class="badge bg-danger">Blocked</span>`;
+  actionCell.innerHTML = `
+    <button onclick="toggleBlockStatus('${brandId}', false)" class="btn btn-success">Unblock</button>
+    <button onclick="deleteBrand('${brandId}')" class="btn btn-danger" style="padding-left: 15px;">Delete</button>`;
+} else {
+  statusCell.innerHTML = `<span class="badge bg-success">Active</span>`;
+  actionCell.innerHTML = `
+    <button onclick="toggleBlockStatus('${brandId}', true)" class="btn btn-danger">Block</button>
+    <button onclick="deleteBrand('${brandId}')" class="btn btn-danger" style="padding-left: 15px;">Delete</button>`;
+}
+
 
       Swal.fire({
         icon: "success",
-        title: "Brand Added!",
-        text: data.message || "Brand added successfully!",
-      }).then(() => {
-        location.reload(); // refresh to see the new brand in the table
+        title: block ? "Brand Blocked" : "Brand Unblocked",
+        text: data.message || "Operation successful!",
       });
 
-    } catch (err) {
+    } catch (error) {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: err.message || "Something went wrong",
+        text: error.message || "Something went wrong!",
       });
     }
-  });
+  }
+
+
+    async function deleteBrand(brandId) {
+    const result = await Swal.fire({
+      title: "Are you sure you want to delete this brand?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it",
+      cancelButtonText: "Cancel"
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const response = await fetch("/admin/deleteBrand", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: brandId })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error || "Delete failed");
+
+    
+      const row = document.getElementById(`brand-row-${brandId}`);
+      if (row) row.remove();
+
+      Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: data.message || "Brand deleted successfully.",
+      });
+
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message || "Something went wrong.",
+      });
+    }
+  }
 </script>
+
 
 

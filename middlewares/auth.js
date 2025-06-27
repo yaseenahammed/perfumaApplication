@@ -1,26 +1,47 @@
 const User=require('../models/userSchema')
 
 const userAuth = async (req, res, next) => {
-  console.log("userAuth middleware triggered", { user: req.user, sessionUser: req.session.user, session: req.session });
+  console.log('userAuth middleware triggered', {
+    sessionUserId: req.session.userId,
+    session: req.session,
+  });
 
-  if (req.user || req.session.user) {
+  if (req.session.userId) {
     try {
-      const userId = req.user ? req.user._id : req.session.user;
-      const user = await User.findById(userId);
+      const user = await User.findById(req.session.userId).lean();
       if (user && !user.isBlocked) {
-        req.user = user; // Ensure req.user is set for downstream middleware
-        next();
+        req.user = user; 
+        console.log('User authenticated:', user.email);
+        return next();
       } else {
-        console.log("User is blocked or not found:", user);
-        res.redirect('/login');
+        console.log('User is blocked or not found:', user);
+        req.session.destroy((err) => {
+          if (err) {
+            console.error('Error destroying session:', err);
+          }
+          return res.status(403).json({
+            success: false,
+            message: user && user.isBlocked ? 'User is blocked by admin' : 'User not found',
+          });
+        });
       }
     } catch (error) {
-      console.error("Error in userAuth middleware:", error);
-      res.status(500).send('Internal Server Error');
+      console.error('Error in userAuth middleware:', error.stack);
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Error destroying session:', err);
+        }
+        return res.status(500).json({
+          success: false,
+          message: 'Something went wrong. Please log in again.',
+        });
+      });
     }
   } else {
-    console.log("No user in req.user or req.session.user. Redirecting to login.");
-    res.redirect('/login');
+    console.log('No userId in session.');
+    req.flash('error', 'Please log in to continue');
+return res.redirect('/login');
+
   }
 };
 

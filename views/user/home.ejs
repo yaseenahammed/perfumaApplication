@@ -11,53 +11,60 @@
     <div class="main-banner" id="top">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-lg-6">
+                <div class="col-lg-12">
                     <div class="left-content">
                         <div class="thumb">
                             <div class="inner-content">
                                 <h4>We Are Perfuma</h4>
                                 <span>Classic And Formal perfumes</span>
                                 <div class="main-border-button">
-                                    <a href="#">Purchase Now!</a>
+                                    <a href="#">Purchase Now</a>
                                 </div>
                             </div>
-                            <img src="assets/images/left-banner.jpeg" alt="banner-perfume-image">
+                            <img src="assets/images/banner3/1018.jpg" alt="banner-perfume-image">
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-6">
-                    <div class="right-content">
-                        <div class="row">
-                            <div class="col-lg-6 d-flex flex-column">
-  <div class="right-first-image flex-fill mb-3">
-    <div class="thumb h-100 position-relative">
-      <img src="assets/images/women-banner.jpg" class="w-100 h-100" style="object-fit: cover;">
-      <div class="inner-content position-absolute top-50 start-50 translate-middle text-white text-center">
-        <h4>Women</h4>
-        <span>Best Perfumes For Women</span>
-      </div>
-      
-    </div>
-  </div>
-
-  <div class="right-first-image flex-fill">
-    <div class="thumb h-100 position-relative">
-      <img src="assets/images/men-banner.jpg" class="w-100 h-100" style="object-fit: cover;">
-      <div class="inner-content position-absolute top-50 start-50 translate-middle text-white text-center">
-        <h4>Men</h4>
-        <span>Best Perfumes For Men</span>
-      </div>
-      
-    </div>
-  </div>
-</div>
-
-                        </div>
-                    </div>
+                </div>
+                </div>
                 </div>
             </div>
         </div>
     </div>
+
+  <div class="container my-5"> 
+
+  <div class="row">
+
+
+    <div class="col-lg-6 ">
+      <div class="thumb position-relative">
+        <img src="assets/images/men-banner.jpg" class="w-100" style="object-fit: cover; height: 300px; ">
+        <div class="inner-content position-absolute top-50 start-50 translate-middle text-white text-center">
+          <h4>Men</h4>
+          <span>Best Perfumes For Men</span>
+        </div>
+      </div>
+    </div>
+
+   
+    <div class="col-lg-6 ">
+      <div class="thumb position-relative" >  
+        <img src="assets/images/women-banner.jpg" class="w-100" style="object-fit: cover; height: 300px;">
+        <div class="inner-content position-absolute top-50 start-50 translate-middle text-white text-center">
+          <h4>Women</h4>
+          <span>Best Perfumes For Women</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+
+                        
+                    
     <!-- ***** Main Banner Area End ***** -->
 
 <!-- ***** Men Area Starts ***** -->
@@ -67,7 +74,7 @@
       <div class="col-lg-6">
         <div class="section-heading">
           <h2>Men's Latest</h2>
-          <span>Details to details is what makes Hexashop different from the other themes.</span>
+          <span>Details to details is what Pefuma different from the other themes.</span>
         </div>
       </div>
     </div>
@@ -151,7 +158,7 @@
       <div class="col-lg-6">
         <div class="section-heading">
           <h2>Women's Latest</h2>
-          <span>Details to details is what makes Hexashop different from the other themes.</span>
+          <span>Details to details is what makes perfuma different from the other themes.</span>
         </div>
       </div>
     </div>
@@ -173,7 +180,7 @@
                   </div>
                 <a href="/productDetails?id=<%= womenPerfumes[i]._id %>">
                     <img src="<%=womenPerfumes[i].productImages[0] %>" alt="<%= womenPerfumes[i].name %>">
-                  </a>>
+                  </a>
                 </div>
                 <div class="product-action-1">
                   <a aria-label="Add to Wishlist" class="action-btn hover-up" href="/addToWishlist?id=<%= womenPerfumes[i]._id %>"></a>
@@ -181,6 +188,7 @@
                 <div class="down-content">
                   <h4><%= womenPerfumes[i].name %></h4>
                   <span>$<%= womenPerfumes[i].salePrice.toFixed(2) %></span>
+                 
                   <a href="/addToCart?id=<%= womenPerfumes[i]._id %>">Add to cart</a>
                   <ul class="stars">
                     <li><i class="fa fa-star"></i></li>
@@ -192,6 +200,8 @@
                 </div>
               </div>
             <% } %>
+
+            
             <!-- Fallback items if womenPerfumes array has fewer than 4 items -->
             <% if (womenPerfumes.length < 4) { %>
               <% for(let i = womenPerfumes.length; i < 4; i++) { %>
@@ -209,6 +219,8 @@
                   <div class="down-content">
                     <h4>Classic Spring</h4>
                     <span>$120.00</span>
+                   
+
                     <ul class="stars">
                       <li><i class="fa fa-star"></i></li>
                       <li><i class="fa fa-star"></i></li>
@@ -242,12 +254,13 @@
                 <div class="col-lg-6">
                     <div class="left-content">
                         <h2>Explore Our Products</h2>
-                        <span>You are allowed to use this HexaShop HTML CSS template. You can feel free to modify or edit this layout. You can convert this template as any kind of ecommerce CMS theme as you wish.</span>
+                        <p>Welcome to our Perfume Collection! Here, you can explore a wide variety of scents made for every mood and moment. Whether you like something fresh, sweet, or strong, we have something special for you.</p>
+                       
                         <div class="quote">
-                            <i class="fa fa-quote-left"></i><p>You are not allowed to redistribute this template ZIP file on any other website.</p>
+                            <i class="fa fa-quote-left"></i><p>Explore fragrance world</p>
                         </div>
-                        <p>There are 5 pages included in this HexaShop Template and we are providing it to you for absolutely free of charge at our TemplateMo website. There are web development costs for us.</p>
-                        <p>If this template is beneficial for your website or business, please kindly <a rel="nofollow" href="https://paypal.me/templatemo" target="_blank">support us</a> a little via PayPal. Please also tell your friends about our great website. Thank you.</p>
+                         <span>Discover a world of fragrances with our exclusive collection of perfumes. From fresh floral notes to warm woody scents, we have something for every mood and occasion. Explore our range and find the perfect fragrance that matches your style.</span>
+                      <p>Take your time, explore different categories, and find the perfect scent that feels just right for you. Let your fragrance speak for you and make every day feel beautiful and memorable.</p>
                         <div class="main-border-button">
                             <a href="products.html">Discover More</a>
                         </div>
@@ -257,27 +270,27 @@
                     <div class="right-content">
                         <div class="row">
                             <div class="col-lg-6">
-                                <div class="leather">
-                                    <h4>Leather Bags</h4>
-                                    <span>Latest Collection</span>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
                                 <div class="first-image">
-                                    <img src="assets/images/explore-image-01.jpg" alt="">
+                                    <img src="assets/images/perfume.jpg" alt="">
                                 </div>
                             </div>
                             <div class="col-lg-6">
                                 <div class="second-image">
-                                    <img src="assets/images/explore-image-02.jpg" alt="">
+                                    <img src="assets/images/zara2.jpeg" alt="">
                                 </div>
                             </div>
                             <div class="col-lg-6">
-                                <div class="types">
-                                    <h4>Different Types</h4>
-                                    <span>Over 304 Products</span>
+                                <div class="second-image">
+                                    <img src="assets/images/download.jpg" alt="">
                                 </div>
                             </div>
+                            <div class="col-lg-6">
+                                <div class="first-image">
+                                    <img src="assets/images/banner-perfume.jpeg" alt="">
+                                </div>
+                            </div>
+                            
+                            
                         </div>
                     </div>
                 </div>
@@ -287,7 +300,7 @@
     <!-- ***** Explore Area Ends ***** -->
 
     <!-- ***** Social Area Starts ***** -->
-    <section class="section" id="social">
+    <!-- <section class="section" id="social">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
@@ -308,7 +321,7 @@
                                 <i class="fa fa-instagram"></i>
                             </a>
                         </div>
-                        <img src="assets/images/instagram-01.jpg" alt="">
+                        <img src="assets/images/perfum3.jpeg" alt="">
                     </div>
                 </div>
                 <div class="col-2">
@@ -319,7 +332,7 @@
                                 <i class="fa fa-instagram"></i>
                             </a>
                         </div>
-                        <img src="assets/images/instagram-02.jpg" alt="">
+                        <img src="assets/images/men-banner.jpg" alt="">
                     </div>
                 </div>
                 <div class="col-2">
@@ -330,7 +343,7 @@
                                 <i class="fa fa-instagram"></i>
                             </a>
                         </div>
-                        <img src="assets/images/instagram-03.jpg" alt="">
+                        <img src="assets/images/blue.jpg" alt="">
                     </div>
                 </div>
                 <div class="col-2">
@@ -368,7 +381,7 @@
                 </div>
             </div>
         </div>
-    </section>
+    </section> -->
     <!-- ***** Social Area Ends ***** -->
 
     <!-- ***** Subscribe Area Starts ***** -->

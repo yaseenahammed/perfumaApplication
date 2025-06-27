@@ -2,7 +2,7 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6 mt-60">
-            <form method="post" action="/admin/editCategory">
+            <form id="editCategoryForm" method="post" action="/admin/editCategory">
   <input type="hidden" name="id" value="<%= category._id %>">
 
   <div class="d-grid text-end mt-30 col-md-5">
@@ -24,3 +24,48 @@
     </div>
 </div>
 <%- include("../../views/partials/admin/footer") %>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.getElementById('editCategoryForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const form = this;
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch('/admin/editCategory', {
+        method: 'POST',
+        body: new URLSearchParams(formData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Category Updated',
+          text: result.message,
+          timer: 1500,
+          showConfirmButton: false
+        }).then(() => {
+          window.location.href = '/admin/category';
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: result.error
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Server Error',
+        text: 'Something went wrong. Please try again.'
+      });
+    }
+  });
+</script>
+

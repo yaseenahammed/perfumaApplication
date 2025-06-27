@@ -1,4 +1,3 @@
-
 const Product = require('../../models/productSchema');
 const Category = require('../../models/categorySchema');
 const Brand = require('../../models/brandSchema');
@@ -6,9 +5,6 @@ const path = require('path');
 const fs = require('fs');
 const fsPromises = require('fs/promises');
 const sharp = require('sharp');
-
-
-
 
 const getAllproducts = async (req, res) => {
   try {
@@ -31,18 +27,28 @@ const getAllproducts = async (req, res) => {
       .skip((page - 1) * limit)
       .populate('category')
       .populate('brand')
-      .sort({createdAt:-1})
+      .sort({ createdAt: -1 })
       .lean()
       .exec();
+       
 
     const count = await Product.countDocuments(query);
     const categories = await Category.find({ isListed: true });
     const brands = await Brand.find({ isBlocked: false });
 
+
+    
+    const allProducts = await Product.find({}, 'quantity');
+let totalQ= 0;
+allProducts.forEach(product => totalQ += product.quantity);
+    
+
     const messages = {
       success: req.flash('success'),
       error: req.flash('error')
     };
+    
+ 
 
     res.render("products", {
       productData,
@@ -51,16 +57,16 @@ const getAllproducts = async (req, res) => {
       cat: categories,
       brand: brands,
       search,
-      messages
+      messages,
+      totalQ
+     
+      
     });
   } catch (error) {
     console.error("Error in getAllproducts:", error);
     res.redirect("/admin/pageError");
   }
 };
-
-
-
 
 const getEditProduct = async (req, res) => {
   try {
@@ -70,7 +76,6 @@ const getEditProduct = async (req, res) => {
     const brands = await Brand.find({ isBlocked: false });
 
     if (!product) {
-      //('error', 'Product not found');
       return res.redirect('/admin/pageError');
     }
 
@@ -78,7 +83,7 @@ const getEditProduct = async (req, res) => {
       product,
       cat: categories,
       brand: brands,
-      error: ('error')[0]
+      error: ' '
     });
   } catch (error) {
     console.error('Error in getEditProduct:', error);
@@ -86,31 +91,32 @@ const getEditProduct = async (req, res) => {
   }
 };
 
-
-
 const postEditProduct = async (req, res) => {
   try {
     const id = req.params.id;
-    const { name, description, regularPrice, discount, quantity, brand, category, offer, status, existingImages } = req.body;
+    const { name, description, regularPrice, discount, quantity, brand, category, offer, status, existingImages, isListed, isBlocked } = req.body;
 
-    // Validate input
     if (!name || !description || !regularPrice || !quantity || !brand || !category || !status) {
       return res.redirect(`/admin/editProduct/${id}`);
     }
 
+   
     const parsedRegularPrice = parseFloat(regularPrice);
     const parsedQuantity = parseInt(quantity);
     const parsedDiscount = discount ? parseFloat(discount) : 0;
     const parsedOffer = offer ? parseFloat(offer) : 0;
 
-    if (isNaN(parsedRegularPrice) || parsedRegularPrice <= 0 || isNaN(parsedQuantity) || parsedQuantity < 0) {
+   
+    if (
+      isNaN(parsedRegularPrice) || parsedRegularPrice <= 0 ||
+      isNaN(parsedQuantity) || parsedQuantity < 0 ||
+      parsedDiscount < 0 || parsedDiscount > 100 ||
+      parsedOffer < 0 || parsedOffer > 100
+    ) {
       return res.redirect(`/admin/editProduct/${id}`);
     }
 
-    if (parsedDiscount < 0 || parsedDiscount > 100 || parsedOffer < 0 || parsedOffer > 100) {
-      return res.redirect(`/admin/editProduct/${id}`);
-    }
-
+   
     const brandExists = await Brand.findById(brand);
     if (!brandExists || brandExists.isBlocked) {
       return res.redirect(`/admin/editProduct/${id}`);
@@ -121,44 +127,23 @@ const postEditProduct = async (req, res) => {
       return res.redirect(`/admin/editProduct/${id}`);
     }
 
-    const imageDir = path.join(__dirname, '../../public/uploads/product-images');
-    if (!fs.existsSync(imageDir)) {
-      fs.mkdirSync(imageDir, { recursive: true });
-    }
-
-    const productImages = [];
-    if (req.files && req.files.length > 0) {
-      for (let i = 0; i < req.files.length; i++) {
-        const imagePath = req.files[i].path;
-        const filename = req.files[i].filename;
-        try {
-          await sharp(imagePath)
-            .resize({ width: 440, height: 440 })
-            .toFile(imagePath + '.tmp');
-          fs.renameSync(imagePath + '.tmp', imagePath);
-          productImages.push(`uploads/product-images/${filename}`);
-        } catch (err) {
-          console.error("Error resizing image:", err);
-          if (fs.existsSync(imagePath)) {
-            fs.unlinkSync(imagePath);
-          }
-          continue;
-        }
-      }
-    }
+    const newUploadedImages = req.files ? req.files.map(file => file.path) : [];
 
     const product = await Product.findById(id);
     if (!product) {
       return res.redirect('/admin/pageError');
     }
 
-    // Parse existingImages from the request body (sent as a JSON string or array)
-    const currentImages = existingImages ? (Array.isArray(existingImages) ? existingImages : JSON.parse(existingImages)) : [];
+    const currentImages = existingImages
+      ? Array.isArray(existingImages)
+        ? existingImages
+        : JSON.parse(existingImages)
+      : [];
 
-    // Combine existing images with new images
-    const updatedImages = productImages.length > 0 ? [...currentImages, ...productImages] : currentImages;
+    const updatedImages = newUploadedImages.length > 0
+      ? [...currentImages, ...newUploadedImages]
+      : currentImages;
 
-    // Validate that there is at least one image
     if (updatedImages.length === 0) {
       return res.redirect(`/admin/editProduct/${id}`);
     }
@@ -173,7 +158,9 @@ const postEditProduct = async (req, res) => {
       category,
       offer: parsedOffer,
       status,
-      productImages: updatedImages, // Use the combined images array
+      productImages: updatedImages,
+      isListed: isListed === 'on' ? true : product.isListed || true, 
+      isBlocked: isBlocked === 'on' ? true : product.isBlocked || false, 
     };
 
     await Product.findByIdAndUpdate(id, updateData, { new: true });
@@ -185,8 +172,6 @@ const postEditProduct = async (req, res) => {
   }
 };
 
-
-
 const getAddProduct = async (req, res) => {
   try {
     const { page = 1, search = '' } = req.query;
@@ -196,17 +181,15 @@ const getAddProduct = async (req, res) => {
       ? {
           $or: [
             { name: { $regex: search, $options: 'i' } },
-            // Searching by brand name won't work like this unless you use aggregation or virtuals
           ],
         }
       : {};
 
     const products = await Product.find(query)
       .populate('brand')
-      .populate('category') 
+      .populate('category')
       .skip((page - 1) * limit)
       .limit(limit);
-      
 
     const total = await Product.countDocuments(query);
     const categories = await Category.find({ isListed: true });
@@ -226,13 +209,11 @@ const getAddProduct = async (req, res) => {
   }
 };
 
-
 const addProduct = async (req, res) => {
   try {
     const { name, description, regularPrice, discount, quantity, brand, category, offer, status } = req.body;
-    
+
     if (!name?.trim() || !description?.trim() || !regularPrice || !quantity || !brand || !category || !status) {
-      // //('error', 'All required fields must be filled');
       return res.redirect('/admin/products');
     }
 
@@ -241,71 +222,35 @@ const addProduct = async (req, res) => {
     const parsedDiscount = parseFloat(discount) || 0;
     const parsedOffer = parseFloat(offer) || 0;
 
-    if (isNaN(parsedRegularPrice) || parsedRegularPrice <= 0 || isNaN(parsedQuantity) || parsedQuantity < 0) {
-      //('error', 'Invalid price or quantity');
-      return res.redirect('/admin/products');
-    }
-
-    if (parsedDiscount < 0 || parsedDiscount > 100 || parsedOffer < 0 || parsedOffer > 100) {
-      //('error', 'Discount and offer must be between 0 and 100');
+    if (
+      isNaN(parsedRegularPrice) || parsedRegularPrice <= 0 ||
+      isNaN(parsedQuantity) || parsedQuantity < 0 ||
+      parsedDiscount < 0 || parsedDiscount > 100 ||
+      parsedOffer < 0 || parsedOffer > 100
+    ) {
       return res.redirect('/admin/products');
     }
 
     const productExists = await Product.findOne({ name: name.trim() });
     if (productExists) {
-      //('error', 'Product already exists');
       return res.redirect('/admin/products');
     }
 
     const brandExists = await Brand.findById(brand);
     const categoryExists = await Category.findOne({ _id: category, isListed: true });
     if (!brandExists || brandExists.isBlocked || !categoryExists) {
-      //('error', 'Invalid brand or category');
       return res.redirect('/admin/products');
     }
 
-    const imageDir = path.join(__dirname, '../../public/uploads/product-images');
-    await fs.mkdir(imageDir, { recursive: true },(err) => {
-    if (err) {
-    console.error('Failed to create directory:', err);
-    return;
-  }
-  // Continue logic here
-});
-
-    const productImages = [];
-
-   for (const file of req.files) {
-  const imagePath = file.path;
-  const filename = file.filename;
-
-  const resizedFilename = `resized-${filename}`;
-  const resizedPath = path.join(imageDir, resizedFilename);
-
- try {
-  await sharp(imagePath)
-    .resize({ width: 440, height: 440, fit: 'cover' })
-    .jpeg({ quality: 95 })
-    .toFile(resizedPath);
-
-  productImages.push(`uploads/product-images/${resizedFilename}`);
-  
-  // Corrected deletion
-  await fsPromises.unlink(imagePath).catch(() => {});
-} catch (err) {
-  console.error('Error processing image:', err);
-  await fsPromises.unlink(imagePath).catch(() => {});
-}
-
-}
-
+    const productImages = req.files.map(file => file.path);
 
     if (productImages.length === 0) {
-      //('error', 'At least one image is required');
       return res.redirect('/admin/products');
     }
 
-    const salePrice = parsedDiscount > 0 ? parsedRegularPrice * (1 - parsedDiscount / 100) : parsedRegularPrice;
+    const salePrice = parsedDiscount > 0
+      ? parsedRegularPrice * (1 - parsedDiscount / 100)
+      : parsedRegularPrice;
 
     const newProduct = new Product({
       name: name.trim(),
@@ -318,24 +263,19 @@ const addProduct = async (req, res) => {
       category,
       offer: parsedOffer,
       status,
-      productImages
+      productImages,
+      isListed: true, 
+      isBlocked: false,
     });
 
-   await newProduct.save();
-   console.log('product added successfully');
-   return res.json({ success: 'Product added successfully' });
-
+    await newProduct.save();
+    console.log('Product added successfully');
+    return res.json({ success: 'Product added successfully' });
   } catch (error) {
     console.error('Error in addProduct:', error);
-    //('error', 'Failed to add product');
     res.redirect('/admin/products');
   }
 };
-
-
-
-
-
 
 const removeProductImage = async (req, res) => {
   try {
@@ -357,16 +297,13 @@ const removeProductImage = async (req, res) => {
   }
 };
 
-
-
-
-
 const addOffer = async (req, res) => {
   try {
     const { offer } = req.body;
     const productId = req.params.id;
 
-    if (!offer || offer <= 0 || offer >= 100) {
+    const parsedOffer = parseFloat(offer);
+    if (isNaN(parsedOffer) || parsedOffer <= 0 || parsedOffer >= 100) {
       return res.status(400).json({ error: 'Offer must be between 1 and 99%' });
     }
 
@@ -375,22 +312,22 @@ const addOffer = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    await Product.findByIdAndUpdate(productId, {
-      offer,
-      status: offer > 0 ? 'discounted' : product.status
-    });
 
-    return res.status(200).json({ message: 'Offer added successfully' });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      {
+        offer: parsedOffer,
+       
+      },
+      { new: true, runValidators: true }
+    );
+
+    return res.status(200).json({ success: true, offer: updatedProduct.offer });
   } catch (error) {
     console.error('Add offer error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
-};
-
-
-
-
-
+};;
 
 const removeOffer = async (req, res) => {
   try {
@@ -401,22 +338,21 @@ const removeOffer = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    await Product.findByIdAndUpdate(productId, {
-      $unset: { offer: "" },
-      status: product.discount > 0 ? 'discounted' : 'available'
-    });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      {
+        $unset: { offer: "" } 
+      },
+      { new: true, runValidators: true }
+    );
 
-    return res.status(200).json({ message: 'Offer removed successfully' });
+   
+    return res.status(200).json({ success: true, offer: null });
   } catch (error) {
     console.error('Remove offer error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-
-
-
-
 
 const blockProduct = async (req, res) => {
   try {
@@ -424,26 +360,23 @@ const blockProduct = async (req, res) => {
     const product = await Product.findById(productId);
 
     if (!product) {
-      //('error', 'Product not found');
-      return res.redirect('/admin/pageError');
+      return res.status(404).json({ error: 'Product not found' });
     }
 
     if (product.status === 'not available') {
-      //('error', 'Product is already blocked');
-      return res.redirect('/admin/products');
+      return res.status(400).json({ error: 'Product is already not available' });
     }
 
-    await Product.findByIdAndUpdate(productId, { status: 'not available' });
-    res.redirect('/admin/products');
+    await Product.findByIdAndUpdate(productId, { 
+      status: 'not available',
+      isBlocked: true 
+    });
+    res.status(200).json({ success: true, message: 'Product blocked successfully' });
   } catch (error) {
     console.error('Error in blockProduct:', error);
-    res.redirect('/admin/pageError');
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-
-
-
 
 const unblockProduct = async (req, res) => {
   try {
@@ -451,28 +384,23 @@ const unblockProduct = async (req, res) => {
     const product = await Product.findById(productId);
 
     if (!product) {
-      //('error', 'Product not found');
-      return res.redirect('/admin/pageError');
+      return res.status(404).json({ error: 'Product not found' });
     }
 
-    if (product.status === 'available' || product.status === 'discounted') {
-      //('error', 'Product is already available');
-      return res.redirect('/admin/products');
+    if (product.status === 'available') {
+      return res.status(400).json({ error: 'Product is already available' });
     }
 
     await Product.findByIdAndUpdate(productId, {
-      status: product.offer > 0 || product.discount > 0 ? 'discounted' : 'available'
+      status: product.offer > 0 ? 'not available' : 'available', 
+      isBlocked: false 
     });
-    res.redirect('/admin/products');
+    res.status(200).json({ success: true, message: 'Product unblocked successfully' });
   } catch (error) {
     console.error('Error in unblockProduct:', error);
-    res.redirect('/admin/pageError');
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-
-
-
 
 module.exports = {
   getAddProduct,
@@ -486,3 +414,4 @@ module.exports = {
   blockProduct,
   unblockProduct
 };
+

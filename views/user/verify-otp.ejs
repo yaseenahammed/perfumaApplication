@@ -161,13 +161,13 @@
                 document.getElementById("timerValue").classList.add("expired");
                 document.getElementById("timerValue").textContent = "Expired";
 
-                // Disable OTP input and enable resend button
+                
                 document.getElementById("otp").disabled = true;
                 document.getElementById("resendBtn").disabled = false;
             }
         }, 1000);
 
-        // Ensure resend button is disabled during countdown
+     
         document.getElementById("resendBtn").disabled = true;
     }
 
@@ -209,48 +209,39 @@
 
         return false;
     }
-
-    function resendOtp() {
-        $.ajax({
-            type: "POST",
-            url: "/resend-otp",
-            success: function(response) {
-                if (response.success) {
-                    Swal.fire({
-                        icon: "success",
-                        title: "OTP Resent",
-                        text: "A new OTP has been sent to your email.",
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-
-                    // Reset timer and input
-                    document.getElementById("otp").disabled = false;
-                    document.getElementById("otp").value = "";
-                    document.getElementById("timerValue").classList.remove("expired");
-                    timer = 60;
-                    document.getElementById("timerValue").textContent = timer;
-                    clearInterval(timerInterval);
-                    startTimer();
-                } else {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: response.message || "Could not resend OTP."
-                    });
-                }
-            },
-            error: function() {
-                Swal.fire({
-                    icon: "error",
-                    title: "Server Error",
-                    text: "Please try again later."
-                });
-            }
+function resendOtp() {
+  $.ajax({
+    type: "POST",
+    url: "http://localhost:3000/resend-OTP",
+    xhrFields: {
+      withCredentials: true 
+    },
+    success: function(response) {
+      if (response.success) {
+        Swal.fire({
+          icon: "success",
+          title: "OTP Resent",
+          text: "A new OTP has been sent to your email.",
+          timer: 1500,
+          showConfirmButton: false
         });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: response.message || "Could not resend OTP."
+        });
+      }
+    },
+    error: function() {
+      Swal.fire({
+        icon: "error",
+        title: "Server Error",
+        text: "Please try again later."
+      });
     }
-
-
+  });
+}
 
   
 </script>

@@ -90,7 +90,7 @@
       transform: translate(-50%, -50%);
       background: white;
       padding: 15px;
-      /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); */
+     
       z-index: 1000;
       border-radius: 8px;
       width: 400px;
@@ -148,6 +148,7 @@
 <div class="content-header">
   <div>
     <h2 class="content-title card-title">Products</h2>
+    
   </div>
 </div>
 <header class="card-header text-center mb-20">
@@ -158,7 +159,9 @@
     </div>
   </form>
 </header>
+
 <div class="right mt-5">
+  
   <table class="table table-striped">
     <thead>
       <tr>
@@ -174,42 +177,51 @@
         <th>Status</th>
         <th>Action</th>
         <th>Edit</th>
+       
       </tr>
     </thead>
-    <tbody>
-      <% for (let i = 0; i < productData.length; i++) { %>
-      <tr>
-        <td><%= productData[i].name %></td>
-        <td><%= productData[i].brand && productData[i].brand.name ? productData[i].brand.name : 'Unknown Brand' %></td>
-        <td><%= productData[i].category && productData[i].category.name ? productData[i].category.name : 'Unknown Category' %></td>
-        <td><%= productData[i].salePrice %></td>
-        <td><%= productData[i].regularPrice %></td>
-        <td><%= productData[i].discount > 0 ? productData[i].discount + '%' : 'None' %></td>
-        <td><%= productData[i].offer > 0 ? productData[i].offer + '%' : 'None' %></td>
-        <td>
-          <% if (productData[i].offer > 0) { %>
-            <button class="btn btn-warning text-white" onclick="removeOffer('<%= productData[i]._id %>')">Remove Offer</button>
-          <% } else { %>
-            <button class="btn btn-info text-white" onclick="openOfferPrompt('<%= productData[i]._id %>')">Add Offer</button>
-          <% } %>
-        </td>
-        <td><%= productData[i].quantity %></td>
-        <td><%= productData[i].status %></td>
-        <td>
-          <% if (productData[i].status === 'available' || productData[i].status === 'discounted') { %>
-            <a href="/admin/products/<%= productData[i]._id %>/block" class="btn btn-danger text-white">Block</a>
-          <% } else { %>
-            <a href="/admin/products/<%= productData[i]._id %>/unblock" class="btn btn-success text-white">Unblock</a>
-          <% } %>
-        </td>
-        <td>
-          <a href="/admin/editProduct/<%= productData[i]._id %>" class="btn btn-primary text-white">Edit</a>
-        </td>
-      </tr>
+ <tbody>
+  <% for (let i = 0; i < productData.length; i++) { %>
+  <tr>
+    <td><%= productData[i].name %></td>
+    <td><%= productData[i].brand && productData[i].brand.name ? productData[i].brand.name : 'Unknown Brand' %></td>
+    <td><%= productData[i].category && productData[i].category.name ? productData[i].category.name : 'Unknown Category' %></td>
+    <td><%= productData[i].salePrice %></td>
+    <td><%= productData[i].regularPrice %></td>
+    <td><%= productData[i].discount > 0 ? productData[i].discount + '%' : 'None' %></td>
+    
+    <td id="offerValue-<%= productData[i]._id %>">
+  <%= typeof productData[i].offer === 'number' && productData[i].offer > 0 ? productData[i].offer + '%' : 'None' %>
+</td>
+    <td id="offerCell-<%= productData[i]._id %>">
+      <% if (productData[i].offer > 0) { %>
+        <button class="btn btn-warning text-white btn-sm" onclick="removeOffer('<%= productData[i]._id %>')">Remove Offer</button>
+      <% } else { %>
+        <button class="btn btn-info text-white btn-sm" onclick="openOfferPrompt('<%= productData[i]._id %>')">Add Offer</button>
       <% } %>
-    </tbody>
+    </td>
+    <td><%= productData[i].quantity %></td>
+    <td id="status-<%= productData[i]._id %>"><%= productData[i].status %></td>
+    <td>
+      <% if (productData[i].status === 'available' || productData[i].status === 'discounted') { %>
+        <button class="btn btn-danger text-white btn-sm" onclick="blockProduct('<%= productData[i]._id %>')">Block</button>
+      <% } else { %>
+        <button class="btn btn-success text-white btn-sm" onclick="unblockProduct('<%= productData[i]._id %>')">Unblock</button>
+      <% } %>
+    </td>
+    <td>
+      <a href="/admin/editProduct/<%= productData[i]._id %>" class="btn btn-primary text-white btn-sm">Edit</a>
+    </td>
+  </tr>
+  <% } %>
+</tbody>
+
+
+ 
   </table>
+  
 </div>
+<h3>total q:<%=totalQ%></h3>
 
 <!-- Pagination -->
 <div class="pagination-container">
@@ -247,7 +259,7 @@
             <% if (messages.success) { %>
               <div class="alert alert-success"><%= messages.success %></div>
             <% } %>
-            <form method="post" action="/admin/addProducts" enctype="multipart/form-data" onsubmit="return validateForm(event)">
+            <form id="addProductForm" method="post" action="/admin/addProducts" enctype="multipart/form-data" >
               <div class="mb-4">
                 <label for="product_name" class="form-label">Product Name</label>
                 <input type="text" name="name" id="product_name" class="form-control border">
@@ -416,7 +428,7 @@ function viewImage(event) {
       }
 
       croppers[index] = new Cropper(croppedImage, {
-        aspectRatio: NaN, // Free aspect ratio to match the UI
+        aspectRatio: NaN, 
         viewMode: 1,
         autoCropArea: 0.8,
         responsive: true,
@@ -467,21 +479,23 @@ function cancelCrop(index) {
   }
 }
 
-function validateForm(event) {
-  let isValid = true;
+document.getElementById('addProductForm').addEventListener('submit', async function (event) {
+  event.preventDefault();
 
+
+  let isValid = true;
   const requiredFields = [
     { id: 'product_name', errorId: 'name-error', message: 'Product name is required' },
     { id: 'descriptionid', errorId: 'description-error', message: 'Description is required' },
     { id: 'regularPrice', errorId: 'regularPrice-error', message: 'Regular price is required' },
     { id: 'quantity', errorId: 'quantity-error', message: 'Quantity is required' },
     { id: 'brand', errorId: 'brand-error', message: 'Brand is required' },
-    { id: 'category', errorId: 'category-error', message: 'Category is required' }
+    { id: 'category', errorId: 'category-error', message: 'Category is required' },
+    { id: 'status', errorId: 'status-error', message: 'Status is required' },
   ];
 
-  for (let i = 0; i < requiredFields.length; i++) {
-    const field = requiredFields[i];
-    const input = document.getElementById(field.id) || document.querySelector(`[name="${field.id}"]`);
+  for (let field of requiredFields) {
+    const input = document.getElementById(field.id);
     const errorDiv = document.getElementById(field.errorId);
     if (!input.value.trim()) {
       errorDiv.innerText = field.message;
@@ -497,11 +511,10 @@ function validateForm(event) {
     { id: 'regularPrice', errorId: 'regularPrice-error', message: 'Regular price must be a positive number' },
     { id: 'quantity', errorId: 'quantity-error', message: 'Quantity must be a positive number' },
     { id: 'discount', errorId: 'discount-error', message: 'Discount must be between 0 and 100' },
-    { id: 'offer', errorId: 'offer-error', message: 'Offer must be between 0 and 100' }
+    { id: 'offer', errorId: 'offer-error', message: 'Offer must be between 0 and 100' },
   ];
 
-  for (let i = 0; i < numericFields.length; i++) {
-    const field = numericFields[i];
+  for (let field of numericFields) {
     const input = document.querySelector(`[name="${field.id}"]`);
     const errorDiv = document.getElementById(field.errorId);
     const value = input.value.trim();
@@ -520,13 +533,12 @@ function validateForm(event) {
 
   const imageInputs = ['input1', 'input2', 'input3', 'input4'];
   let hasImage = false;
-  for (let i = 0; i < imageInputs.length; i++) {
-    const id = imageInputs[i];
+  for (let id of imageInputs) {
     const input = document.getElementById(id);
     if (input.files.length > 0) {
       hasImage = true;
       if (input.dataset.cropped === 'false') {
-        alert(`Please click "Crop & Keep" for Image ${id.replace('input', '')} before submitting.`);
+        Swal.fire('Error', `Please click "Crop & Keep" for Image ${id.replace('input', '')} before submitting.`, 'error');
         isValid = false;
       }
     }
@@ -543,13 +555,62 @@ function validateForm(event) {
   }
 
   if (!isValid) {
-    event.preventDefault();
-    return false;
+    return;
   }
 
-  return true;
-}
 
+  const form = event.target;
+  const formData = new FormData(form);
+
+  try {
+    const response = await fetch(form.action, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await response.json();
+
+   if (response.ok && data.success) {
+      Swal.fire({
+        title: 'Success!',
+        text: 'Product added successfully',
+        icon: 'success',
+        confirmButtonText: 'OK',
+      }).then(() => {
+        form.reset(); 
+       
+        imageInputs.forEach(id => {
+          const img = document.getElementById(`imgView${id.replace('input', '')}`);
+          img.src = '';
+          img.style.display = 'none';
+          const input = document.getElementById(id);
+          input.value = '';
+          input.dataset.cropped = '';
+          if (croppers[id.replace('input', '')]) {
+            croppers[id.replace('input', '')].destroy();
+            delete croppers[id.replace('input', '')];
+          }
+        });
+        location.reload();
+      });
+    } else {
+      Swal.fire({
+        title: 'Error!',
+        text: data.error || 'Failed to add product',
+        icon: 'error',
+      });
+    }
+  } catch (error) {
+    Swal.fire({
+      title: 'Error!',
+      text: 'An unexpected error occurred',
+      icon: 'error',
+    });
+  }
+});
+
+
+// Add Offer
 function openOfferPrompt(productId) {
   Swal.fire({
     title: 'Enter Offer %',
@@ -561,61 +622,155 @@ function openOfferPrompt(productId) {
     },
     showCancelButton: true,
     confirmButtonText: 'Add Offer',
-    preConfirm: (value) => {
+    showLoaderOnConfirm: true,
+    preConfirm: async (value) => {
       if (!value || value <= 0 || value >= 100) {
         Swal.showValidationMessage('Offer must be between 1 and 99');
-      } else {
-        return fetch(`/admin/products/${productId}/add-offer`, {
+        return false;
+      }
+      try {
+        const response = await fetch(`/admin/products/${productId}/add-offer`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ offer: value })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) throw new Error(data.error);
-          return data;
-        })
-        .catch(err => {
-          Swal.showValidationMessage(`Request failed: ${err.message}`);
         });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to add offer');
+        return data;
+      } catch (error) {
+        Swal.showValidationMessage(`Request failed: ${error.message}`);
+        return false;
       }
-    }
-  }).then(result => {
-    if (result.isConfirmed) {
-      Swal.fire('Success!', 'Offer added.', 'success').then(() => {
-        location.reload();
-      });
+    },
+    allowOutsideClick: () => !Swal.isLoading()
+  }).then((result) => {
+    if (result.isConfirmed && result.value) {
+      Swal.fire('Success!', 'Offer added successfully.', 'success');
+      
+      const offerValue = document.getElementById(`offerValue-${productId}`);
+      if (offerValue) {
+        offerValue.textContent = `${result.value.offer}%`;
+      }
+   
+      const offerCell = document.getElementById(`offerCell-${productId}`);
+      if (offerCell) {
+        offerCell.innerHTML = `
+          <button class="btn btn-warning text-white btn-sm" onclick="removeOffer('${productId}')">Remove Offer</button>
+        `;
+      }
     }
   });
 }
 
+// Remove Offer
 function removeOffer(productId) {
   Swal.fire({
     title: 'Are you sure?',
-    text: "Remove this offer?",
+    text: 'Remove this offer?',
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: 'Yes, remove it!'
-  }).then((result) => {
+    confirmButtonText: 'Yes, remove it!',
+    showLoaderOnConfirm: true
+  }).then(async (result) => {
     if (result.isConfirmed) {
-      fetch(`/admin/products/${productId}/remove-offer`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) {
-          Swal.fire('Error!', data.error, 'error');
-        } else {
-          Swal.fire('Removed!', 'Offer removed successfully.', 'success').then(() => {
-            location.reload();
-          });
+      try {
+        const response = await fetch(`/admin/products/${productId}/remove-offer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to remove offer');
+        Swal.fire('Success!', 'Offer removed successfully.', 'success');
+        
+        const offerValue = document.getElementById(`offerValue-${productId}`);
+        if (offerValue) {
+          offerValue.textContent = 'None';
         }
-      })
-      .catch(err => {
-        Swal.fire('Error!', 'Failed to remove offer. Please try again.', 'error');
-      });
+      
+        const offerCell = document.getElementById(`offerCell-${productId}`);
+        if (offerCell) {
+          offerCell.innerHTML = `
+            <button class="btn btn-info text-white btn-sm" onclick="openOfferPrompt('${productId}')">Add Offer</button>
+          `;
+        }
+      } catch (error) {
+        Swal.fire('Error!', error.message || 'Failed to remove offer.', 'error');
+      }
+    }
+  });
+}
+
+// Block Product
+function blockProduct(productId) {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'Block this product?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, block it!',
+    showLoaderOnConfirm: true
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(`/admin/products/${productId}/block`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to block product');
+        Swal.fire('Success!', 'Product blocked successfully.', 'success');
+        const statusCell = document.getElementById(`status-${productId}`);
+        if (statusCell) {
+          statusCell.textContent = 'blocked';
+        }
+        const actionCell = document.getElementById(`status-${productId}`).nextElementSibling;
+        if (actionCell) {
+          actionCell.innerHTML = `
+            <button class="btn btn-success text-white btn-sm" onclick="unblockProduct('${productId}')">Unblock</button>
+          `;
+        }
+      } catch (error) {
+        Swal.fire('Error!', error.message || 'Failed to block product.', 'error');
+      }
+    }
+  });
+}
+
+// Unblock Product
+function unblockProduct(productId) {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'Unblock this product?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, unblock it!',
+    showLoaderOnConfirm: true
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(`/admin/products/${productId}/unblock`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to unblock product');
+        Swal.fire('Success!', 'Product unblocked successfully.', 'success');
+        const statusCell = document.getElementById(`status-${productId}`);
+        if (statusCell) {
+          statusCell.textContent = 'available';
+        }
+        const actionCell = document.getElementById(`status-${productId}`).nextElementSibling;
+        if (actionCell) {
+          actionCell.innerHTML = `
+            <button class="btn btn-danger text-white btn-sm" onclick="blockProduct('${productId}')">Block</button>
+          `;
+        }
+      } catch (error) {
+        Swal.fire('Error!', error.message || 'Failed to unblock product.', 'error');
+      }
     }
   });
 }
 </script>
+
+

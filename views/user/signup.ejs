@@ -81,7 +81,7 @@
 
       let hasError = false;
 
-      // Name Validation
+      
       const nameVal = nameid.value;
       const namePattern = /^[A-Za-z ]{3,10}$/;
       if (nameVal.trim() === "") {
@@ -97,7 +97,7 @@
         error1.innerHTML = "";
       }
 
-      // Email Validation
+    
       const emailVal = emailid.value;
       const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (emailVal.trim() === "" || !emailPattern.test(emailVal)) {
@@ -109,7 +109,7 @@
         error2.innerHTML = "";
       }
 
-      // Password Validation
+      
       const passVal = passid.value;
       const cpassVal = cpassid.value;
       const hasAlphabet = /[A-Za-z]/.test(passVal);
@@ -128,7 +128,7 @@
         error3.innerHTML = "";
       }
 
-      // Confirm Password Validation
+     
       if (passVal !== cpassVal) {
         error4.style.display = "block";
         error4.innerHTML = "Passwords do not match";
@@ -138,7 +138,7 @@
         error4.innerHTML = "";
       }
 
-      // Prevent submission if any validation failed
+      
       if (hasError) {
         e.preventDefault();
       }

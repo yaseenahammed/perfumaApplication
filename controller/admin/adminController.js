@@ -7,7 +7,7 @@ const pageError=async(req,res)=>{
 
 
 
-// Load Admin Login Page
+
 const loadLogin = async (req, res) => {
   try {
     if (req.session.admin) {
@@ -15,7 +15,9 @@ const loadLogin = async (req, res) => {
     }
     const message = req.session.message;
     req.session.message = null;
-    res.render('admin-login', { message});
+    res.render('admin-login', {
+       message
+      });
   } catch (error) {
     console.error("An error occurred in loadLogin:", error);
     res.render('admin-Error');
@@ -24,7 +26,7 @@ const loadLogin = async (req, res) => {
 
 
 
-// Handle Admin Login
+
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -33,8 +35,8 @@ const login = async (req, res) => {
     if (admin) {
       const passwordMatch = await bcrypt.compare(password, admin.password);
       if (passwordMatch) {
-        req.session.admin = admin._id; // ✅ Store admin ID
-        return res.redirect('/admin');
+        req.session.admin = admin._id; 
+        return res.redirect('/admin/dashboard');
       } else {
         req.session.message = "Incorrect password";
         return res.redirect('/admin/login');
@@ -49,16 +51,17 @@ const login = async (req, res) => {
   }
 };
 
-// Load Admin Dashboard
+
+
 const loadDashboard = async (req, res) => {
  
-    if(req.session.admin){
+
       try {
         res.render('dashboard')
       } catch (error) {
         res.redirect('/admin/pageError')
       }
-    }
+    
 };
 
 
@@ -66,20 +69,24 @@ const logout=async(req,res)=>{
   try {
     req.session.destroy(err=>{
       if(err){
-        console.log("Error destroying session",err)
-        return res.redirect('/admin/pageError')
+        console.log("an error occured in login",err)
+        res.redirect('/admin/pageError')
       }else{
-
         res.redirect('/admin/login')
       }
-     
-
+      
     })
+    
   } catch (error) {
-    console.log("unexpected error during logout",error)
+    console.error('something went wrong in logout session',error)
     res.redirect('/admin/pageError')
+    
   }
+
 }
+
+
+
 
 
 

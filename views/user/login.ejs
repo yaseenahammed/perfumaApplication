@@ -22,12 +22,23 @@
     <link rel="stylesheet" href="css/style.css" type="text/css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet"/>
 
-    
-
     <link rel="stylesheet" href="/assets/css/userLogin.css" type="text/css" />
 
-    
-    
+    <style>
+      .forget-password-link {
+        font-size: 0.875rem;
+        color: blue;
+        text-decoration: none;
+      }
+      .forget-password-link:hover {
+        color: aqua;
+        text-decoration: underline;
+      }
+      #error-message{
+        color: red;
+      }
+
+    </style>
   </head>
   <body>
     <div class="container">
@@ -35,66 +46,88 @@
         <div class="card-body login-section">
           <div class="login-form mt-2">
             <h3 class="card-title text-center">Log In</h3>
-           
-            <form id="loginform" method="post" action="/login">
-      <div class="form-group mt-3">
-        <label for="email">Email address</label>
-        <input
-          type="email"
-          class="form-control"
-          name="email"
-          id="email"
-          placeholder="Enter email"
-          required
-        />
-        <div id="error1" class="error-message"></div>
-      </div>
+  <!-- Display server message if exists, else hide error-message div for JS use -->
+   <% if (typeof message !== "undefined" && message) { %>
+  <div id="error-message" class="alert alert-danger text-center mt-3">
+    <%= message %>
+  </div>
+<% } else if (locals.error && error.length > 0) { %>
+  <div id="error-message" class="alert alert-danger text-center mt-3">
+    <%= error %>
+  </div>
+<% } else { %>
+  <div id="error-message" class="alert alert-danger text-center mt-3" style="display: none;"></div>
+<% } %>
 
-      <div class="form-group mt-3">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          class="form-control"
-          name="password"
-          id="password"
-          placeholder="Password"
-          required
-        />
-        <div id="error2" class="error-message"></div>
-      </div>
 
-      <% if (locals.message && locals.message.length > 0) { %>
-      <div class="alert alert-danger text-center mt-3">
-        <%= locals.message %>
-      </div>
-      <% } %>
 
-      <button type="submit" class="btn btn-primary mt-4">Log In</button>
 
-      <div class="text-center mt-3">
-        <p>or log in with</p>
-        <div class="social-btns">
-          <a href="/auth/google" class="btn btn-outline-danger">
-            <img src="https://developers.google.com/identity/images/g-logo.png"
-                 alt="Google Logo"
-                 style="width: 20px; margin-right: 8px;" />
-            Google
-          </a>
-        </div>
-      </div>
+<% if (query.error) { %>
+  <div id="error-message" class="alert alert-danger text-center mt-3">
+    <%= query.error %>
+  </div>
+<% } %>
 
-      <div class="text-center mt-4">
-        <a href="/signup" class="sign-up-link">Not registered? Sign up</a>
-      </div>
-    </form>
+              
+            <form id="loginform">
+              <div class="form-group mt-3">
+                <label for="email">Email address</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  name="email"
+                  id="email"
+                  value=""
+                  placeholder="Enter email"
+                  required
+                />
+                <div id="error1" class="error-message"></div>
+              </div>
 
-            
+              <div class="form-group mt-3">
+                <label for="password">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  name="password"
+                  id="password"
+                  value=""
+                  placeholder="Password"
+                  required
+                />
+                <div id="error2" class="error-message"></div>
+              </div>
+
+              <div class="form-group d-flex justify-content-end">
+                <a href="/forgot-password" class="forgot-password link ms-auto">Forgot password</a>
+              </div>
+
+             
+
+              <button type="submit" class="btn btn-primary mt-4">Log In</button>
+
+              <div class="text-center mt-3">
+                <p>or log in with</p>
+                <div class="social-btns">
+                  <a href="/auth/google" class="btn btn-outline-danger">
+                    <img src="https://developers.google.com/identity/images/g-logo.png"
+                         alt="Google Logo"
+                         style="width: 20px; margin-right: 8px;" />
+                    Google
+                  </a>
+                </div>
+              </div>
+
+              <div class="text-center mt-4">
+                <a href="/signup" class="sign-up-link">Not registered? Sign up</a>
+              </div>
+            </form>
           </div>
+
           <div class="login-image">
             <a href="/">
-              <img src="c:\Users\USER\Desktop\My things\perfume.jpg" alt="perfume site" />
+              <img src="/images/perfume.jpg" alt="perfume site" />
             </a>
-            
           </div>
         </div>
       </div>
@@ -106,6 +139,7 @@
       const error1 = document.getElementById("error1");
       const error2 = document.getElementById("error2");
       const loginform = document.getElementById("loginform");
+      const errorMessage = document.getElementById("error-message");
 
       function emailValidateChecking() {
         const emailval = emailid.value;
@@ -132,12 +166,37 @@
       }
 
       document.addEventListener("DOMContentLoaded", function () {
-        loginform.addEventListener("submit", function (e) {
+        loginform.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
           emailValidateChecking();
           passValidateChecking();
 
-          if (error1.innerHTML || error2.innerHTML) {
-            e.preventDefault();
+          if (error1.innerHTML || error2.innerHTML) return;
+
+          const formData = {
+            email: emailid.value,
+            password: passid.value
+          };
+
+          try {
+            const response = await fetch("/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              window.location.href = result.redirectUrl;
+            } else {
+              errorMessage.style.display = "block";
+              errorMessage.textContent = result.message;
+            }
+          } catch (err) {
+            errorMessage.style.display = "block";
+            errorMessage.textContent = "Something went wrong. Please try again.";
           }
         });
       });

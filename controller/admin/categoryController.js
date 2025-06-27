@@ -14,23 +14,23 @@ const categoryInfo = async (req, res) => {
             page = parseInt(req.query.page);
         }
 
-        const limit = 3; // Number of categories per page
+        const limit = 3; 
 
-        // Fetch matching categories with pagination
-        const categoryData = await Category.find({
-            name: { $regex: ".*" + search + ".*", $options: 'i' } // Case-insensitive
+     
+        const category = await Category.find({
+            name: { $regex: ".*" + search + ".*", $options: 'i' } 
         })
             .limit(limit)
             .skip((page - 1) * limit)
             .exec();
 
-        // Count total matching documents
+        
         const count = await Category.find({
             name: { $regex: ".*" + search + ".*", $options: 'i' }
         }).countDocuments();
 
         res.render('categories', {
-            cat: categoryData,
+            cat: category,
             totalPages: Math.ceil(count / limit),
             currentPage: page,
             searchQuery: search
@@ -48,10 +48,10 @@ const addCategory = async (req, res) => {
     let { name, description } = req.body;
 
     try {
-        // Normalize the name to lowercase and trim it
+       
         name = name.trim().toLowerCase();
 
-        // Check if category with same name exists (case-insensitive)
+     
         const existingCategory = await Category.findOne({ name: { $regex: `^${name}$`, $options: 'i' } });
 
         if (existingCategory) {
@@ -104,7 +104,7 @@ const removeOffer = async (req, res) => {
         const { categoryId } = req.body;
 
         const category = await Category.findByIdAndUpdate(categoryId, {
-            offer: 0
+            offer: null
         });
 
         if (!category) {
@@ -123,10 +123,13 @@ const listCategory = async (req, res) => {
   try {
     const { categoryId, action } = req.body;
 
-    // Decide new value based on action
+    
     const isListed = action === 'list';
 
-    // Update the category
+    
+    
+
+  
     await Category.findByIdAndUpdate(categoryId, { isListed });
 
     res.json({ message: `Category successfully ${isListed ? 'listed' : 'unlisted'}.` });
@@ -155,7 +158,7 @@ const editCategory = async (req, res) => {
     const id = req.body.id;
     const { categoryName, description } = req.body;
 
-    const existingCategory = await Category.findOne({ name: categoryName, _id: { $ne: id } });
+    const existingCategory = await Category.findOne({ name: { $regex: `^${categoryName}$`, $options: 'i' } });
 
     if (existingCategory) {
       return res.status(400).json({ error: "Category exists, please choose another name" });
@@ -167,9 +170,9 @@ const editCategory = async (req, res) => {
     }, { new: true });
 
     if (updatedCategory) {
-      res.redirect('/admin/category');
+      return res.status(200).json({ success: true, message: "Category updated successfully" });
     } else {
-      res.status(404).json({ error: "Category not found" });
+      return res.status(404).json({ error: "Category not found" });
     }
 
   } catch (error) {

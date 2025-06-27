@@ -101,17 +101,25 @@
 
               <!-- Navigation Menu -->
               <ul class="nav">
-                <li class="scroll-to-section">
-                  <a href="#top" class="active">Home</a>
+                <li class="submenu">
+                  <a href="/" class="active">Home</a>
+                   <ul>
+                     <li><a href="#men">Men's</a></li>
+                    <li><a href="#women">Women's</a></li>
+                    
+                  </ul>
                 </li>
-                <li class="scroll-to-section"><a href="#men">Men's</a></li>
-                <li class="scroll-to-section"><a href="#women">Women's</a></li>
+                <!-- <li class="scroll-to-section"><a href="#men">Men's</a></li>
+                <li class="scroll-to-section"><a href="#women">Women's</a></li> -->
                 <li class="submenu">
                   <a href="javascript:;">Pages</a>
                   <ul>
                      <li><a href="/shop">shop</a></li>
+                     <li><a href="/cart">Cart</a></li>
+                    <li><a href="/whishlist">Whishlist</a></li>
                     <li><a href="/about">About Us</a></li>
                     <li><a href="/contact">Contact Us</a></li>
+                    
                   </ul>
                 </li>
                 <li class="scroll-to-section">
@@ -120,12 +128,18 @@
               </ul>
 
               <!-- User Login Section -->
-            <% console.log('EJS user:', user); %> <!-- Server-side log -->
-<% if (user) { %>
+     
+  <% if (user) { %>
   <div class="dropdown">
-    <a class="btn dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-      data-bs-toggle="dropdown" aria-expanded="false">
-      <%= user.name || 'User' %> <!-- Use user.name, fallback to 'User' -->
+    <a
+      class="btn dropdown-toggle"
+      href="#"
+      role="button"
+      id="dropdownMenuLink"
+      data-bs-toggle="dropdown"
+      aria-expanded="false"
+    >
+      <%= user.name || 'User' %>
     </a>
     <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
       <li><a class="dropdown-item" href="/userProfile">Profile</a></li>
@@ -168,3 +182,5 @@
     <script src="/assets/js/custom.js"></script>
   </body>
 </html>
+
+

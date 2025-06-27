@@ -1,0 +1,276 @@
+<%- include("../partials/user/header") %>
+
+<style>
+  body {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  .card {
+    margin-top: 100px;
+    background-color: #2b2b2b;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(212, 160, 23, 0.3);
+  }
+
+  .card-header {
+    background: linear-gradient(90deg, #2b2b2b, #3a3a3a);
+    color: #d4a017;
+    border-radius: 10px 10px 0 0;
+    padding: 15px;
+    font-weight: 700;
+    font-size: 20px;
+  }
+
+  .form-group label {
+    color: #d4a017;
+    font-weight: 500;
+  }
+
+  .form-control {
+    background-color: #3a3a3a;
+    border: 1px solid #444444;
+    color: #ffffff;
+    border-radius: 5px;
+    padding: 10px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .form-control:focus {
+    border-color: #d4a017;
+    box-shadow: 0 0 8px rgba(212, 160, 23, 0.3);
+    outline: none;
+  }
+
+  .btn-custom {
+    background: linear-gradient(90deg, #d4a017, #b8860b); /* Gold gradient */
+    border: none;
+    border-radius: 5px;
+    padding: 12px 25px;
+    color: #ffffff;
+    font-weight: 600;
+    transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .btn-custom:hover {
+    background: linear-gradient(90deg, #c79f15, #a67b0a); /* Darker gold */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 160, 23, 0.5);
+  }
+
+  .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .button-group .btn-custom {
+    padding: 14px 35px;
+  }
+
+  .save-button-group {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  .modal-content {
+    background-color: #2b2b2b;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-header {
+    background: linear-gradient(90deg, #2b2b2b, #3a3a3a);
+    color: #d4a017;
+    border-radius: 10px 10px 0 0;
+    padding: 15px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .modal-footer {
+    border-top: none;
+    padding: 15px;
+  }
+
+  #message {
+    margin-top: 10px;
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+  }
+
+  .text-success {
+    color: #48bb78;
+  }
+
+  .text-danger {
+    color: #e53e3e;
+  }
+</style>
+
+<main class="main">
+  <div class="page-header breadcrumb-wrap mb-3">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="/userProfile" rel="nofollow">Dashboard</a>
+        <span></span> Edit Profile
+      </div>
+    </div>
+  </div>
+  <section class="pt-10 pb-10">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 m-auto">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Edit Profile</h5>
+            </div>
+            <div class="card-body">
+              <form action="/edit-profile" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                  <label for="name">Name</label>
+                  <input type="text" id="name" name="name" value="<%= user.name %>" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label for="email">Email</label>
+                  <input type="email" id="email" name="email" value="<%= user.email %>" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                  <label for="profileImage">Profile Image</label>
+                  <input type="file" id="profileImage" name="profileImage" class="form-control">
+                </div>
+                <div class="save-button-group">
+                  <button type="submit" class="btn btn-custom">Save Changes</button>
+                </div>
+              </form>
+
+              <!-- Buttons Moved Outside the Card -->
+              <div class="button-group">
+                <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#emailModal">Update Email</button>
+                <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#passwordModal">Change Password</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Email Update Modal -->
+<div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="emailModalLabel">Update Email</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="emailForm">
+          <div class="mb-3">
+            <label for="newEmail" class="form-label">New Email</label>
+            <input type="email" class="form-control" id="newEmail" name="newEmail" required>
+          </div>
+          <button type="submit" class="btn btn-custom">Send OTP</button>
+        </form>
+        <form id="otpForm" style="display: none;">
+          <div class="mb-3">
+            <label for="otp" class="form-label">Enter OTP</label>
+            <input type="text" class="form-control" id="otp" name="otp" required>
+          </div>
+          <button type="submit" class="btn btn-custom">Verify OTP</button>
+        </form>
+        <div id="message" class="text-danger"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Password Change Modal -->
+<div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="passwordModalLabel">Change Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="/change-password" method="POST">
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label">Current Password</label>
+            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+          </div>
+          <div class="mb-3">
+            <label for="newPassword" class="form-label">New Password</label>
+            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+          </div>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+          </div>
+          <button type="submit" class="btn btn-custom">Change Password</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('#emailForm').on('submit', function(e) {
+      e.preventDefault();
+      const newEmail = $('#newEmail').val();
+      $.ajax({
+        url: '/send-email-otp',
+        type: 'POST',
+        data: { newEmail },
+        success: function(response) {
+          $('#message').text(response.message).removeClass('text-danger').addClass('text-success');
+          $('#emailForm').hide();
+          $('#otpForm').show();
+        },
+        error: function(xhr) {
+          $('#message').text(xhr.responseJSON.message).addClass('text-danger');
+        }
+      });
+    });
+
+    $('#otpForm').on('submit', function(e) {
+      e.preventDefault();
+      const otp = $('#otp').val();
+      $.ajax({
+        url: '/verify-email-otp',
+        type: 'POST',
+        data: { otp },
+        success: function(response) {
+          $('#message').text(response.message).removeClass('text-danger').addClass('text-success');
+          setTimeout(() => location.reload(), 1000);
+        },
+        error: function(xhr) {
+          $('#message').text(xhr.responseJSON.message).addClass('text-danger');
+        }
+      });
+    });
+  });
+</script>
+
+<%- include("../partials/user/footer") %>
