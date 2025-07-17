@@ -12,7 +12,8 @@ const customerController = require('../controller/admin/customerController');
 const categoryController = require('../controller/admin/categoryController');
 const brandController = require('../controller/admin/brandController'); 
 const productController = require('../controller/admin/productController');
-const { adminAuth } = require("../middlewares/auth");
+const nocache=require('nocache')
+const { adminAuth,isAdmin} = require("../middlewares/auth");
 
 
 
@@ -20,7 +21,7 @@ const { adminAuth } = require("../middlewares/auth");
 router.get('/pageError', adminController.pageError);
 
 // Login 
-router.get('/login', adminController.loadLogin);
+router.get('/login',nocache(),isAdmin, adminController.loadLogin);
 router.post('/login', adminController.login);
 
 //dashboard

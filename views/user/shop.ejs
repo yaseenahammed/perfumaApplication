@@ -382,7 +382,7 @@
                   <% } %>
                 </p>
               </a>
-              <button class="add-to-cart-btn" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
+              <button class="add-to-cart-btn  bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
             </div>
           <% }) %>
         <% } %>
@@ -448,7 +448,7 @@
     if (query) params.push(`query=${query}`);
     url += params.join('&');
 
-    console.log('Navigating to (sort):', url); // Debug URL
+    console.log('Navigating to (sort):', url); 
     window.location.href = url;
   }
 </script>

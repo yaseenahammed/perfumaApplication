@@ -105,7 +105,7 @@
       <div class="card-body">
         <div class="row">
           <div class="col-md-3">
-            <form id="formId">
+<form id="formId">
   <div class="mb-4">
     <label for="product_name" class="form-label">Name</label>
     <input type="text" name="name" placeholder="Type here" class="form-control" id="product_name" />
@@ -139,8 +139,8 @@
                     <th class="text-start">Edit</th>
                   </tr>
                 </thead>
-                <tbody>
-  <% cat.reverse().forEach((category, index) => { %>
+ <tbody id="categoryTableBody">
+  <% cat.forEach((category, index) => { %>
   <tr>
     <td><%= index + 1 %></td>
     <td class="text-start"><%= category.name %></td>
@@ -154,6 +154,7 @@
       <% } %>
     </td>
 
+  
     <td id="offer-btn-<%=category._id%>">
       <% if (category.offer && category.offer > 0) { %>
         <button class="btn btn-warning text-white" onclick="removeOffer('<%= category._id %>')">Remove Offer</button>
@@ -266,6 +267,32 @@
      
       form.reset();
 
+
+      const tableBody = document.querySelector("#categoryTableBody"); // Add id to tbody
+const newRow = document.createElement("tr");
+
+newRow.innerHTML = `
+  <td>${data.categoryIndex}</td>
+  <td>${data.newCategory.name}</td>
+  <td>${data.newCategory.description}</td>
+  <td id="offer-${data.newCategory._id}">No Offer</td>
+  <td id="offer-btn-${data.newCategory._id}">
+    <button class="btn btn-info text-white" onclick="addOffer('${data.newCategory._id}')">Add Offer</button>
+  </td>
+  <td>
+    <button class="btn btn-danger" onclick="toggleStatus('${data.newCategory._id}')">Unlist</button>
+  </td>
+  <td>
+    <span class="badge bg-success">Listed</span>
+  </td>
+  <td>
+    <button class="btn btn-info text-white" onclick="editCategory('${data.newCategory._id}')">Edit</button>
+  </td>
+`;
+
+tableBody.prepend(newRow); // insert at top
+
+
      
     });
   } catch (error) {
@@ -337,17 +364,27 @@
            "Offer added successfully",
             "success"
           )
+          const offerTextCell = document.getElementById(`offer-${categoryId}`);
+if (offerTextCell) {
+  offerTextCell.innerText = `${result.value.offer}% Off`;
+}
+
+const offerText = document.getElementById(`offer-text-${categoryId}`);
+if (offerText) {
+  offerText.innerText = `${result.value}% off`;
+}
+
+const buttonCell = document.getElementById(`offer-btn-${categoryId}`);
+if (buttonCell) {
+  buttonCell.innerHTML = `
+    <button class="btn btn-warning text-white" onclick="removeOffer('${categoryId}')">
+      Remove Offer
+    </button>`;
+}
 
 
-          const offerCell=document.getElementById(`offer-btn-${categoryId}`);
-                if(offerCell){
-                  offerCell.innerText=`${result.value}% off`
-                }
-                  const buttonCell=document.getElementById(`offer-btn-${categoryId}`)
-                  if(buttonCell){
-                    buttonCell.innerHTML= `
-                    <button class="btn btn-info text-white" onclick="removeOffer('${categoryId}')"> Remove Offer </button>`;
-                  }
+
+
         }
       });
     }
@@ -378,16 +415,25 @@
                   "Offer has been removed.",
                   "success"
                 )
+                const offerTextCell = document.getElementById(`offer-${categoryId}`);
+if (offerTextCell) {
+  offerTextCell.innerText = `No Offer`;
+}
             
-                const offerCell=document.getElementById(`offer-${categoryId}`);
-                if(offerCell){
-                  offerCell.innerText="No offer"
-                }
-                  const buttonCell=document.getElementById(`offer-btn-${categoryId}`)
-                  if(buttonCell){
-                    buttonCell.innerHTML= `
-                    <button class="btn btn-info text-white" onclick="addOffer('${categoryId}')"> Add Offer </button>`;
-                  }
+               const offerText = document.getElementById(`offer-text-${categoryId}`);
+if (offerText) {
+  offerText.innerText = "No offer";
+}
+
+const buttonCell = document.getElementById(`offer-btn-${categoryId}`);
+if (buttonCell) {
+  buttonCell.innerHTML = `
+    <button class="btn btn-info text-white" onclick="addOffer('${categoryId}')">
+      Add Offer
+    </button>`;
+}
+
+
                 
 
               }
@@ -398,6 +444,11 @@
         }
       });
     }
+
+  
+
+
+
 
     function Listing(categoryId, action) {
       const confirmText = action === "list"

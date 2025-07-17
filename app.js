@@ -7,11 +7,13 @@ const flash = require('connect-flash');
 const userRouter=require('./routes/userRouter')
 const adminRouter=require('./routes/adminRouter')
 const session=require('express-session')
+const User=require('./models/userSchema')
 const passport=require('./config/passport')
+const nocache=require('nocache')
 
 
 db()
-
+app.use(nocache())
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
@@ -40,9 +42,11 @@ app.use(
   })
 );
 
-
-
 app.use(flash());
+
+
+
+
 
 
 app.use((req, res, next) => {

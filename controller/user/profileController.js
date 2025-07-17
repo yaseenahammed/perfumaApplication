@@ -26,19 +26,23 @@ const sendVerificationEmail = async (email, otp) => {
     });
 
     const mailOptions = {
-      from: process.env.NODEMAILER_EMAIL,
+      from: `Perfuma Support <${process.env.NODEMAILER_EMAIL}>`,
       to: email,
-      subject: 'Your OTP for password reset',
-      text: `Your OTP is ${otp}`,
-      html: `<b><h4>Your OTP: ${otp}</h4></b>`,
+      subject: 'Your OTP for Password Reset',
+      text: `Your OTP is ${otp}. It is valid for 60 seconds.`,
+      html: `<b><h4>Your OTP: ${otp}</h4><p>It is valid for 60 seconds.</p></b>`,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent:', info.messageId);
-    return true;
+    console.log('Email sent successfully:', info.messageId);
+    return { success: true };
   } catch (error) {
-    console.error('Error sending email:', error);
-    return false;
+    console.error('Error sending email:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack,
+    });
+    return { success: false, message: error.message };
   }
 };
 
@@ -54,14 +58,18 @@ const getForgotPassword = async (req, res) => {
 const forgotEmailValid = async (req, res) => {
   try {
     const { email } = req.body;
+  console.log("body is:",req.body)
     console.log('Email received in forgotEmailValid:', email);
     const findUser = await User.findOne({ email });
     if (findUser) {
       const otp = generateOtp();
       const emailSent = await sendVerificationEmail(email, otp);
       if (emailSent) {
+        
         req.session.userEmail = email;
-        req.session.userOtp = otp;
+req.session.userOtp = otp;
+req.session.otpCreatedAt = Date.now();
+
         console.log('Session set in forgotEmailValid:', req.session); 
         req.session.save(err => {
           if (err) {
@@ -89,19 +97,30 @@ const forgotEmailValid = async (req, res) => {
 
 const verifyForgotPassOtp = async (req, res) => {
   try {
+ 
+
     const enterOtp = req.body.otp;
     console.log('Received OTP:', enterOtp, typeof enterOtp);
     console.log('Session OTP:', req.session.userOtp, typeof req.session.userOtp);
     console.log('Session before verification:', req.session);
 
-    if (!req.session.userOtp || !req.session.userEmail) {
+    if (!req.session.userOtp || !req.session.userEmail || !req.session.otpCreatedAt) {
       return res.json({ success: false, message: 'Session expired or invalid' });
     }
 
+    // Check OTP expiration (60 seconds = 60 * 1000 ms)
+    const otpAge = Date.now() - req.session.otpCreatedAt;
+    if (otpAge > 60 * 1000) {
+      delete req.session.userOtp;
+      delete req.session.otpCreatedAt;
+      req.session.save();
+      return res.json({ success: false, message: 'OTP has expired. Please request a new one.' });
+    }
+
     if (String(enterOtp) === String(req.session.userOtp)) {
-      console.log('Session before setting otpVerified:', req.session);
       req.session.otpVerified = true;
       delete req.session.userOtp;
+      delete req.session.otpCreatedAt;
       req.session.save(err => {
         if (err) {
           console.error('Session save error in verifyForgotPassOtp:', err);
@@ -111,13 +130,14 @@ const verifyForgotPassOtp = async (req, res) => {
         res.json({ success: true, redirectUrl: '/reset-password' });
       });
     } else {
-      res.json({ success: false, message: 'OTP not matching' });
+      res.json({ success: false, message: 'Invalid OTP' });
     }
   } catch (error) {
     console.error('Error in verifyForgotPassOtp:', error);
     res.status(500).json({ success: false, message: 'An error occurred' });
   }
 };
+
 
 const getResetPassPage = async (req, res) => {
   try {
@@ -187,61 +207,45 @@ const resendOtp = async (req, res) => {
     console.log('resendOtp triggered');
     console.log('Session:', req.session);
 
-    const userId = req.session.userId || req.session.tempUser;
-    console.log('Session userId:', userId);
-
-    if (!userId) {
-      console.log('No userId');
-      return res.status(401).json({ success: false, message: 'Session expired. Please sign up again.' });
+    const email = req.session.userEmail;
+    if (!email) {
+      console.log('No userEmail in session');
+      return res.render('forgot-password', {
+        user: null,
+        message: 'Session expired. Please enter your email again.',
+      });
     }
 
-    if (!mongoose.isValidObjectId(userId)) {
-      console.log('Invalid userId:', userId);
-      return res.status(400).json({ success: false, message: 'Invalid session data.' });
-    }
-
-    const user = await User.findById(userId);
-    console.log('User:', user?.email || 'None');
-
-    if (!user) {
-      console.log('User not found');
-      return res.status(404).json({ success: false, message: 'User not found.' });
+    const findUser = await User.findOne({ email });
+    if (!findUser) {
+      console.log('User not found for email:', email);
+      return res.render('forgot-password', {
+        user: null,
+        message: 'User with this email does not exist',
+      });
     }
 
     const otp = generateOtp();
-    console.log('OTP:', otp);
-
-    user.otp = otp;
-    user.otpExpires = Date.now() + 10 * 60 * 1000;
-    await user.save();
-    console.log('User updated:', user.email);
-
-    await new Promise((resolve, reject) => {
-      transporter.verify((error) => {
-        if (error) {
-          console.error('Transporter error:', error);
-          reject(error);
-        } else {
-          console.log('Transporter ready');
-          resolve();
+    const emailResult = await sendVerificationEmail(email, otp);
+    if (emailResult.success) {
+      req.session.userOtp = otp;
+      req.session.otpCreatedAt = Date.now();
+      console.log('New OTP generated in resendOtp:', otp);
+      req.session.save(err => {
+        if (err) {
+          console.error('Session save error in resendOtp:', err);
+          return res.status(500).json({ success: false, message: 'Session error' });
         }
+        res.json({ success: true, message: 'New OTP sent to your email' });
       });
-    });
-
-    await transporter.sendMail({
-      to: user.email,
-      subject: 'Your New OTP for Signup',
-      text: `Your new OTP is ${otp}. It is valid for 10 minutes.`,
-    });
-    console.log('Email sent to:', user.email);
-
-    return res.json({ success: true, message: 'OTP resent successfully' });
+    } else {
+      res.json({ success: false, message: `Failed to send OTP: ${emailResult.message || 'Please try again.'}` });
+    }
   } catch (error) {
-    console.error('resendOtp error:', error.stack);
-    return res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
+    console.error('Error in resendOtp:', error);
+    res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
   }
 };
-
 
 
 module.exports = {

@@ -1,6 +1,6 @@
 
 const mongoose=require("mongoose")
-const {Schem}=mongoose
+const {Schema}=mongoose
 
 
 
@@ -9,43 +9,24 @@ const {Schem}=mongoose
 
 const addresShema=new Schema({
    userId:{
-    type:String.Types,ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref:'User',
     required:true
 
    },
     
-    address:[{
-      addressType:{
-        type:String,
-        required:true
-      },
-      fullName:{
-        type:String,
-        required:true
-     },
-     mobile:{
-        type:String,
-        required:true
-     },
-     street:{
-      type:String,
-      required:true
-  },
-  city:{
-    type:String,
-    required:true
-  },
-  state: {
-    type:String,
-    required:true
-  },
-  pincode:{
-    type:Number,
-    required:true
+    addresses: [
+  {
+   
+    phone: { type: String, required: true },
+    street: { type: String, required: true },
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    country: { type: String, required: true },
+    zip: { type: String, required: true }
   }
-    }]
-    
+]
+
 });
 
     

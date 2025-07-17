@@ -1,205 +1,355 @@
 <!DOCTYPE html>
-<html lang="zxx">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="description" content="Male_Fashion Template" />
-    <meta name="keywords" content="Male_Fashion, unica, creative, html" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-   
-    <title>Perfuma</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css" />
-    <link rel="stylesheet" href="css/elegant-icons.css" type="text/css" />
-    <link rel="stylesheet" href="css/magnific-popup.css" type="text/css" />
-    <link rel="stylesheet" href="css/nice-select.css" type="text/css" />
-    <link rel="stylesheet" href="css/owl.carousel.min.css" type="text/css" />
-    <link rel="stylesheet" href="css/slicknav.min.css" type="text/css" />
-    <link rel="stylesheet" href="css/style.css" type="text/css" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet"/>
-
-    <link rel="stylesheet" href="/assets/css/userLogin.css" type="text/css" />
-
-    <style>
-      .forget-password-link {
-        font-size: 0.875rem;
-        color: blue;
-        text-decoration: none;
-      }
-      .forget-password-link:hover {
-        color: aqua;
-        text-decoration: underline;
-      }
-      #error-message{
-        color: red;
-      }
-
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="card">
-        <div class="card-body login-section">
-          <div class="login-form mt-2">
-            <h3 class="card-title text-center">Log In</h3>
-  <!-- Display server message if exists, else hide error-message div for JS use -->
-   <% if (typeof message !== "undefined" && message) { %>
-  <div id="error-message" class="alert alert-danger text-center mt-3">
-    <%= message %>
-  </div>
-<% } else if (locals.error && error.length > 0) { %>
-  <div id="error-message" class="alert alert-danger text-center mt-3">
-    <%= error %>
-  </div>
-<% } else { %>
-  <div id="error-message" class="alert alert-danger text-center mt-3" style="display: none;"></div>
-<% } %>
-
-
-
-
-<% if (query.error) { %>
-  <div id="error-message" class="alert alert-danger text-center mt-3">
-    <%= query.error %>
-  </div>
-<% } %>
-
-              
-            <form id="loginform">
-              <div class="form-group mt-3">
-                <label for="email">Email address</label>
-                <input
-                  type="email"
-                  class="form-control"
-                  name="email"
-                  id="email"
-                  value=""
-                  placeholder="Enter email"
-                  required
-                />
-                <div id="error1" class="error-message"></div>
-              </div>
-
-              <div class="form-group mt-3">
-                <label for="password">Password</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  name="password"
-                  id="password"
-                  value=""
-                  placeholder="Password"
-                  required
-                />
-                <div id="error2" class="error-message"></div>
-              </div>
-
-              <div class="form-group d-flex justify-content-end">
-                <a href="/forgot-password" class="forgot-password link ms-auto">Forgot password</a>
-              </div>
-
-             
-
-              <button type="submit" class="btn btn-primary mt-4">Log In</button>
-
-              <div class="text-center mt-3">
-                <p>or log in with</p>
-                <div class="social-btns">
-                  <a href="/auth/google" class="btn btn-outline-danger">
-                    <img src="https://developers.google.com/identity/images/g-logo.png"
-                         alt="Google Logo"
-                         style="width: 20px; margin-right: 8px;" />
-                    Google
-                  </a>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfuma - Sign In</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="min-h-screen bg-gray-50">
+    <div class="flex min-h-screen">
+        <!-- Left Side - Full Image -->
+        <div class="w-1/2 bg-gradient-to-br from-rose-100 to-amber-50 relative overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center">
+                <img src="https://t3.ftcdn.net/jpg/08/32/30/12/360_F_832301227_1iQHc794dGkUn4VQLlarNKnV1UvpZSLq.jpg" alt="Perfuma Fragrance" class="w-full h-full object-cover">
+            </div>
+            <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+            <div class="absolute top-8 left-8">
+                <a href="/" class="text-white hover:text-amber-200 transition duration-200">
+                    <i class="fas fa-home text-xl"></i>
+                </a>
+            </div>
+            <div class="absolute bottom-8 left-8 right-8 text-center">
+                <div class="flex justify-center space-x-4 mb-4">
+                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-spray-can text-lg text-white"></i>
+                    </div>
+                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-heart text-lg text-white"></i>
+                    </div>
+                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-star text-lg text-white"></i>
+                    </div>
                 </div>
-              </div>
-
-              <div class="text-center mt-4">
-                <a href="/signup" class="sign-up-link">Not registered? Sign up</a>
-              </div>
-            </form>
-          </div>
-
-          <div class="login-image">
-            <a href="/">
-              <img src="/images/perfume.jpg" alt="perfume site" />
-            </a>
-          </div>
+                <h3 class="text-white text-xl font-semibold">Premium Fragrances</h3>
+                <p class="text-white/80 text-sm mt-2">Discover your signature scent</p>
+            </div>
         </div>
-      </div>
+
+        <!-- Right Side - Login Form -->
+        <div class="w-1/2 flex items-center justify-center p-8">
+            <div class="max-w-md w-full space-y-8">
+                <!-- Header -->
+                <div class="text-center">
+                    <h1 class="text-4xl font-bold text-gray-900 tracking-wide">PERFUMA</h1>
+                    <p class="mt-2 text-gray-600">Sign into your account</p>
+                </div>
+
+                <!-- Server Error Messages -->
+                <% if (typeof message !== "undefined" && message) { %>
+                <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex">
+                        <i class="fas fa-exclamation-circle text-red-400 mr-2 mt-0.5"></i>
+                        <p class="text-sm text-red-700"><%= message %></p>
+                    </div>
+                </div>
+                <% } else if (locals.error && error.length > 0) { %>
+                <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex">
+                        <i class="fas fa-exclamation-circle text-red-400 mr-2 mt-0.5"></i>
+                        <p class="text-sm text-red-700"><%= error %></p>
+                    </div>
+                </div>
+                <% } %>
+
+                <% if (query.error) { %>
+                <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex">
+                        <i class="fas fa-exclamation-circle text-red-400 mr-2 mt-0.5"></i>
+                        <p class="text-sm text-red-700"><%= query.error %></p>
+                    </div>
+                </div>
+                <% } %>
+
+                <!-- Login Form -->
+                <form id="loginform" class="mt-8 space-y-6">
+                    <!-- Email Field -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                            <input 
+                                id="email" 
+                                name="email" 
+                                type="email" 
+                                required 
+                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition duration-200"
+                                placeholder="Enter your email"
+                            >
+                        </div>
+                        <p id="error1" class="mt-1 text-sm text-red-600 hidden"></p>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input 
+                                id="password" 
+                                name="password" 
+                                type="password" 
+                                required 
+                                class="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition duration-200"
+                                placeholder="Enter your password"
+                            >
+                            <button 
+                                type="button" 
+                                id="togglePassword"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            >
+                                <i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+                            </button>
+                        </div>
+                        <p id="error2" class="mt-1 text-sm text-red-600 hidden"></p>
+                    </div>
+
+                    <!-- Forgot Password -->
+                    <div class="flex justify-end">
+                        <a href="/forgot-password" class="text-sm font-medium text-amber-600 hover:text-amber-500 transition duration-200">
+                            Forgot password?
+                        </a>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div>
+                        <button 
+                            type="submit" 
+                            id="submitBtn"
+                            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition duration-200 transform hover:scale-105"
+                        >
+                            <span id="submitText">Sign In</span>
+                            <div id="loadingSpinner" class="hidden ml-2">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="mt-6">
+                        <div class="relative">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-gray-50 text-gray-500">or sign in with</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Google Login -->
+                    <div class="mt-6">
+                        <a href="/auth/google" class="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition duration-200">
+                            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo" class="w-5 h-5 mr-2">
+                            Sign in with Google
+                        </a>
+                    </div>
+
+                    <!-- Sign Up Link -->
+                    <div class="text-center mt-6">
+                        <p class="text-sm text-gray-600">
+                            Not registered? 
+                            <a href="/signup" class="font-medium text-amber-600 hover:text-amber-500 transition duration-200">
+                                Sign up here
+                            </a>
+                        </p>
+                    </div>
+                </form>
+
+                <!-- Dynamic Error Message -->
+                <div id="error-message" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex">
+                        <i class="fas fa-exclamation-circle text-red-400 mr-2 mt-0.5"></i>
+                        <p class="text-sm text-red-700" id="errorText"></p>
+                    </div>
+                </div>
+
+                <!-- Success Message -->
+                <div id="successMessage" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div class="flex">
+                        <i class="fas fa-check-circle text-green-400 mr-2 mt-0.5"></i>
+                        <p class="text-sm text-green-700">Login successful! Redirecting...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-      const emailid = document.getElementById("email");
-      const passid = document.getElementById("password");
-      const error1 = document.getElementById("error1");
-      const error2 = document.getElementById("error2");
-      const loginform = document.getElementById("loginform");
-      const errorMessage = document.getElementById("error-message");
+        const emailid = document.getElementById("email");
+        const passid = document.getElementById("password");
+        const error1 = document.getElementById("error1");
+        const error2 = document.getElementById("error2");
+        const loginform = document.getElementById("loginform");
+        const errorMessage = document.getElementById("error-message");
+        const errorText = document.getElementById("errorText");
 
-      function emailValidateChecking() {
-        const emailval = emailid.value;
-        const emailpattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})$/;
+        function emailValidateChecking() {
+            const emailval = emailid.value;
+            const emailpattern = /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})$/;
 
-        if (!emailpattern.test(emailval)) {
-          error1.style.display = "block";
-          error1.innerHTML = "Invalid Format";
-        } else {
-          error1.style.display = "none";
-          error1.innerHTML = "";
-        }
-      }
-
-      function passValidateChecking() {
-        const passval = passid.value;
-        if (passval.length < 6) {
-          error2.style.display = "block";
-          error2.innerHTML = "Should contain at least 8 characters";
-        } else {
-          error2.style.display = "none";
-          error2.innerHTML = "";
-        }
-      }
-
-      document.addEventListener("DOMContentLoaded", function () {
-        loginform.addEventListener("submit", async function (e) {
-          e.preventDefault();
-
-          emailValidateChecking();
-          passValidateChecking();
-
-          if (error1.innerHTML || error2.innerHTML) return;
-
-          const formData = {
-            email: emailid.value,
-            password: passid.value
-          };
-
-          try {
-            const response = await fetch("/login", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(formData)
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-              window.location.href = result.redirectUrl;
+            if (!emailpattern.test(emailval)) {
+                showError(error1, emailid, "Invalid email format");
+                return false;
             } else {
-              errorMessage.style.display = "block";
-              errorMessage.textContent = result.message;
+                hideError(error1, emailid);
+                return true;
             }
-          } catch (err) {
-            errorMessage.style.display = "block";
-            errorMessage.textContent = "Something went wrong. Please try again.";
-          }
+        }
+
+        function passValidateChecking() {
+            const passval = passid.value;
+            if (passval.length < 6) {
+                showError(error2, passid, "Password should contain at least 6 characters");
+                return false;
+            } else {
+                hideError(error2, passid);
+                return true;
+            }
+        }
+
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
         });
-      });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loginform.addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                // Clear previous messages
+                hideMessages();
+
+                // Validate form
+                const emailValid = emailValidateChecking();
+                const passValid = passValidateChecking();
+
+                if (!emailValid || !passValid) return;
+
+                // Show loading state
+                setLoadingState(true);
+
+                const formData = {
+                    email: emailid.value,
+                    password: passid.value
+                };
+
+                try {
+                    const response = await fetch("/login", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showSuccessMessage();
+                        setTimeout(() => {
+                            window.location.href = result.redirectUrl;
+                        }, 1500);
+                    } else {
+                        showErrorMessage(result.message || "Login failed. Please try again.");
+                    }
+                } catch (err) {
+                    showErrorMessage("Something went wrong. Please try again.");
+                } finally {
+                    setLoadingState(false);
+                }
+            });
+        });
+
+        // Helper functions
+        function showError(errorElement, inputElement, message) {
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            
+            // Add error styling to input
+            inputElement.classList.add('border-red-500', 'focus:ring-red-500');
+            inputElement.classList.remove('border-gray-300', 'focus:ring-amber-500');
+        }
+
+        function hideError(errorElement, inputElement) {
+            errorElement.classList.add('hidden');
+            
+            // Remove error styling from input
+            inputElement.classList.remove('border-red-500', 'focus:ring-red-500');
+            inputElement.classList.add('border-gray-300', 'focus:ring-amber-500');
+        }
+
+        function setLoadingState(loading) {
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            
+            if (loading) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                submitText.textContent = 'Signing In...';
+                loadingSpinner.classList.remove('hidden');
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                submitText.textContent = 'Sign In';
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+
+        function showErrorMessage(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function showSuccessMessage() {
+            const successMessage = document.getElementById('successMessage');
+            successMessage.classList.remove('hidden');
+        }
+
+        function hideMessages() {
+            errorMessage.classList.add('hidden');
+            document.getElementById('successMessage').classList.add('hidden');
+        }
+
+        // Clear errors when user starts typing
+        emailid.addEventListener('input', () => {
+            hideError(error1, emailid);
+            hideMessages();
+        });
+        
+        passid.addEventListener('input', () => {
+            hideError(error2, passid);
+            hideMessages();
+        });
+
+        // Real-time validation
+        emailid.addEventListener('blur', emailValidateChecking);
+        passid.addEventListener('blur', passValidateChecking);
     </script>
-  </body>
+</body>
 </html>

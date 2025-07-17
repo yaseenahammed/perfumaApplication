@@ -5,13 +5,16 @@ const productController = require('../controller/user/productController');
 const profileController = require('../controller/user/profileController');
 const userProfileController=require('../controller/user/userProfileController')
 const CartController=require('../controller/user/cartController')
+const checkoutController=require('../controller/user/checkoutController')
 const passport = require('../config/passport');
 const uploads = require('../helpers/multer');
-const { userAuth } = require('../middlewares/auth');
+const nocache=require('nocache')
+const { userAuth,isLogin,setUser} = require('../middlewares/auth');
+
 
 // Routes
-router.get('/',userController.loadHome);
-router.get('/signup', userController.loadSignup);
+router.get('/',setUser,userController.loadHome);
+router.get('/signup',isLogin, userController.loadSignup);
 router.post('/signup', userController.signup);
 router.get('/verify-otp', (req, res) => {
   res.render('verify-otp', { title: 'Verify OTP', message: req.flash('message') });
@@ -51,21 +54,32 @@ router.get('/auth/google/callback', (req, res, next) => {
 
 
 // Login/Logout
-router.get('/login', userController.loadLogin);
+router.get('/login',nocache(),isLogin, userController.loadLogin);
 router.post('/login', userController.login);
 router.get('/logout', userAuth, userController.logout);
 
 // Shop
-router.get('/shop', userAuth, userController.loadShop);
-router.post('/shop', userAuth, userController.searchProducts);
+router.get('/shop', setUser,userController.loadShop);
+router.post('/shop',setUser,userController.searchProducts);
 
 // Profile Management
-router.get('/forgot-password', profileController.getForgotPassword);
-router.post('/forgot-password', profileController.forgotEmailValid); 
-router.post('/verify-passForgot-otp', profileController.verifyForgotPassOtp);
-router.get('/reset-password', profileController.getResetPassPage);
-router.post('/reset-password', profileController.resetPassword);
-router.post('/resend-otp', profileController.resendOtp);
+router.get('/forgot-password', nocache(), isLogin, profileController.getForgotPassword);
+router.post('/forgot-password', nocache(), isLogin, profileController.forgotEmailValid);
+router.post('/verify-passForgot-otp', nocache(), isLogin, profileController.verifyForgotPassOtp);
+router.get('/reset-password', nocache(), isLogin, profileController.getResetPassPage);
+router.post('/reset-password', nocache(), isLogin, profileController.resetPassword);
+router.post('/forget-resend-otp', nocache(), isLogin, profileController.resendOtp);
+
+
+
+// Product Details
+router.get('/productDetails',productController.productDetails);
+
+
+router.post('/add-to-cart/:productId',userAuth,productController.addToCart);
+router.post('/cart/add/:productId', userAuth, productController.incrementQuantity);
+router.post('/cart/decrement/:productId', userAuth, productController.decrementQuantity);
+
 
 //user profile
 router.get('/userProfile',userAuth,userProfileController.userProfile)
@@ -80,16 +94,16 @@ router.post('/send-email-otp', userAuth, userProfileController.sendEmailOtp);
 router.post('/verify-email-otp', userAuth, userProfileController.verifyEmailOtp);
 router.post('/change-password', userAuth, userProfileController.changePassword);
 
-// Product Details
-router.get('/productDetails', userAuth, productController.productDetails);
-router.post('/add-to-cart/:productId',userAuth,productController.addToCart);
-router.post('/cart/add/:productId', userAuth, productController.incrementQuantity);
-router.post('/cart/decrement/:productId', userAuth, productController.decrementQuantity);
-
-
 //cart
 router.get('/cart',userAuth,CartController.getCart);
 router.delete('/cart/remove/:productId', userAuth,CartController.removeFromCart);
+
+//checkout
+router.get('/checkout',userAuth,checkoutController.getCheckout)
+router.post('/addressAdd',userAuth,checkoutController.addAddress)
+router.post('/addressEdit',userAuth,checkoutController.editAddress)
+router.get('/order-details/:orderId', userAuth, checkoutController.orderConfirm);
+router.post('/place-order',userAuth,checkoutController.placeOrder)
 
 
 module.exports = router;

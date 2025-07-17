@@ -44,13 +44,7 @@ const userSchema=new Schema({
   type: String,
   default: 'default.png'
 },
-  addresses: [{
-    street: String,
-    city: String,
-    state: String,
-    zip: String,
-    country: String
-  }],
+ 
 
    cart:[{
     type:Schema.Types.ObjectId,

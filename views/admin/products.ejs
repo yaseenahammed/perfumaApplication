@@ -221,7 +221,7 @@
   </table>
   
 </div>
-<h3>total q:<%=totalQ%></h3>
+
 
 <!-- Pagination -->
 <div class="pagination-container">
@@ -299,7 +299,6 @@
                 <select class="form-select border" name="status" id="status">
                   <option value="" disabled selected>Select status</option>
                   <option value="available">Available</option>
-                  <option value="discounted">Discounted</option>
                   <option value="out-of-stock">Out of Stock</option>
                 </select>
                 <div id="status-error" class="error-message"></div>
@@ -396,8 +395,10 @@
 let croppers = {};
 
 function viewImage(event) {
+
   const input = event.target;
   const index = input.id.replace('input', '');
+
   const imgView = document.getElementById(`imgView${index}`);
   const cropperContainer = document.getElementById(`cropperContainer${index}`);
   const croppedImage = document.getElementById(`croppedImg${index}`);
@@ -417,6 +418,7 @@ function viewImage(event) {
     const reader = new FileReader();
     reader.onload = () => {
       imgView.src = reader.result;
+      
       imgView.style.display = "block";
       croppedImage.src = reader.result;
       cropperContainer.style.display = 'block';

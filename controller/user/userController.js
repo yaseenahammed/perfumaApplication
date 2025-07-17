@@ -11,6 +11,7 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.NODEMAILER_EMAIL,
     pass: process.env.NODEMAILER_PASSWORD,
+   
     
   },
 
@@ -65,6 +66,7 @@ const loadHome = async (req, res) => {
 
 const loadSignup = async (req, res) => {
   try {
+    console.log('load signup')
     res.render('signup', { title: 'Sign Up', error: null });
   } catch (error) {
     console.error('Error in loadSignup:', error.stack);
@@ -75,8 +77,11 @@ const loadSignup = async (req, res) => {
 
 const signup = async (req, res) => {
   try {
+    console.log(process.env.NODEMAILER_EMAIL)
+    console.log(process.env.NODEMAILER_PASSWORD)
+    console.log('post signup')
     const { name, email, password } = req.body;
-    console.log(req.body);
+    console.log('signup in body',req.body);
 
   const findUser = await User.findOne({ email });
     if (findUser) {
@@ -189,7 +194,7 @@ const verifyOtp = async (req, res) => {
 
     return res.json({
       success: true,
-      redirectUrl: "/login",
+      redirectUrl: "/",
     });
   } catch (err) {
     console.error(" Verify OTP Error:", err);
@@ -250,7 +255,7 @@ const resendOtp = async (req, res) => {
 
 const pageNotFound = async (req, res) => {
   try {
-    res.status(404).render('pageNotFound', { title: 'Page Not Found' });
+    res.status(404).render('page-404', { title: 'Page Not Found' });
   } catch (error) {
     console.error('Error in pageNotFound:', error.stack);
     res.status(500).send('Server Error');
@@ -406,6 +411,15 @@ const loadShop = async (req, res) => {
       .exec();
     console.log('Products fetched:', products.map(p => ({ name: p.name, category: p.category?.name })));
 
+       const filteredProducts = products.filter(product => {
+      const isValid = product.brand && !product.brand.isBlocked &&
+        product.category && product.category.isListed &&
+        !product.isBlocked 
+
+      return isValid;
+    });
+
+
     const totalProducts = await Product.countDocuments(query);
     const totalPages = Math.ceil(totalProducts / limit);
     console.log("Total Products:", totalProducts);
@@ -417,7 +431,7 @@ const loadShop = async (req, res) => {
 
     res.render('shop', {
       user,
-      products,
+      products:filteredProducts,
       categories,
       brands,
       currentPage: page,
@@ -477,6 +491,8 @@ const searchProducts = async (req, res) => {
       .limit(limit)
       .lean()
       .exec();
+
+    
 
     const totalProducts = await Product.countDocuments(searchQuery);
     const totalPages = Math.ceil(totalProducts / limit);

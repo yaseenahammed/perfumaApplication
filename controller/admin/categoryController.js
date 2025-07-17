@@ -28,6 +28,7 @@ const categoryInfo = async (req, res) => {
         const count = await Category.find({
             name: { $regex: ".*" + search + ".*", $options: 'i' }
         }).countDocuments();
+        
 
         res.render('categories', {
             cat: category,
@@ -52,7 +53,7 @@ const addCategory = async (req, res) => {
         name = name.trim().toLowerCase();
 
      
-        const existingCategory = await Category.findOne({ name: { $regex: `^${name}$`, $options: 'i' } });
+        const existingCategory = await Category.findOne({ name: { $regex: `^${name}$`, $options: 'i' } }).sort({createdAt:-1});
 
         if (existingCategory) {
             return res.status(400).json({ error: "Category already exists" });
@@ -61,7 +62,13 @@ const addCategory = async (req, res) => {
         const newCategory = new Category({ name, description });
         await newCategory.save();
 
-        return res.json({ message: "Category added successfully" });
+        const categoryCount=await Category.countDocuments()
+        const nextIndex=categoryCount
+
+        return res.json({ message: "Category added successfully" ,
+          newCategory,
+          categoryIndex:nextIndex,
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Internal server error" });
@@ -90,12 +97,13 @@ const addOffer = async (req, res) => {
       return res.status(404).json({ error: "Category not found" });
     }
 
-    return res.json({ message: "Offer added successfully", category }); 
+    return res.json({ message: "Offer added successfully", offer:category.offer }); 
   } catch (error) {
     console.error("Error adding offer:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 
 
@@ -126,11 +134,7 @@ const listCategory = async (req, res) => {
     
     const isListed = action === 'list';
 
-    
-    
-
-  
-    await Category.findByIdAndUpdate(categoryId, { isListed });
+      await Category.findByIdAndUpdate(categoryId, { isListed });
 
     res.json({ message: `Category successfully ${isListed ? 'listed' : 'unlisted'}.` });
   } catch (error) {
@@ -180,6 +184,8 @@ const editCategory = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
 
 
 

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - Perfuma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out forwards',
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .order-card {
+            transition: all 0.3s ease;
+        }
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans">
+    <%- include("../../views/partials/user/header") %>
+
+    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
+        <div class="relative z-10 container mx-auto px-4 text-center text-white">
+            <h1 class="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-violet-700 bg-clip-text text-transparent">Order Confirmed</h1>
+            <nav class="flex items-center justify-center space-x-2 text-lg">
+                <a href="/" class="text-gray-300 hover:text-white transition duration-200">Home</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <a href="/cart" class="text-gray-300 hover:text-white transition duration-200">Cart</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <a href="/checkout" class="text-gray-300 hover:text-white transition duration-200">Checkout</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <span class="text-amber-400">Order Confirmation</span>
+            </nav>
+        </div>
+    </section>
+
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-8 animate-slide-up order-card">
+                    <div class="text-center mb-8">
+                        <div class="w-32 h-32 mx-auto mb-6">
+                            <img src="/images/order-success-illustration.svg" alt="Order Successful" class="w-full h-full object-contain">
+                        </div>
+                        <h2 class="text-3xl font-bold text-green-600 mb-4">Order Placed Successfully!</h2>
+                        <p class="text-gray-700 text-lg mb-4">Thank you for your purchase from Perfuma. Your order for the Alba Automatic Skeleton Dial Black Watch has been confirmed and will be processed shortly.</p>
+                        <p class="text-gray-600 text-sm">An email confirmation has been sent to <%= user.email %> with your order details.</p>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-clipboard-list text-amber-500 mr-3"></i>
+                            Order Summary
+                        </h3>
+                        <div class="space-y-6">
+                            <div class="flex items-center gap-4 border-b border-gray-100 pb-4">
+                                <img src="/images/alba-watch.jpg" alt="Alba Automatic Skeleton Dial Black" class="w-20 h-20 object-cover rounded-lg shadow-sm">
+                                <div class="flex-1">
+                                    <h4 class="text-lg font-semibold text-gray-900">Alba Automatic Skeleton Dial Black Watch</h4>
+                                    <p class="text-gray-600 text-sm">Quantity: <%= order.quantity || 1 %></p>
+                                    <p class="text-gray-600 text-sm">Price: ₹<%= order.itemPrice || '10,999' %></p>
+                                    <p class="text-gray-600 text-sm">Packaging: Premium Luxury Gift Box</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-gray-800 font-medium">Item Total: ₹<%= (order.itemPrice || 10999) * (order.quantity || 1) %></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 space-y-4">
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600">Subtotal:</span>
+                                <span class="font-semibold text-gray-900">₹<%= order.subtotal || '10,999' %></span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600">Shipping:</span>
+                                <span class="font-semibold text-gray-900">₹<%= order.shipping || '499' %></span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600">Discount:</span>
+                                <span class="font-semibold text-green-600">-₹<%= order.discount || '0' %></span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600">Taxes:</span>
+                                <span class="font-semibold text-gray-900">₹<%= order.tax || '599' %></span>
+                            </div>
+                            <div class="border-t border-gray-200 pt-4">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xl font-bold text-gray-900">Order Total:</span>
+                                    <span class="text-2xl font-bold text-amber-600">₹<%= order.total || '11,997' %></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 border-t border-gray-200 pt-6">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-map-marker-alt text-amber-500 mr-3"></i>
+                            Delivery Details
+                        </h3>
+                        <div class="space-y-2">
+                            <p class="text-gray-800 font-semibold"><%= user.name %></p>
+                            <p class="text-gray-600">Antas Kalyan Street, Kuriachira, Thrissur, Kerala 680006, India</p>
+                            <p class="text-gray-600">Phone: <%= user.phone || '+91 9876543210' %></p>
+                            <p class="text-gray-600">Payment Method: <%= order.paymentMethod || 'Cash on Delivery' %></p>
+                            <p class="text-gray-600">Order ID: <%= order.id || 'ORD123456789' %></p>
+                            <p class="text-gray-600">Order Status: Confirmed</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 border-t border-gray-200 pt-6">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-headset text-amber-500 mr-3"></i>
+                            Customer Support
+                        </h3>
+                        <div class="space-y-2">
+                            <p class="text-gray-600">Need assistance? Our team is here to help.</p>
+                            <p class="text-gray-600">Email: <a href="mailto:support@perfuma.com" class="text-amber-500 hover:text-amber-600">support@perfuma.com</a></p>
+                            <p class="text-gray-600">Phone: <a href="tel:+919876543210" class="text-amber-500 hover:text-amber-600">+91 9876543210</a></p>
+                            <p class="text-gray-600">Track your order or get more details on our <a href="/support" class="text-amber-500 hover:text-amber-600">Support Page</a>.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="/order-details/<%= order.id || 'ORD123456789' %>" class="px-8 py-4 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-clipboard-list mr-2"></i> View Order Details
+                        </a>
+                        <a href="/shop" class="px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-shopping-bag mr-2"></i> Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include("../../views/partials/user/footer") %><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - Perfuma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out forwards',
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .order-card {
+            transition: all 0.3s ease;
+        }
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans">
+    <%- include("../../views/partials/user/header") %>
+
+    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
+        <div class="relative z-10 container mx-auto px-4 text-center text-white">
+            <h1 class="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-violet-700 bg-clip-text text-transparent">Order Confirmed</h1>
+            <nav class="flex items-center justify-center space-x-2 text-lg">
+                <a href="/" class="text-gray-300 hover:text-white transition duration-200">Home</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <a href="/cart" class="text-gray-300 hover:text-white transition duration-200">Cart</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <a href="/checkout" class="text-gray-300 hover:text-white transition duration-200">Checkout</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <span class="text-amber-400">Order Confirmation</span>
+            </nav>
+        </div>
+    </section>
+
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-8 animate-slide-up order-card">
+                    <div class="text-center mb-8">
+                        <div class="w-32 h-32 mx-auto mb-6">
+                            <img src="/images/order-success-illustration.svg" alt="Order Successful" class="w-full h-full object-contain">
+                        </div>
+                        <h2 class="text-3xl font-bold text-green-600 mb-4">Order Placed Successfully!</h2>
+                        <p class="text-gray-700 text-lg mb-4">Thank you for your purchase from Perfuma. Your order for the Alba Automatic Skeleton Dial Black Watch has been confirmed and will be processed shortly.</p>
+                        <p class="text-gray-600 text-sm">An email confirmation has been sent to <%= user.email %> with your order details.</p>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-clipboard-list text-amber-500 mr-3"></i>
+                            Order Summary
+                        </h3>
+                        <div class="space-y-6">
+                            <div class="flex items-center gap-4 border-b border-gray-100 pb-4">
+                                <img src="/images/alba-watch.jpg" alt="Alba Automatic Skeleton Dial Black" class="w-20 h-20 object-cover rounded-lg shadow-sm">
+                                <div class="flex-1">
+                                    <h4 class="text-lg font-semibold text-gray-900">Alba Automatic Skeleton Dial Black Watch</h4>
+                                    <p class="text-gray-600 text-sm">Quantity: <%= order.quantity || 1 %></p>
+                                    <p class="text-gray-600 text-sm">Price: ₹<%= order.itemPrice || '10,999' %></p>
+                                    <p class="text-gray-600 text-sm">Packaging: Premium Luxury Gift Box</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-gray-800 font-medium">Item Total: ₹<%= (order.itemPrice || 10999) * (order.quantity || 1) %></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 space-y-4">
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600">Subtotal:</span>
+                                <span class="font-semibold text-gray-900">₹<%= order.subtotal || '10,999' %></span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600">Shipping:</span>
+                                <span class="font-semibold text-gray-900">₹<%= order.shipping || '499' %></span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600">Discount:</span>
+                                <span class="font-semibold text-green-600">-₹<%= order.discount || '0' %></span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600">Taxes:</span>
+                                <span class="font-semibold text-gray-900">₹<%= order.tax || '599' %></span>
+                            </div>
+                            <div class="border-t border-gray-200 pt-4">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xl font-bold text-gray-900">Order Total:</span>
+                                    <span class="text-2xl font-bold text-amber-600">₹<%= order.total || '11,997' %></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 border-t border-gray-200 pt-6">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-map-marker-alt text-amber-500 mr-3"></i>
+                            Delivery Details
+                        </h3>
+                        <div class="space-y-2">
+                            <p class="text-gray-800 font-semibold"><%= user.name %></p>
+                            <p class="text-gray-600">Antas Kalyan Street, Kuriachira, Thrissur, Kerala 680006, India</p>
+                            <p class="text-gray-600">Phone: <%= user.phone || '+91 9876543210' %></p>
+                            <p class="text-gray-600">Payment Method: <%= order.paymentMethod || 'Cash on Delivery' %></p>
+                            <p class="text-gray-600">Order ID: <%= order.id || 'ORD123456789' %></p>
+                            <p class="text-gray-600">Order Status: Confirmed</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 border-t border-gray-200 pt-6">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-headset text-amber-500 mr-3"></i>
+                            Customer Support
+                        </h3>
+                        <div class="space-y-2">
+                            <p class="text-gray-600">Need assistance? Our team is here to help.</p>
+                            <p class="text-gray-600">Email: <a href="mailto:support@perfuma.com" class="text-amber-500 hover:text-amber-600">support@perfuma.com</a></p>
+                            <p class="text-gray-600">Phone: <a href="tel:+919876543210" class="text-amber-500 hover:text-amber-600">+91 9876543210</a></p>
+                            <p class="text-gray-600">Track your order or get more details on our <a href="/support" class="text-amber-500 hover:text-amber-600">Support Page</a>.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="/order-details/<%= order.id || 'ORD123456789' %>" class="px-8 py-4 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-clipboard-list mr-2"></i> View Order Details
+                        </a>
+                        <a href="/shop" class="px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-shopping-bag mr-2"></i> Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include("../../views/partials/user/footer") %>

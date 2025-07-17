@@ -11,7 +11,7 @@ const userAuth = async (req, res, next) => {
       const user = await User.findById(req.session.userId).lean();
       if (user && !user.isBlocked) {
         req.user = user; 
-        console.log('User authenticated:', user.email);
+
         return next();
       } else {
         console.log('User is blocked or not found:', user);
@@ -45,6 +45,42 @@ return res.redirect('/login');
   }
 };
 
+const isLogin=async (req,res,next)=>{
+  try {
+    const user=req.session.userId
+    if(user){
+     return res.redirect('/')
+    }
+    next()
+  } catch (error) {
+    console.error('error in middileware',error)
+  }
+}
+
+
+
+
+const setUser = async (req, res, next) => {
+  try {
+    if (req.session.userId) {
+      const user = await User.findById(req.session.userId).lean();
+
+      if (!user || user.isBlocked) {
+        req.session.destroy(() => {});
+        res.locals.user = null;
+      } else {
+        res.locals.user = user;
+      }
+    } else {
+      res.locals.user = null;
+    }
+  } catch (err) {
+    console.error('setUser middleware error:', err);
+    res.locals.user = null;
+  }
+
+  next();
+};
 
 
 
@@ -72,10 +108,23 @@ const adminAuth = async (req, res, next) => {
 };
 
 
-
+const isAdmin=async (req,res,next)=>{
+  try {
+    const admin=req.session.admin
+    if(admin){
+      return res.redirect('/admin/dashboard')
+    }
+    next()
+  } catch (error) {
+    console.error('error in middleware',error)
+  }
+}
 
 
 module.exports={
     userAuth,
-    adminAuth
+    isLogin,
+    adminAuth,
+    isAdmin,
+    setUser,
 }

@@ -9,8 +9,11 @@ const pageError=async(req,res)=>{
 
 
 const loadLogin = async (req, res) => {
+  
   try {
     if (req.session.admin) {
+
+      
       return res.redirect('/admin/dashboard');
     }
     const message = req.session.message;

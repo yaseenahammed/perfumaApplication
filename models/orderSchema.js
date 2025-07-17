@@ -34,11 +34,11 @@ const orderSchema = new Schema({
     country: String,
     phone: String
   },
-  paymentMethod: {
-    type: String,
-    enum: ['COD', 'Online'],
-    required: true
-  },
+ paymentMethod: {
+  type: String,
+  enum: ['Card', 'UPI', 'Net Banking', 'Cash on Delivery'],
+  required: true,
+},
   paymentStatus: {
     type: String,
     enum: ['Paid', 'Pending', 'Failed'],

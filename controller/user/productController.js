@@ -9,34 +9,31 @@ const productDetails = async (req, res) => {
   try {
     const userId = req.session.userId;
     console.log('productDetails - Session:', req.session);
-    console.log('productDetails - userId:', userId || 'None');
+   
 
-    if (!userId) {
-      req.flash('error', 'Please log in to view product details');
-      console.log('No userId, redirecting to /login');
-      return res.redirect('/login');
-    }
+  let userData = null;
+if (userId && mongoose.isValidObjectId(userId)) {
+  userData = await User.findById(userId).lean();
+}
 
-    if (!mongoose.isValidObjectId(userId)) {
-      req.flash('error', 'Invalid session data');
-      console.log('Invalid userId:', userId);
-      return res.redirect('/login');
-    }
+  if (userId && !mongoose.isValidObjectId(userId)) {
+  req.flash('error', 'Invalid session data');
+  console.log('Invalid userId:', userId);
+  return res.redirect('/login');
+}
 
-    const userData = await User.findById(userId).lean();
-    console.log('User:', userData?.email || 'None');
 
-    if (!userData) {
-      req.flash('error', 'User not found');
-      console.log('User not found');
-      return res.redirect('/login');
-    }
+   
 
-    if (userData.isBlocked) {
-      req.flash('error', 'User is blocked by admin');
-      console.log('User blocked:', userData.email);
-      return res.redirect('/login');
-    }
+  if (!userData) {
+  console.log('User not found, continuing without user data');
+  userData = null;
+}
+
+  if (userData && userData.isBlocked) {
+  console.log('User blocked:', userData.email);
+  userData = null;
+}
 
     const productId = req.query.id;
     console.log('Product ID:', productId);
@@ -78,7 +75,7 @@ const productDetails = async (req, res) => {
       quantity: product.quantity,
       totalOffer,
       category: findCategory,
-      error: req.flash('error'),
+      error: req.flash('error')[0] || null,
     });
   } catch (error) {
     console.error('Error in productDetails:', error.stack);
@@ -183,7 +180,17 @@ const incrementQuantity = async (req, res) => {
     item.totalPrice = item.quantity * item.price;
     await cart.save();
 
-    res.json({ success: true });
+    const subtotal = cart.items.reduce((sum, item) => sum + item.totalPrice, 0);
+    const total = subtotal; // Adjust for tax/shipping if needed
+    const cartItemsLength = cart.items.length;
+
+    res.json({
+      success: true,
+      updatedQuantity: item.quantity,
+      subtotal: subtotal,
+      total: total,
+      cartItemsLength: cartItemsLength,
+    });
   } catch (err) {
     console.error('Increment error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -209,13 +216,22 @@ const decrementQuantity = async (req, res) => {
     item.totalPrice = item.quantity * item.price;
     await cart.save();
 
-    res.json({ success: true });
+    const subtotal = cart.items.reduce((sum, item) => sum + item.totalPrice, 0);
+    const total = subtotal; // Adjust for tax/shipping if needed
+    const cartItemsLength = cart.items.length;
+
+    res.json({
+      success: true,
+      updatedQuantity: item.quantity,
+      subtotal: subtotal,
+      total: total,
+      cartItemsLength: cartItemsLength,
+    });
   } catch (err) {
     console.error('Decrement error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
-
 
 module.exports = {
   productDetails,

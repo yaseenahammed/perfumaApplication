@@ -22,6 +22,9 @@ const getAllproducts = async (req, res) => {
       };
     }
 
+//  const category1=await Product.find({quantity:{$gte:6}})
+//   console.log("this is:",category1)
+
     const productData = await Product.find(query)
       .limit(limit)
       .skip((page - 1) * limit)
@@ -39,8 +42,8 @@ const getAllproducts = async (req, res) => {
 
     
     const allProducts = await Product.find({}, 'quantity');
-let totalQ= 0;
-allProducts.forEach(product => totalQ += product.quantity);
+    let totalQ= 0;
+    allProducts.forEach(product => totalQ += product.quantity);
     
 
     const messages = {
@@ -134,15 +137,9 @@ const postEditProduct = async (req, res) => {
       return res.redirect('/admin/pageError');
     }
 
-    const currentImages = existingImages
-      ? Array.isArray(existingImages)
-        ? existingImages
-        : JSON.parse(existingImages)
-      : [];
+    const currentImages = existingImages ? Array.isArray(existingImages) ? existingImages : JSON.parse(existingImages) : [];
 
-    const updatedImages = newUploadedImages.length > 0
-      ? [...currentImages, ...newUploadedImages]
-      : currentImages;
+    const updatedImages = newUploadedImages.length > 0 ? [...currentImages, ...newUploadedImages] : currentImages;
 
     if (updatedImages.length === 0) {
       return res.redirect(`/admin/editProduct/${id}`);
@@ -280,6 +277,7 @@ const addProduct = async (req, res) => {
 const removeProductImage = async (req, res) => {
   try {
     const { imagePath } = req.body;
+    console.log('image path',req.body)
     const productId = req.params.id;
     const product = await Product.findById(productId);
 

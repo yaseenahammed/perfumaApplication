@@ -1,276 +1,240 @@
-<%- include("../partials/user/header") %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - Perfuma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles */
+        .btn-custom {
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            transform: scale(1.05);
+            background: linear-gradient(to-r, #c79f15, #a67b0a);
+        }
+        .profile-card {
+            transition: all 0.3s ease;
+        }
+        .profile-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .modal-content {
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        .modal-header {
+            background: linear-gradient(to-r, #d4a017, #b8860b);
+            color: #fff;
+            border-radius: 12px 12px 0 0;
+        }
+        .form-control:focus {
+            border-color: #d4a017;
+            box-shadow: 0 0 8px rgba(212, 160, 23, 0.3);
+            outline: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <%- include("../partials/user/header") %>
 
-<style>
-  body {
-    background-color: #1a1a1a;
-    color: #ffffff;
-    font-family: 'Roboto', sans-serif;
-  }
-
-  .card {
-    margin-top: 100px;
-    background-color: #2b2b2b;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 20px rgba(212, 160, 23, 0.3);
-  }
-
-  .card-header {
-    background: linear-gradient(90deg, #2b2b2b, #3a3a3a);
-    color: #d4a017;
-    border-radius: 10px 10px 0 0;
-    padding: 15px;
-    font-weight: 700;
-    font-size: 20px;
-  }
-
-  .form-group label {
-    color: #d4a017;
-    font-weight: 500;
-  }
-
-  .form-control {
-    background-color: #3a3a3a;
-    border: 1px solid #444444;
-    color: #ffffff;
-    border-radius: 5px;
-    padding: 10px;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  .form-control:focus {
-    border-color: #d4a017;
-    box-shadow: 0 0 8px rgba(212, 160, 23, 0.3);
-    outline: none;
-  }
-
-  .btn-custom {
-    background: linear-gradient(90deg, #d4a017, #b8860b); /* Gold gradient */
-    border: none;
-    border-radius: 5px;
-    padding: 12px 25px;
-    color: #ffffff;
-    font-weight: 600;
-    transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  .btn-custom:hover {
-    background: linear-gradient(90deg, #c79f15, #a67b0a); /* Darker gold */
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(212, 160, 23, 0.5);
-  }
-
-  .button-group {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
-    position: relative;
-    z-index: 2;
-  }
-
-  .button-group .btn-custom {
-    padding: 14px 35px;
-  }
-
-  .save-button-group {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-  }
-
-  .modal-content {
-    background-color: #2b2b2b;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  }
-
-  .modal-header {
-    background: linear-gradient(90deg, #2b2b2b, #3a3a3a);
-    color: #d4a017;
-    border-radius: 10px 10px 0 0;
-    padding: 15px;
-  }
-
-  .modal-body {
-    padding: 20px;
-  }
-
-  .modal-footer {
-    border-top: none;
-    padding: 15px;
-  }
-
-  #message {
-    margin-top: 10px;
-    font-weight: 500;
-    transition: opacity 0.3s ease;
-  }
-
-  .text-success {
-    color: #48bb78;
-  }
-
-  .text-danger {
-    color: #e53e3e;
-  }
-</style>
-
-<main class="main">
-  <div class="page-header breadcrumb-wrap mb-3">
-    <div class="container">
-      <div class="breadcrumb">
-        <a href="/userProfile" rel="nofollow">Dashboard</a>
-        <span></span> Edit Profile
-      </div>
-    </div>
-  </div>
-  <section class="pt-10 pb-10">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-8 m-auto">
-          <div class="card">
-            <div class="card-header">
-              <h5 class="mb-0">Edit Profile</h5>
-            </div>
-            <div class="card-body">
-              <form action="/edit-profile" method="POST" enctype="multipart/form-data">
-                <div class="form-group">
-                  <label for="name">Name</label>
-                  <input type="text" id="name" name="name" value="<%= user.name %>" class="form-control">
-                </div>
-                <div class="form-group">
-                  <label for="email">Email</label>
-                  <input type="email" id="email" name="email" value="<%= user.email %>" class="form-control" readonly>
-                </div>
-                <div class="form-group">
-                  <label for="profileImage">Profile Image</label>
-                  <input type="file" id="profileImage" name="profileImage" class="form-control">
-                </div>
-                <div class="save-button-group">
-                  <button type="submit" class="btn btn-custom">Save Changes</button>
-                </div>
-              </form>
-
-              <!-- Buttons Moved Outside the Card -->
-              <div class="button-group">
-                <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#emailModal">Update Email</button>
-                <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#passwordModal">Change Password</button>
-              </div>
-            </div>
-          </div>
+    <!-- Page Header -->
+    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
+        <div class="relative z-10 container mx-auto px-4 text-center text-white">
+            <h1 class="text-4xl lg:text-5xl font-bold mb-4 animate-fade-in">Edit Profile</h1>
+            <nav class="flex items-center justify-center space-x-2 text-lg">
+                <a href="/userProfile" class="text-gray-300 hover:text-white transition duration-200">Dashboard</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <span class="text-amber-400">Edit Profile</span>
+            </nav>
         </div>
-      </div>
+    </section>
+
+    <!-- Main Edit Profile Section -->
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto">
+                <div class="profile-card bg-white rounded-2xl shadow-xl p-8 animate-fade-in">
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-user-edit text-amber-500 mr-3"></i>
+                            Edit Profile
+                        </h2>
+                    </div>
+                    <form action="/edit-profile" method="POST" enctype="multipart/form-data">
+                        <div class="space-y-6">
+                            <div class="form-group">
+                                <label for="name" class="block text-sm font-medium text-gray-900">Name</label>
+                                <input type="text" id="name" name="name" value="<%= user.name %>" class="form-control mt-1 block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-amber-500 transition duration-300">
+                            </div>
+                            <div class="form-group">
+                                <label for="email" class="block text-sm font-medium text-gray-900">Email</label>
+                                <input type="email" id="email" name="email" value="<%= user.email %>" class="form-control mt-1 block w-full px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="profileImage" class="block text-sm font-medium text-gray-900">Profile Image</label>
+                                <input type="file" id="profileImage" name="profileImage" class="form-control mt-1 block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-amber-500 transition duration-300">
+                            </div>
+                            <div class="save-button-group flex justify-center">
+                                <button type="submit" class="btn-custom inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
+                                    <i class="fas fa-save mr-2"></i>
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="button-group flex justify-center gap-4 mt-6">
+                        <button class="btn-custom inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300" data-bs-toggle="modal" data-bs-target="#emailModal">
+                            <i class="fas fa-envelope mr-2"></i>
+                            Update Email
+                        </button>
+                        <button class="btn-custom inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300" data-bs-toggle="modal" data-bs-target="#passwordModal">
+                            <i class="fas fa-lock mr-2"></i>
+                            Change Password
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Email Update Modal -->
+    <div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="emailModalLabel">Update Email</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="emailForm">
+                        <div class="mb-3">
+                            <label for="newEmail" class="form-label text-gray-900">New Email</label>
+                            <input type="email" class="form-control w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-amber-500 transition duration-300" id="newEmail" name="newEmail" required>
+                        </div>
+                        <button type="submit" class="btn-custom inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Send OTP
+                        </button>
+                    </form>
+                    <form id="otpForm" style="display: none;">
+                        <div class="mb-3">
+                            <label for="otp" class="form-label text-gray-900">Enter OTP</label>
+                            <input type="text" class="form-control w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-amber-500 transition duration-300" id="otp" name="otp" required>
+                        </div>
+                        <button type="submit" class="btn-custom inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
+                            <i class="fas fa-check mr-2"></i>
+                            Verify OTP
+                        </button>
+                    </form>
+                    <div id="message" class="mt-3 text-sm font-medium <% if (message && message.includes('Error')) { %>text-red-500<% } else { %>text-green-500<% } %>">
+                        <% if (message) { %><%= message %><% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </section>
-</main>
 
-<!-- Email Update Modal -->
-<div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="emailModalLabel">Update Email</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="emailForm">
-          <div class="mb-3">
-            <label for="newEmail" class="form-label">New Email</label>
-            <input type="email" class="form-control" id="newEmail" name="newEmail" required>
-          </div>
-          <button type="submit" class="btn btn-custom">Send OTP</button>
-        </form>
-        <form id="otpForm" style="display: none;">
-          <div class="mb-3">
-            <label for="otp" class="form-label">Enter OTP</label>
-            <input type="text" class="form-control" id="otp" name="otp" required>
-          </div>
-          <button type="submit" class="btn btn-custom">Verify OTP</button>
-        </form>
-        <div id="message" class="text-danger"></div>
-      </div>
+    <!-- Password Change Modal -->
+    <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="passwordModalLabel">Change Password</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/change-password" method="POST">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label text-gray-900">Current Password</label>
+                            <input type="password" class="form-control w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-amber-500 transition duration-300" id="currentPassword" name="currentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label text-gray-900">New Password</label>
+                            <input type="password" class="form-control w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-amber-500 transition duration-300" id="newPassword" name="newPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label text-gray-900">Confirm New Password</label>
+                            <input type="password" class="form-control w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-amber-500 transition duration-300" id="confirmPassword" name="confirmPassword" required>
+                        </div>
+                        <button type="submit" class="btn-custom inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
+                            <i class="fas fa-lock mr-2"></i>
+                            Change Password
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<!-- Password Change Modal -->
-<div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="passwordModalLabel">Change Password</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form action="/change-password" method="POST">
-          <div class="mb-3">
-            <label for="currentPassword" class="form-label">Current Password</label>
-            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
-          </div>
-          <div class="mb-3">
-            <label for="newPassword" class="form-label">New Password</label>
-            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
-          </div>
-          <div class="mb-3">
-            <label for="confirmPassword" class="form-label">Confirm New Password</label>
-            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
-          </div>
-          <button type="submit" class="btn btn-custom">Change Password</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
+    <%- include("../partials/user/footer") %>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
 
-<script>
-  $(document).ready(function() {
-    $('#emailForm').on('submit', function(e) {
-      e.preventDefault();
-      const newEmail = $('#newEmail').val();
-      $.ajax({
-        url: '/send-email-otp',
-        type: 'POST',
-        data: { newEmail },
-        success: function(response) {
-          $('#message').text(response.message).removeClass('text-danger').addClass('text-success');
-          $('#emailForm').hide();
-          $('#otpForm').show();
-        },
-        error: function(xhr) {
-          $('#message').text(xhr.responseJSON.message).addClass('text-danger');
-        }
-      });
-    });
+    <script>
+        $(document).ready(function() {
+            $('#emailForm').on('submit', function(e) {
+                e.preventDefault();
+                const newEmail = $('#newEmail').val();
+                $.ajax({
+                    url: '/send-email-otp',
+                    type: 'POST',
+                    data: { newEmail },
+                    success: function(response) {
+                        $('#message').text(response.message).removeClass('text-danger').addClass('text-success');
+                        $('#emailForm').hide();
+                        $('#otpForm').show();
+                    },
+                    error: function(xhr) {
+                        $('#message').text(xhr.responseJSON.message).addClass('text-danger');
+                    }
+                });
+            });
 
-    $('#otpForm').on('submit', function(e) {
-      e.preventDefault();
-      const otp = $('#otp').val();
-      $.ajax({
-        url: '/verify-email-otp',
-        type: 'POST',
-        data: { otp },
-        success: function(response) {
-          $('#message').text(response.message).removeClass('text-danger').addClass('text-success');
-          setTimeout(() => location.reload(), 1000);
-        },
-        error: function(xhr) {
-          $('#message').text(xhr.responseJSON.message).addClass('text-danger');
-        }
-      });
-    });
-  });
-</script>
-
-<%- include("../partials/user/footer") %>
+            $('#otpForm').on('submit', function(e) {
+                e.preventDefault();
+                const otp = $('#otp').val();
+                $.ajax({
+                    url: '/verify-email-otp',
+                    type: 'POST',
+                    data: { otp },
+                    success: function(response) {
+                        $('#message').text(response.message).removeClass('text-danger').addClass('text-success');
+                        setTimeout(() => location.reload(), 1000);
+                    },
+                    error: function(xhr) {
+                        $('#message').text(xhr.responseJSON.message).addClass('text-danger');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

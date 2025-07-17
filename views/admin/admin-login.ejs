@@ -4,38 +4,84 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Login</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap"
-    rel="stylesheet"
-  />
-  <link rel="stylesheet" href="/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="/assets/css/adminLogin.css" />
-  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
-  <div class="login-container">
-    <h2 class="text-center">Admin Login</h2>
-   
-    <% if(message){ %>
-  <div class="login-error"><%= message %></div>
-   <% } %>
-  
- <form id="adminLoginForm" method="post" action="/admin/login">
-    <div class="form-group">
-      <label for="adminEmail">Email address</label>
-      <input type="email" class="form-control" id="adminEmail" name="email"  />
-      <div id="emailError" class="error-message"></div>
+<body class="min-h-screen bg-gray-50">
+  <div class="flex min-h-screen">
+    <!-- Left Side - Image -->
+    <div class="w-1/2 bg-gradient-to-br from-rose-100 to-amber-50 relative overflow-hidden">
+      <div class="absolute inset-0 flex items-center justify-center">
+        <img src="https://t3.ftcdn.net/jpg/08/32/30/12/360_F_832301227_1iQHc794dGkUn4VQLlarNKnV1UvpZSLq.jpg" alt="Perfuma Fragrance" class="w-full h-full object-cover">
+      </div>
+      <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+      <div class="absolute bottom-8 left-8 right-8 text-center">
+        <h3 class="text-white text-xl font-semibold">Admin Portal</h3>
+        <p class="text-white/80 text-sm mt-2">Manage your platform securely</p>
+      </div>
     </div>
-    <div class="form-group">
-      <label for="adminPassword">Password</label>
-      <input type="password" class="form-control" id="adminPassword" name="password"  />
-      <div id="passwordError" class="error-message"></div>
+
+    <!-- Right Side - Login Form -->
+    <div class="w-1/2 flex items-center justify-center p-8">
+      <div class="max-w-md w-full space-y-8">
+        <h2 class="text-center text-3xl font-bold text-gray-900">Admin Login</h2>
+        <p class="text-center text-gray-600 mt-2">Sign into your admin account</p>
+
+        <% if (message) { %>
+          <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div class="flex">
+              <i class="fas fa-exclamation-circle text-red-400 mr-2 mt-0.5"></i>
+              <p class="text-sm text-red-700"><%= message %></p>
+            </div>
+          </div>
+        <% } %>
+
+        <form id="adminLoginForm" method="post" action="/admin/login" class="mt-8 space-y-6">
+          <div>
+            <label for="adminEmail" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-envelope text-gray-400"></i>
+              </div>
+              <input
+                type="email"
+                id="adminEmail"
+                name="email"
+                required
+                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition duration-200"
+                placeholder="Enter your email"
+              />
+              <div id="emailError" class="mt-1 text-sm text-red-600 hidden"></div>
+            </div>
+          </div>
+          <div>
+            <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-lock text-gray-400"></i>
+              </div>
+              <input
+                type="password"
+                id="adminPassword"
+                name="password"
+                required
+                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition duration-200"
+                placeholder="Enter your password"
+              />
+              <div id="passwordError" class="mt-1 text-sm text-red-600 hidden"></div>
+            </div>
+          </div>
+          <button
+            type="submit"
+            class="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition duration-200 transform hover:scale-105"
+          >
+            Log In
+          </button>
+        </form>
+      </div>
     </div>
-    <button type="submit" class="btn btn-primary">Log In</button>
-  </form>
   </div>
-  <script src="/js/jquery.min.js"></script>
-  <script src="/js/bootstrap.bundle.min.js"></script>
+
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const adminLoginForm = document.getElementById("adminLoginForm");
@@ -49,21 +95,35 @@
         const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (!emailPattern.test(emailField.value)) {
           emailError.textContent = "Invalid email format";
+          emailError.classList.remove("hidden");
           isValid = false;
         } else {
           emailError.textContent = "";
+          emailError.classList.add("hidden");
         }
         if (passwordField.value.length < 6) {
-          passwordError.textContent =
-            "Password should contain at least 6 characters";
+          passwordError.textContent = "Password should contain at least 6 characters";
+          passwordError.classList.remove("hidden");
           isValid = false;
         } else {
           passwordError.textContent = "";
+          passwordError.classList.add("hidden");
         }
 
         if (!isValid) {
           event.preventDefault();
         }
+      });
+
+      // Clear errors on input
+      emailField.addEventListener("input", function () {
+        emailError.textContent = "";
+        emailError.classList.add("hidden");
+      });
+
+      passwordField.addEventListener("input", function () {
+        passwordError.textContent = "";
+        passwordError.classList.add("hidden");
       });
     });
   </script>

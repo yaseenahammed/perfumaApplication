@@ -64,20 +64,20 @@ const customerInfo=async(req,res)=>{
 
 
 
-const blockCustomer = async (req, res) => {
 
+
+const blockCustomer=async(req,res)=>{
   try {
-    const userId = req.query.id;
-
-    await User.findByIdAndUpdate (userId,{$set:{ isBlocked: true }} );
-  
-    res.redirect('/admin/users');
+    const user=req.query.id
+    await User.findByIdAndUpdate(user,{$set:{isBlocked:true}})
+    res.redirect('/admin/users')
   } catch (error) {
-    console.error("Error blocking user:", error);
-    res.status(500).send("Internal Server Error");
-  }
-};
 
+    console.error('error in block customer',error)
+    res.status(500).send('internal server error')
+    
+  }
+}
 
 
 

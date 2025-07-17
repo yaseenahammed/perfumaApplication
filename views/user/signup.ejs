@@ -1,152 +1,334 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Simple Signup Page</title>
-  <link rel="stylesheet" href="assets/css/userSignup.css">
-
-  <style>
-.error-message{
-  color: red;
-  font-size: 0.70rem;
-  display: none;
-}
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfuma - Sign Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
+<body class="min-h-screen bg-gray-50">
+    <div class="flex min-h-screen">
+        <!-- Left Side - Full Image -->
+        <div class="w-1/2 bg-gradient-to-br from-rose-100 to-amber-50 relative overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center">
+                <img src="https://t3.ftcdn.net/jpg/08/32/30/12/360_F_832301227_1iQHc794dGkUn4VQLlarNKnV1UvpZSLq.jpg" alt="Perfuma Fragrance" class="w-full h-full object-cover">
+            </div>
+            <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+            <div class="absolute bottom-8 left-8 right-8 text-center">
+                <div class="flex justify-center space-x-4 mb-4">
+                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-spray-can text-lg text-white"></i>
+                    </div>
+                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-heart text-lg text-white"></i>
+                    </div>
+                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-star text-lg text-white"></i>
+                    </div>
+                </div>
+                <h3 class="text-white text-xl font-semibold">Join Perfuma</h3>
+                <p class="text-white/80 text-sm mt-2">Create your fragrance journey</p>
+            </div>
+        </div>
 
-  <div class="container">
-    <h2>Sign Up</h2>
-    <form id="signform" action="/signup" method="post">
-     <div class="form-group">
-      <input id="name" type="text" name="name" placeholder="name" required>
-      <div id="error1" class="error-message"></div>
-    </div> 
-      <div class="form-group">
-        <input id="email" type="email" name="email" placeholder="Email" required>
-        <div id="error2" class="error-message"></div>
-      </div>
-      <div class="form-group">
-        <input id="password" type="password" name="password" placeholder="Password" required>
-        <div id="error3" class="error-message"></div>
-      </div>
-       
-      <div class="form-group">
-        <input id="confirmPassword" type="password" name="confirmPassword" placeholder="Confirm Password" required>
-        <div id="error4" class="error-message"></div>
+        <!-- Right Side - Signup Form -->
+        <div class="w-1/2 flex items-center justify-center p-8">
+            <div class="max-w-md w-full space-y-8">
+                <!-- Header -->
+                <div class="text-center">
+                    <h1 class="text-4xl font-bold text-gray-900 tracking-wide">PERFUMA</h1>
+                    <p class="mt-2 text-gray-600">Create your account</p>
+                </div>
 
-      </div>
-        <% if (locals.message && locals.message.length > 0) { %>
-              <div class="alert alert-danger text-center">
-                <%= locals.message %>
-              </div>
-              <% } %>
-     
-      <button type="submit" class="btn">Sign Up</button>
-       <div class="form-group">
-    <a href="/auth/google" class="google-btn">
-      <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo" style="width:20px; margin-right:8px;">
-      Sign in with Google
-    </a>
-     
-    </form>
-  </div>
+                <!-- Signup Form -->
+                <form id="signform" action="/signup" method="post" class="mt-8 space-y-6">
+                    <!-- Name Field -->
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                            <input 
+                                id="name" 
+                                name="name" 
+                                type="text" 
+                                 
+                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition duration-200"
+                                placeholder="Enter your full name"
+                            >
+                        </div>
+                        <p id="error1" class="mt-1 text-sm text-red-600 hidden"></p>
+                    </div>
 
+                    <!-- Email Field -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                            <input 
+                                id="email" 
+                                name="email" 
+                                type="email" 
+                                 
+                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition duration-200"
+                                placeholder="Enter your email"
+                            >
+                        </div>
+                        <p id="error2" class="mt-1 text-sm text-red-600 hidden"></p>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input 
+                                id="password" 
+                                name="password" 
+                                type="password" 
+                                 
+                                class="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition duration-200"
+                                placeholder="Enter your password"
+                            >
+                            <button 
+                                type="button" 
+                                id="togglePassword"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            >
+                                <i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+                            </button>
+                        </div>
+                        <p id="error3" class="mt-1 text-sm text-red-600 hidden"></p>
+                    </div>
+
+                    <!-- Confirm Password Field -->
+                    <div>
+                        <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input 
+                                id="confirmPassword" 
+                                name="confirmPassword" 
+                                type="password" 
+                                 
+                                class="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition duration-200"
+                                placeholder="Confirm your password"
+                            >
+                            <button 
+                                type="button" 
+                                id="toggleConfirmPassword"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            >
+                                <i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+                            </button>
+                        </div>
+                        <p id="error4" class="mt-1 text-sm text-red-600 hidden"></p>
+                    </div>
+
+                    <!-- Server Error Message -->
+                    <% if (locals.message && locals.message.length > 0) { %>
+                    <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="flex">
+                            <i class="fas fa-exclamation-circle text-red-400 mr-2 mt-0.5"></i>
+                            <p class="text-sm text-red-700"><%= locals.message %></p>
+                        </div>
+                    </div>
+                    <% } %>
+
+                    <!-- Submit Button -->
+                    <div>
+                        <button 
+                            type="submit" 
+                            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition duration-200 transform hover:scale-105"
+                        >
+                            Sign Up
+                        </button>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="mt-6">
+                        <div class="relative">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-gray-50 text-gray-500">Or sign up with</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Google Signup -->
+                    <div class="mt-6">
+                        <a href="/auth/google" class="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition duration-200">
+                            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo" class="w-5 h-5 mr-2">
+                            Sign up with Google
+                        </a>
+                    </div>
+
+                    <!-- Sign In Link -->
+                    <div class="text-center mt-6">
+                        <p class="text-sm text-gray-600">
+                            Already have an account? 
+                            <a href="/login" class="font-medium text-amber-600 hover:text-amber-500 transition duration-200">
+                                Sign in here
+                            </a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const nameid = document.getElementById('name');
+        const emailid = document.getElementById('email');
+        const passid = document.getElementById('password');
+        const cpassid = document.getElementById('confirmPassword');
+        const error1 = document.getElementById('error1');
+        const error2 = document.getElementById('error2');
+        const error3 = document.getElementById('error3');
+        const error4 = document.getElementById('error4');
+        const signform = document.getElementById('signform');
+
+        document.addEventListener('DOMContentLoaded', function () {
+            signform.addEventListener("submit", function (e) {
+                let hasError = false;
+
+                // Clear previous error styles
+                clearErrorStyles();
+
+                // Name validation
+                const nameVal = nameid.value;
+                const namePattern = /^[A-Za-z ]{3,10}$/;
+                if (nameVal.trim() === "") {
+                    showError(error1, nameid, 'Enter a valid name');
+                    hasError = true;
+                } else if (!namePattern.test(nameVal)) {
+                    showError(error1, nameid, "Only alphabets and spaces (3-10 characters)");
+                    hasError = true;
+                } else {
+                    hideError(error1, nameid);
+                }
+
+                // Email validation
+                const emailVal = emailid.value;
+                const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (emailVal.trim() === "" || !emailPattern.test(emailVal)) {
+                    showError(error2, emailid, "Invalid email format");
+                    hasError = true;
+                } else {
+                    hideError(error2, emailid);
+                }
+
+                // Password validation
+                const passVal = passid.value;
+                const cpassVal = cpassid.value;
+                const hasAlphabet = /[A-Za-z]/.test(passVal);
+                const hasDigit = /[0-9]/.test(passVal);
+
+                if (passVal.length < 6) {
+                    showError(error3, passid, "Password should be at least 6 characters");
+                    hasError = true;
+                } else if (!hasAlphabet || !hasDigit) {
+                    showError(error3, passid, "Password must contain letters and numbers");
+                    hasError = true;
+                } else {
+                    hideError(error3, passid);
+                }
+
+                // Confirm password validation
+                if (passVal !== cpassVal) {
+                    showError(error4, cpassid, "Passwords do not match");
+                    hasError = true;
+                } else {
+                    hideError(error4, cpassid);
+                }
+
+                if (hasError) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('confirmPassword');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Helper functions
+        function showError(errorElement, inputElement, message) {
+            errorElement.style.display = "block";
+            errorElement.innerHTML = message;
+            errorElement.classList.remove('hidden');
+            
+            // Add error styling to input
+            inputElement.classList.add('border-red-500', 'focus:ring-red-500');
+            inputElement.classList.remove('border-gray-300', 'focus:ring-amber-500');
+        }
+
+        function hideError(errorElement, inputElement) {
+            errorElement.style.display = "none";
+            errorElement.innerHTML = "";
+            errorElement.classList.add('hidden');
+            
+            // Remove error styling from input
+            inputElement.classList.remove('border-red-500', 'focus:ring-red-500');
+            inputElement.classList.add('border-gray-300', 'focus:ring-amber-500');
+        }
+
+        function clearErrorStyles() {
+            const inputs = [nameid, emailid, passid, cpassid];
+            const errors = [error1, error2, error3, error4];
+            
+            inputs.forEach(input => {
+                input.classList.remove('border-red-500', 'focus:ring-red-500');
+                input.classList.add('border-gray-300', 'focus:ring-amber-500');
+            });
+            
+            errors.forEach(error => {
+                error.classList.add('hidden');
+            });
+        }
+
+        // Clear errors when user starts typing
+        nameid.addEventListener('input', () => hideError(error1, nameid));
+        emailid.addEventListener('input', () => hideError(error2, emailid));
+        passid.addEventListener('input', () => hideError(error3, passid));
+        cpassid.addEventListener('input', () => hideError(error4, cpassid));
+    </script>
 </body>
 </html>
-
-
-
-  
-
-  <script>
-
-  const nameid = document.getElementById('name');
-  const emailid = document.getElementById('email');
-  const passid = document.getElementById('password');
-  const cpassid = document.getElementById('confirmPassword');
-  const error1 = document.getElementById('error1');
-  const error2 = document.getElementById('error2');
-  const error3 = document.getElementById('error3');
-  const error4 = document.getElementById('error4');
-  const signform = document.getElementById('signform');
-
-  document.addEventListener('DOMContentLoaded', function () {
-    signform.addEventListener("submit", function (e) {
-
-      let hasError = false;
-
-      
-      const nameVal = nameid.value;
-      const namePattern = /^[A-Za-z ]{3,10}$/;
-      if (nameVal.trim() === "") {
-        error1.style.display = "block";
-        error1.innerHTML = 'Enter a valid name';
-        hasError = true;
-      } else if (!namePattern.test(nameVal)) {
-        error1.style.display = "block";
-        error1.innerHTML = "Only alphabets and spaces (3-10 characters)";
-        hasError = true;
-      } else {
-        error1.style.display = "none";
-        error1.innerHTML = "";
-      }
-
-    
-      const emailVal = emailid.value;
-      const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      if (emailVal.trim() === "" || !emailPattern.test(emailVal)) {
-        error2.style.display = "block";
-        error2.innerHTML = "Invalid email format";
-        hasError = true;
-      } else {
-        error2.style.display = "none";
-        error2.innerHTML = "";
-      }
-
-      
-      const passVal = passid.value;
-      const cpassVal = cpassid.value;
-      const hasAlphabet = /[A-Za-z]/.test(passVal);
-      const hasDigit = /[0-9]/.test(passVal);
-
-      if (passVal.length < 6) {
-        error3.style.display = "block";
-        error3.innerHTML = "Password should be at least 6 characters";
-        hasError = true;
-      } else if (!hasAlphabet || !hasDigit) {
-        error3.style.display = "block";
-        error3.innerHTML = "Password must contain letters and numbers";
-        hasError = true;
-      } else {
-        error3.style.display = "none";
-        error3.innerHTML = "";
-      }
-
-     
-      if (passVal !== cpassVal) {
-        error4.style.display = "block";
-        error4.innerHTML = "Passwords do not match";
-        hasError = true;
-      } else {
-        error4.style.display = "none";
-        error4.innerHTML = "";
-      }
-
-      
-      if (hasError) {
-        e.preventDefault();
-      }
-
-    });
-  });
-</script>
-
-   
-
-

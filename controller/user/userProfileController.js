@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const User = require('../../models/userSchema');
 const Order=require('../../models/orderSchema')
+const Address = require('../../models/addresSchema');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
@@ -22,9 +23,12 @@ const userProfile=async(req,res)=>{
     const user=await User.findById(userId)
     const orders = await Order.find({ user: userId });
    
+    const addressDoc=await Address.findOne({userId})
+    const defaultAddress=addressDoc?.addresses[0]
       res.render('user-profile',{
         user,
-        orders
+        orders,
+        defaultAddress
       })
     
   } catch (error) {
@@ -41,6 +45,7 @@ const getEditProfile=async(req,res)=>{
         res.render('edit-profile',{
            
            user,
+           message:''
            
         })
     } catch (error) {
@@ -92,7 +97,14 @@ const userAddress = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.render('user-address', { user }); 
+    const addressData = await Address.findOne({ userId: req.session.userId });
+    
+
+    res.render('user-address',
+       { 
+        user ,
+        addresses: addressData ? addressData.addresses : []
+      }); 
   } catch (error) {
     console.error('Error in user-address page:', error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -101,39 +113,74 @@ const userAddress = async (req, res) => {
 
 const addAddress = async (req, res) => {
   try {
-    const { street, city, state, zip, country } = req.body;
+    const userId = req.session.userId;
+    const { phone, street, city, state, zip, country } = req.body;
 
-    const user = await User.findById(req.session.userId); 
+    let userAddress = await Address.findOne({ userId });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    const newAddress = { phone, street, city, state, zip, country };
+
+    const isDigitsOnly = /^\d+$/;
+
+if (!isDigitsOnly.test(phone) || phone.length !== 10) {
+  return res.status(400).send("Invalid phone number");
+}
+
+if (!isDigitsOnly.test(zip) || zip.length !== 6) {
+  return res.status(400).send("Invalid pincode");
+}
+
+
+    if (!userAddress) {
+      // Create new document if not exist
+      userAddress = new Address({ userId, addresses: [newAddress] });
+    } else {
+      // Push to existing array
+      userAddress.addresses.push(newAddress);
     }
 
-    user.addresses.push({ street, city, state, zip, country });
-
-    await user.save();
-    console.log("Address added", user.addresses);
-
-    
+    await userAddress.save();
     res.redirect('/user-address');
   } catch (error) {
     console.error("Error in addAddress:", error);
-    res.status(500).json({ message: "Internal Server Error" }); 
+    res.status(500).send("Internal Server Error");
   }
 };
 
 
 const editAddress = async (req, res) => {
   try {
-    const { addressId, street, city, state, zip, country } = req.body;
-    const user = await User.findById(req.session.userId);
+    const { addressId, phone, street, city, state, zip, country } = req.body;
+    const userId =req.session.userId;
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    const addressDoc=await Address.findOne({userId})
+
+
+
+    if (!addressDoc) {
+      return res.status(404).json({ message: "Address document not found" });
     }
 
-    user.addresses[addressId] = { street, city, state, zip, country };
-    await user.save();
+    const index=addressDoc.addresses.findIndex((addr,idx)=>idx.toString()===addressId);
+    if(index===-1){
+      return res.status(404).json({message:"Address not found"})
+    }
+
+
+    const isDigitsOnly = /^\d+$/;
+
+if (!isDigitsOnly.test(phone) || phone.length !== 10) {
+  return res.status(400).send("Invalid phone number");
+}
+
+if (!isDigitsOnly.test(zip) || zip.length !== 6) {
+  return res.status(400).send("Invalid pincode");
+}
+
+
+    addressDoc.addresses[index]={phone, street, city, state, zip,country}
+    addressDoc.save();
+    
     res.redirect('/user-address');
   } catch (error) {
     console.error("Error in editAddress:", error);
@@ -143,14 +190,22 @@ const editAddress = async (req, res) => {
 
 const deleteAddress = async (req, res) => {
   try {
-    const user = await User.findById(req.session.userId);
+    const userId = req.session.userId;
+    const addressIndex=req.params.index;
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    const addressDoc=await Address.findOne({userId})
+
+    if(!addressDoc){
+      return res.status(404).json({message:"Address document not found"});
+
     }
 
-    user.addresses.splice(req.params.index, 1);
-    await user.save();
+    addressDoc.addresses.splice(addressIndex,1)
+    await addressDoc.save()
+
+
+    
+   
     res.redirect('/user-address');
   } catch (error) {
     console.error("Error in deleteAddress:", error);
