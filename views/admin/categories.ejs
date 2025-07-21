@@ -1,506 +1,492 @@
-
-  
 <%- include("../../views/partials/admin/header") %>
-<head>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> 
-  <style>
-    .col-md-3 {
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      margin: 10px;
+
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                animation: {
+                    'fade-in': 'fadeIn 0.5s ease-in-out',
+                    'slide-up': 'slideUp 0.6s ease-out',
+                },
+                keyframes: {
+                    fadeIn: {
+                        '0%': { opacity: '0' },
+                        '100%': { opacity: '1' },
+                    },
+                    slideUp: {
+                        '0%': { transform: 'translateY(30px)', opacity: '0' },
+                        '100%': { transform: 'translateY(0)', opacity: '1' },
+                    }
+                }
+            }
+        }
     }
+</script>
 
-    .form-label {
-      margin-bottom: 8px;
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- jQuery CDN (retained for existing functionality) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<style>
+    /* Custom button styles */
+    .btn-create, .btn-list, .btn-unlist, .btn-edit, .btn-add-offer, .btn-remove-offer {
+        transition: all 0.3s ease;
     }
-
-    .form-control {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      box-sizing: border-box;
-    }
-
-    .d-grid {
-      margin-top: 20px;
-    }
-
-    .btn-primary {
-      background-color: #007bff;
-      color: #fff;
-      border: 1px solid #007bff;
-      border-radius: 5px;
-      padding: 10px 20px;
-      cursor: pointer;
-    }
-
-    .btn-primary:hover {
-      background-color: #0056b3;
-      border-color: #0056b3;
-    }
-
-       .pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 30px 0;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.pagination-container a,
-.pagination-container span {
-  display: inline-block;
-  padding: 8px 14px;
-  font-size: 14px;
-  text-decoration: none;
-  color: #007bff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background-color: #fff;
-  transition: all 0.2s ease-in-out;
-}
-
-.pagination-container a:hover {
-  background-color: #007bff;
-  color: #fff;
-  border-color: #007bff;
-}
-
-.pagination-container .current-page {
-  background-color: #007bff;
-  color: #fff;
-  border-color: #007bff;
-  font-weight: bold;
-  cursor: default;
-}
-   
-.error-message{
-  color: red;
-}
-
     
-  </style>
-</head>
-<body>
-  <section class="content-main">
-    <div class="content-header">
-      <div>
-        <h2 class="content-title card-title">Category</h2>
-      </div>
-    </div>
-    <header class="card-header text-center mb-20">
-      <form action="/admin/category" method="get" class="d-inline">
-        <div class="input-group input-group-sm border border-1 border-grey rounded-pill" style="width: 500px; margin-left: 230px">
-          <input type="text" class="form-control border-0 rounded-pill mt-3" placeholder="Search categories" name="search"/>
-          <button class="btn" type="submit">Search</button>
+    .btn-create:hover, .btn-list:hover, .btn-unlist:hover, .btn-edit:hover, .btn-add-offer:hover, .btn-remove-offer:hover {
+        transform: scale(1.05);
+    }
+    
+    .table-row {
+        transition: all 0.3s ease;
+    }
+    
+    .table-row:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .error-message {
+        color: #ef4444; /* Tailwind red-500 */
+        font-size: 0.875rem;
+    }
+</style>
+
+<body class="bg-gray-50">
+    <!-- Page Header -->
+    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
+        <div class="relative z-10 container mx-auto px-4 text-center text-white">
+            <h1 class="text-4xl lg:text-5xl font-bold mb-4 animate-fade-in">Categories</h1>
+            <nav class="flex items-center justify-center space-x-2 text-lg">
+                <a href="/admin" class="text-gray-300 hover:text-white transition duration-200">Admin Dashboard</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <span class="text-amber-400">Categories</span>
+            </nav>
         </div>
-      </form>
-    </header>
-    <div class="card">
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-3">
-<form id="formId">
-  <div class="mb-4">
-    <label for="product_name" class="form-label">Name</label>
-    <input type="text" name="name" placeholder="Type here" class="form-control" id="product_name" />
-    <div id="name-error" class="error-message"></div>
-  </div>
-  <div class="mb-4">
-    <label class="form-label">Description</label>
-    <textarea placeholder="Type here" name="description" class="form-control" id="descriptionId" ></textarea>
-    <div id="description-error" class="error-message"></div>
-  </div>
-  <div class="d-grid">
-    <button class="btn btn-primary" type="submit">
-      Create category
-    </button>
-  </div>
-</form>
-
-          </div>
-          <div class="col-md-8 ml-10">
-            <div class="table-responsive">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th class="text-center"></th>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Offer Price</th>
-                    <th>Offer</th>
-                    <th>Status</th>
-                    <th>List/Unlist</th>
-                    <th class="text-start">Edit</th>
-                  </tr>
-                </thead>
- <tbody id="categoryTableBody">
-  <% cat.forEach((category, index) => { %>
-  <tr>
-    <td><%= index + 1 %></td>
-    <td class="text-start"><%= category.name %></td>
-    <td class="text-start"><%= category.description %></td>
-
-    <td id="offer-<%=category._id%>">
-      <% if (category.offer && category.offer > 0) { %>
-        <%= category.offer %>% Off
-      <% } else { %>
-        No Offer
-      <% } %>
-    </td>
-
-  
-    <td id="offer-btn-<%=category._id%>">
-      <% if (category.offer && category.offer > 0) { %>
-        <button class="btn btn-warning text-white" onclick="removeOffer('<%= category._id %>')">Remove Offer</button>
-      <% } else { %>
-        <button class="btn btn-info text-white" onclick="addOffer('<%= category._id %>')">Add Offer</button>
-      <% } %>
-    </td>
-
-    <td id="list-btn-<%= category._id %>">
-      <% if (category.isListed) { %>
-        <button class="btn btn-danger" onclick="Listing('<%= category._id %>', 'unlist')">Unlist</button>
-      <% } else { %>
-        <button class="btn btn-success" onclick="Listing('<%= category._id %>', 'list')">List</button>
-      <% } %>
-    </td>
-
-    <td id="list-status-<%= category._id %>">
-      <% if (category.isListed) { %>
-        <span class="badge bg-success">Listed</span>
-      <% } else { %>
-        <span class="badge bg-secondary">Unlisted</span>
-      <% } %>
-    </td>
-
-    <td>
-      <a href="/admin/editCategory?id=<%= category._id %>" class="btn btn-info text-white">Edit</a>
-    </td>
-  </tr>
-  <% }) %>
-</tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-   
-
-   <!-- Pagination -->
-    <div class="pagination-container">
-      <% if (currentPage > 1) { %>
-      <a href="?page=<%= currentPage - 1 %>">&laquo; Previous</a>
-      <% } %> <% for (let i = 1; i <= totalPages; i++) { %> <% if (i ===
-      currentPage) { %>
-      <span class="current-page"><%= i %></span>
-      <% } else { %>
-      <a href="?page=<%= i %>"><%= i %></a>
-      <% } %> <% } %> <% if (currentPage < totalPages) { %>
-      <a href="?page=<%= currentPage + 1 %>">Next &raquo;</a>
-      <% } %>
-    </div>
     </section>
 
+    <!-- Main Content -->
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-list text-amber-500 mr-3"></i>
+                            Categories
+                        </h2>
+                    </div>
 
-  
+                    <!-- Search Bar -->
+                    <header class="text-center mb-8">
+                        <form action="/admin/category" method="get" class="d-inline">
+                            <div class="flex justify-center">
+                                <div class="relative w-full max-w-md">
+                                    <input 
+                                        type="text" 
+                                        class="w-full border border-gray-200 rounded-full py-3 px-6 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                                        placeholder="Search categories..." 
+                                        name="search"
+                                    >
+                                    <button 
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full hover:from-amber-600 hover:to-orange-600 transition duration-300"
+                                        type="submit"
+                                    >
+                                        Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </header>
 
+                    <!-- Category Form and Table -->
+                    <div class="grid lg:grid-cols-3 gap-8">
+                        <!-- Form Section -->
+                        <div class="lg:col-span-1">
+                            <form id="formId">
+                                <div class="mb-6">
+                                    <label for="product_name" class="block text-gray-700 font-semibold mb-2">Name</label>
+                                    <input 
+                                        type="text" 
+                                        name="name" 
+                                        placeholder="Type here" 
+                                        class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                                        id="product_name" 
+                                    />
+                                    <div id="name-error" class="error-message mt-1"></div>
+                                </div>
+                                <div class="mb-6">
+                                    <label class="block text-gray-700 font-semibold mb-2">Description</label>
+                                    <textarea 
+                                        placeholder="Type here" 
+                                        name="description" 
+                                        class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                                        id="descriptionId"
+                                    ></textarea>
+                                    <div id="description-error" class="error-message mt-1"></div>
+                                </div>
+                                <div class="mt-6">
+                                    <button 
+                                        class="btn-create w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center"
+                                        type="submit"
+                                    >
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Create Category
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
 
+                        <!-- Table Section -->
+                        <div class="lg:col-span-2">
+                            <div class="overflow-x-auto">
+                                <table class="w-full table-auto">
+                                    <thead>
+                                        <tr class="bg-gray-100 text-gray-900 text-left">
+                                            <th class="px-6 py-4 font-bold">#</th>
+                                            <th class="px-6 py-4 font-bold">Name</th>
+                                            <th class="px-6 py-4 font-bold">Description</th>
+                                            <th class="px-6 py-4 font-bold">Offer Price</th>
+                                            <th class="px-6 py-4 font-bold">Offer</th>
+                                            <th class="px-6 py-4 font-bold">Status</th>
+                                            <th class="px-6 py-4 font-bold">List/Unlist</th>
+                                            <th class="px-6 py-4 font-bold">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="categoryTableBody">
+                                        <% cat.forEach((category, index) => { %>
+                                            <tr class="table-row bg-gray-50 border-b border-gray-200 hover:bg-gray-100">
+                                                <td class="px-6 py-4 text-gray-900"><%= index + 1 %></td>
+                                                <td class="px-6 py-4 text-gray-900"><%= category.name %></td>
+                                                <td class="px-6 py-4 text-gray-600"><%= category.description %></td>
+                                                <td class="px-6 py-4 text-gray-900" id="offer-<%= category._id %>">
+                                                    <% if (category.offer && category.offer > 0) { %>
+                                                        <%= category.offer %>% Off
+                                                    <% } else { %>
+                                                        No Offer
+                                                    <% } %>
+                                                </td>
+                                                <td class="px-6 py-4" id="offer-btn-<%= category._id %>">
+                                                    <% if (category.offer && category.offer > 0) { %>
+                                                        <button 
+                                                            class="btn-remove-offer bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300"
+                                                            onclick="removeOffer('<%= category._id %>')"
+                                                        >
+                                                            Remove Offer
+                                                        </button>
+                                                    <% } else { %>
+                                                        <button 
+                                                            class="btn-add-offer bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300"
+                                                            onclick="addOffer('<%= category._id %>')"
+                                                        >
+                                                            Add Offer
+                                                        </button>
+                                                    <% } %>
+                                                </td>
+                                                <td class="px-6 py-4" id="list-status-<%= category._id %>">
+                                                    <% if (category.isListed) { %>
+                                                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Listed</span>
+                                                    <% } else { %>
+                                                        <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-semibold">Unlisted</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="px-6 py-4" id="list-btn-<%= category._id %>">
+                                                    <% if (category.isListed) { %>
+                                                        <button 
+                                                            class="btn-unlist bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300"
+                                                            onclick="Listing('<%= category._id %>', 'unlist')"
+                                                        >
+                                                            Unlist
+                                                        </button>
+                                                    <% } else { %>
+                                                        <button 
+                                                            class="btn-list bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300"
+                                                            onclick="Listing('<%= category._id %>', 'list')"
+                                                        >
+                                                            List
+                                                        </button>
+                                                    <% } %>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <a 
+                                                        href="/admin/editCategory?id=<%= category._id %>" 
+                                                        class="btn-edit bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 inline-flex items-center"
+                                                    >
+                                                        <i class="fas fa-edit mr-2"></i>
+                                                        Edit
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
 
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+                    <!-- Pagination -->
+                    <div class="pagination-container mt-8 flex justify-center items-center gap-2">
+                        <% if (currentPage > 1) { %>
+                            <a href="?page=<%= currentPage - 1 %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">« Previous</a>
+                        <% } %>
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <% if (i === currentPage) { %>
+                                <span class="current-page bg-amber-500 text-white border-amber-500 px-4 py-2 rounded-lg font-bold"><%= i %></span>
+                            <% } else { %>
+                                <a href="?page=<%= i %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200"><%= i %></a>
+                            <% } %>
+                        <% } %>
+                        <% if (currentPage < totalPages) { %>
+                            <a href="?page=<%= currentPage + 1 %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">Next »</a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const form = document.getElementById("formId");
+    <!-- Scripts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("formId");
 
-      form.addEventListener("submit", async function (event) {
-  event.preventDefault();
-  clearErrorMessages();
+            form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                clearErrorMessages();
 
-  const name = document.getElementsByName("name")[0].value.trim();
-  const description = document.getElementById("descriptionId").value.trim();
+                const name = document.getElementsByName("name")[0].value.trim();
+                const description = document.getElementById("descriptionId").value.trim();
 
-  let isValid = true;
+                let isValid = true;
 
-  if (name === "") {
-    displayErrorMessage("name-error", "Please enter a name");
-    isValid = false;
-  } else if (!/^[a-zA-Z\s]+$/.test(name)) {
-    displayErrorMessage("name-error", "Category name should contain only letters");
-    isValid = false;
-  }
+                if (name === "") {
+                    displayErrorMessage("name-error", "Please enter a name");
+                    isValid = false;
+                } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+                    displayErrorMessage("name-error", "Category name should contain only letters");
+                    isValid = false;
+                }
 
-  if (description === "") {
-    displayErrorMessage("description-error", "Please enter a description");
-    isValid = false;
-  }
+                if (description === "") {
+                    displayErrorMessage("description-error", "Please enter a description");
+                    isValid = false;
+                }
 
-  if (!isValid) return;
+                if (!isValid) return;
 
-  try {
-    const response = await fetch("/admin/addCategory", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, description }),
-    });
+                try {
+                    const response = await fetch("/admin/addCategory", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ name, description }),
+                    });
 
-    const data = await response.json();
+                    const data = await response.json();
 
-    if (!response.ok) throw new Error(data.error);
+                    if (!response.ok) throw new Error(data.error);
 
-    Swal.fire({
-      icon: "success",
-      title: "Success!",
-      text: data.message || "Category added successfully",
-      confirmButtonText: "OK",
-    }).then(() => {
-     
-      form.reset();
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success!",
+                        text: data.message || "Category added successfully",
+                        confirmButtonText: "OK",
+                    }).then(() => {
+                        form.reset();
 
+                        const tableBody = document.querySelector("#categoryTableBody");
+                        const newRow = document.createElement("tr");
+                        newRow.classList.add("table-row", "bg-gray-50", "border-b", "border-gray-200", "hover:bg-gray-100");
 
-      const tableBody = document.querySelector("#categoryTableBody"); // Add id to tbody
-const newRow = document.createElement("tr");
+                        newRow.innerHTML = `
+                            <td class="px-6 py-4 text-gray-900">${data.categoryIndex}</td>
+                            <td class="px-6 py-4 text-gray-900">${data.newCategory.name}</td>
+                            <td class="px-6 py-4 text-gray-600">${data.newCategory.description}</td>
+                            <td class="px-6 py-4 text-gray-900" id="offer-${data.newCategory._id}">No Offer</td>
+                            <td class="px-6 py-4" id="offer-btn-${data.newCategory._id}">
+                                <button class="btn-add-offer bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="addOffer('${data.newCategory._id}')">Add Offer</button>
+                            </td>
+                            <td class="px-6 py-4" id="list-status-${data.newCategory._id}">
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Listed</span>
+                            </td>
+                            <td class="px-6 py-4" id="list-btn-${data.newCategory._id}">
+                                <button class="btn-unlist bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="Listing('${data.newCategory._id}', 'unlist')">Unlist</button>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="/admin/editCategory?id=${data.newCategory._id}" class="btn-edit bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 inline-flex items-center">
+                                    <i class="fas fa-edit mr-2"></i>
+                                    Edit
+                                </a>
+                            </td>
+                        `;
 
-newRow.innerHTML = `
-  <td>${data.categoryIndex}</td>
-  <td>${data.newCategory.name}</td>
-  <td>${data.newCategory.description}</td>
-  <td id="offer-${data.newCategory._id}">No Offer</td>
-  <td id="offer-btn-${data.newCategory._id}">
-    <button class="btn btn-info text-white" onclick="addOffer('${data.newCategory._id}')">Add Offer</button>
-  </td>
-  <td>
-    <button class="btn btn-danger" onclick="toggleStatus('${data.newCategory._id}')">Unlist</button>
-  </td>
-  <td>
-    <span class="badge bg-success">Listed</span>
-  </td>
-  <td>
-    <button class="btn btn-info text-white" onclick="editCategory('${data.newCategory._id}')">Edit</button>
-  </td>
-`;
-
-tableBody.prepend(newRow); // insert at top
-
-
-     
-    });
-  } catch (error) {
-    Swal.fire({
-      icon: "error",
-      title: "Oops!",
-      text: error.message || "Something went wrong",
-    });
-  }
-});
-
-
-      function displayErrorMessage(id, message) {
-        const el = document.getElementById(id);
-        el.innerText = message;
-        el.style.display = "block";
-      }
-
-      function clearErrorMessages() {
-        document.querySelectorAll(".error-message").forEach((el) => {
-          el.innerText = "";
-          el.style.display = "none";
-        });
-      }
-    });
-
-
-
-
-    function addOffer(categoryId) {
-      Swal.fire({
-        title: "Enter Offer Percentage",
-        input: "number",
-        inputAttributes: {
-          min: 1,
-          max: 100,
-          step: 1,
-        },
-        showCancelButton: true,
-        confirmButtonText: "Add Offer",
-        showLoaderOnConfirm: true,
-        preConfirm: (offer) => {
-          if (!offer || offer <= 0 || offer > 100) {
-            Swal.showValidationMessage(
-              "Please enter a valid percentage (1-100)"
-            );
-            return;
-          }
-
-          return fetch("/admin/add-offer", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ categoryId, offer }),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.error) throw new Error(data.error);
-              return data;
-            })
-            .catch((err) => {
-              Swal.showValidationMessage(`Request failed: ${err}`);
+                        tableBody.prepend(newRow);
+                    });
+                } catch (error) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops!",
+                        text: error.message || "Something went wrong",
+                    });
+                }
             });
-        },
-      }).then((result) => {
-        if (result.isConfirmed) {
-          Swal.fire("Success!",
-           "Offer added successfully",
-            "success"
-          )
-          const offerTextCell = document.getElementById(`offer-${categoryId}`);
-if (offerTextCell) {
-  offerTextCell.innerText = `${result.value.offer}% Off`;
-}
 
-const offerText = document.getElementById(`offer-text-${categoryId}`);
-if (offerText) {
-  offerText.innerText = `${result.value}% off`;
-}
-
-const buttonCell = document.getElementById(`offer-btn-${categoryId}`);
-if (buttonCell) {
-  buttonCell.innerHTML = `
-    <button class="btn btn-warning text-white" onclick="removeOffer('${categoryId}')">
-      Remove Offer
-    </button>`;
-}
-
-
-
-
-        }
-      });
-    }
-
-    function removeOffer(categoryId) {
-      Swal.fire({
-        title: "Are you sure?",
-        text: "This will remove the offer from the category.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes, remove it!",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          fetch("/admin/remove-offer", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ categoryId }),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.error) {
-                Swal.fire("Error", data.error, "error");
-              } else {
-                Swal.fire(
-                  "Removed!",
-                  "Offer has been removed.",
-                  "success"
-                )
-                const offerTextCell = document.getElementById(`offer-${categoryId}`);
-if (offerTextCell) {
-  offerTextCell.innerText = `No Offer`;
-}
-            
-               const offerText = document.getElementById(`offer-text-${categoryId}`);
-if (offerText) {
-  offerText.innerText = "No offer";
-}
-
-const buttonCell = document.getElementById(`offer-btn-${categoryId}`);
-if (buttonCell) {
-  buttonCell.innerHTML = `
-    <button class="btn btn-info text-white" onclick="addOffer('${categoryId}')">
-      Add Offer
-    </button>`;
-}
-
-
-                
-
-              }
-            })
-            .catch((err) => {
-              Swal.fire("Error", "Something went wrong.", "error");
-            });
-        }
-      });
-    }
-
-  
-
-
-
-
-    function Listing(categoryId, action) {
-      const confirmText = action === "list"
-          ? "Are you sure you want to list this category?"
-          : "Are you sure you want to unlist this category?";
-      const endpoint = "/admin/list-category";
-
-      Swal.fire({
-        title: confirmText,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          fetch(endpoint, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ categoryId, action }),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.message) {
-                Swal.fire("Success", 
-                data.message,
-                 "success"
-                )
-
-                 const btnTd = document.getElementById(`list-btn-${categoryId}`);
-            const statusTd = document.getElementById(`list-status-${categoryId}`);
-
-            if (btnTd && statusTd) {
-              if (action === "list") {
-                btnTd.innerHTML = `<button class="btn btn-danger" onclick="Listing('${categoryId}', 'unlist')">Unlist</button>`;
-                statusTd.innerHTML = `<span class="badge bg-success">Listed</span>`;
-              } else {
-                btnTd.innerHTML = `<button class="btn btn-success" onclick="Listing('${categoryId}', 'list')">List</button>`;
-                statusTd.innerHTML = `<span class="badge bg-secondary">Unlisted</span>`;
-              }
+            function displayErrorMessage(id, message) {
+                const el = document.getElementById(id);
+                el.innerText = message;
+                el.style.display = "block";
             }
-              } else {
-                Swal.fire("Error", data.error || "Operation failed", "error");
-              }
-            })
-            .catch(() => {
-              Swal.fire("Error", "Something went wrong", "error");
+
+            function clearErrorMessages() {
+                document.querySelectorAll(".error-message").forEach((el) => {
+                    el.innerText = "";
+                    el.style.display = "none";
+                });
+            }
+        });
+
+        function addOffer(categoryId) {
+            Swal.fire({
+                title: "Enter Offer Percentage",
+                input: "number",
+                inputAttributes: {
+                    min: 1,
+                    max: 100,
+                    step: 1,
+                },
+                showCancelButton: true,
+                confirmButtonText: "Add Offer",
+                showLoaderOnConfirm: true,
+                preConfirm: (offer) => {
+                    if (!offer || offer <= 0 || offer > 100) {
+                        Swal.showValidationMessage("Please enter a valid percentage (1-100)");
+                        return;
+                    }
+                    return fetch("/admin/add-offer", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ categoryId, offer }),
+                    })
+                        .then((res) => res.json())
+                        .then((data) => {
+                            if (data.error) throw new Error(data.error);
+                            return data;
+                        })
+                        .catch((err) => {
+                            Swal.showValidationMessage(`Request failed: ${err}`);
+                        });
+                },
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire("Success!", "Offer added successfully", "success");
+                    const offerTextCell = document.getElementById(`offer-${categoryId}`);
+                    if (offerTextCell) {
+                        offerTextCell.innerText = `${result.value.offer}% Off`;
+                    }
+                    const buttonCell = document.getElementById(`offer-btn-${categoryId}`);
+                    if (buttonCell) {
+                        buttonCell.innerHTML = `
+                            <button class="btn-remove-offer bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="removeOffer('${categoryId}')">
+                                Remove Offer
+                            </button>`;
+                    }
+                }
             });
         }
-      });
-    }
-  </script>
 
-  <%- include("../../views/partials/admin/footer") %>
+        function removeOffer(categoryId) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "This will remove the offer from the category.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, remove it!",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch("/admin/remove-offer", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ categoryId }),
+                    })
+                        .then((res) => res.json())
+                        .then((data) => {
+                            if (data.error) {
+                                Swal.fire("Error", data.error, "error");
+                            } else {
+                                Swal.fire("Removed!", "Offer has been removed.", "success");
+                                const offerTextCell = document.getElementById(`offer-${categoryId}`);
+                                if (offerTextCell) {
+                                    offerTextCell.innerText = `No Offer`;
+                                }
+                                const buttonCell = document.getElementById(`offer-btn-${categoryId}`);
+                                if (buttonCell) {
+                                    buttonCell.innerHTML = `
+                                        <button class="btn-add-offer bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="addOffer('${categoryId}')">
+                                            Add Offer
+                                        </button>`;
+                                }
+                            }
+                        })
+                        .catch((err) => {
+                            Swal.fire("Error", "Something went wrong.", "error");
+                        });
+                }
+            });
+        }
+
+        function Listing(categoryId, action) {
+            const confirmText = action === "list" ? "Are you sure you want to list this category?" : "Are you sure you want to unlist this category?";
+            const endpoint = "/admin/list-category";
+
+            Swal.fire({
+                title: confirmText,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(endpoint, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ categoryId, action }),
+                    })
+                        .then((res) => res.json())
+                        .then((data) => {
+                            if (data.message) {
+                                Swal.fire("Success", data.message, "success");
+                                const btnTd = document.getElementById(`list-btn-${categoryId}`);
+                                const statusTd = document.getElementById(`list-status-${categoryId}`);
+                                if (btnTd && statusTd) {
+                                    if (action === "list") {
+                                        btnTd.innerHTML = `<button class="btn-unlist bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="Listing('${categoryId}', 'unlist')">Unlist</button>`;
+                                        statusTd.innerHTML = `<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Listed</span>`;
+                                    } else {
+                                        btnTd.innerHTML = `<button class="btn-list bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="Listing('${categoryId}', 'list')">List</button>`;
+                                        statusTd.innerHTML = `<span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-semibold">Unlisted</span>`;
+                                    }
+                                }
+                            } else {
+                                Swal.fire("Error", data.error || "Operation failed", "error");
+                            }
+                        })
+                        .catch(() => {
+                            Swal.fire("Error", "Something went wrong", "error");
+                        });
+                }
+            });
+        }
+    </script>
+
+    <%- include("../../views/partials/admin/footer") %>
 </body>

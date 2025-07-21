@@ -77,66 +77,46 @@ const loadSignup = async (req, res) => {
 
 const signup = async (req, res) => {
   try {
-    console.log(process.env.NODEMAILER_EMAIL)
-    console.log(process.env.NODEMAILER_PASSWORD)
-    console.log('post signup')
     const { name, email, password } = req.body;
-    console.log('signup in body',req.body);
 
-  const findUser = await User.findOne({ email });
-    if (findUser) {
-      if (findUser.googleId) {
-        return res.json({ success: false, message: 'This email is registered via Google. Please login using Google.' })
-      } else {
-        return res.json({ success: false, message: "User with this email already exists" })
-      }
-
-    }
-    
-    const existingUser = await User.findOne({ email }).lean();
+  
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.render('signup', {
-        title: 'Sign Up',
-        message: 'Email already exists',
-      });
+      if (existingUser.googleId) {
+        return res.json({ success: false, message: 'Email registered via Google.' });
+      }
+      return res.json({ success: false, message: 'Email already exists.' });
     }
-     
-   
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = generateOtp();
+    const otpExpires = Date.now() + 10 * 60 * 1000;
 
-    const user = new User({
+    
+    req.session.tempUser = {
       name,
       email,
       password: hashedPassword,
       otp,
-      otpExpires: Date.now() + 10 * 60 * 1000,
-    });
-
-    await user.save();
-
+      otpExpires,
+    };
+console.log('your otp is',otp)
     await transporter.sendMail({
       to: email,
       subject: 'Your OTP for Signup',
       text: `Your OTP is ${otp}. It is valid for 10 minutes.`,
     });
 
-    console.log('Your OTP is', otp);
-
-   
-    req.session.userId = user._id;
-
     res.redirect('/verify-otp');
-  } catch (error) {
-    console.error('Error in signup controller:', error);
-
+  } catch (err) {
+    console.error('Signup error:', err);
     res.render('signup', {
       title: 'Sign Up',
       message: 'Something went wrong. Please try again.',
     });
   }
 };
+
 
 
 const generateOtp = () => {
@@ -146,109 +126,123 @@ const generateOtp = () => {
 
 const verifyOtp = async (req, res) => {
   try {
-    const otp = req.body?.otp?.toString();
-    const userId = req.session.userId;
+    const otpInput = req.body.otp?.toString();
+    const tempUser = req.session.tempUser;
 
-    console.log(" OTP from client:", otp);
-    console.log('Session userId:', req.session.userId);
-
-
-    if (!otp || !userId) {
-      return res.status(400).json({
-        success: false,
-        message: "Session expired or OTP missing.",
-      });
+    if (!tempUser || !otpInput) {
+      return res.status(400).json({ success: false, message: 'Session expired or OTP missing' });
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found.",
-      });
+    const { name, email, password, otp, otpExpires } = tempUser;
+
+    if (Date.now() > otpExpires) {
+      return res.status(401).json({ success: false, message: 'OTP expired' });
     }
 
-    console.log(" OTP in DB:", user.otp);
-    console.log(" OTP expires at:", user.otpExpires);
-
-    if (user.otpExpires && user.otpExpires < Date.now()) {
-      return res.status(401).json({
-        success: false,
-        message: "OTP expired.",
-      });
+    if (otp !== otpInput) {
+      return res.status(401).json({ success: false, message: 'Incorrect OTP' });
     }
 
-    if (user.otp?.toString() !== otp) {
-      return res.status(401).json({
-        success: false,
-        message: "Incorrect OTP.",
-      });
-    }
-
-    user.isVerified = true;
-    user.otp = undefined;
-    user.otpExpires = undefined;
-    await user.save();
-    const dbUser = await User.findById(user._id);
-    console.log("Saved to DB:", dbUser);
-
-    return res.json({
-      success: true,
-      redirectUrl: "/",
+   
+    const newUser = new User({
+      name,
+      email,
+      password,
+      isVerified: true,
     });
+
+    await newUser.save();
+
+
+    req.session.userId = newUser._id;
+    delete req.session.tempUser;
+
+    res.json({ success: true, redirectUrl: '/' });
   } catch (err) {
-    console.error(" Verify OTP Error:", err);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
+    console.error('OTP verification error:', err);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
 
 
-
-
-
-const resendOtp = async (req, res) => {
+const resendOtp=async(req,res)=>{
   try {
-    console.log("resendOtp function triggered");
-    console.log("Session data:", req.session);
-
-    const userId = req.session.userId ;
-    console.log("Session userId:", userId);
-
-    if (!userId) {
-      return res.json({ success: false, message: "Session expired. Please sign up again." });
+    const tempUser=req.session.tempUser;
+    if(!tempUser || !tempUser.email){
+      return res.json({
+        success:false,
+        message:'session expired.Please sign up again.',
+      })
     }
 
-    const user = await User.findById(userId);
-    console.log("User fetched:", user?.email);
+    const newOtp=generateOtp()
+    const otpExpires=Date.now() + 10*60*1000;
+    
+    req.session.tempUser.otp=newOtp;
+    req.session.tempUser.otpExpires=otpExpires;
 
-    if (!user) {
-      return res.json({ success: false, message: "User not found." });
-    }
-
-    const otp = generateOtp();
-    console.log('Generated OTP:', otp);
-
-    user.otp = otp;
-    user.otpExpires = Date.now() + 10 * 60 * 1000;
-    await user.save();
 
     await transporter.sendMail({
-      to: user.email,
-      subject: 'Your New OTP for Signup',
-      text: `Your new OTP is ${otp}. It is valid for 10 minutes.`,
-    });
+      to:tempUser.email,
+      subject:'New otp for signup',
+      text:`New OTP is ${newOtp}.Valid for 10 minutes`
+    })
 
-    console.log("OTP email sent");
-    return res.json({ success: true, message: "OTP resent successfully" });
+    console.log('Resend OTP to:', tempUser.email);
+    console.log('New otp is:',newOtp)
+    return res.json({success:true,message:'OTP resent succesfully'})
 
   } catch (error) {
-    console.error('Error in resendOtp:', error.stack);
-    return res.json({ success: false, message: "Server error. Please try again later." });
+    console.error('error in resendOtp',otp)
+    return res.json({
+      success:false,
+      message:'server error,try again'
+    })
+    
   }
-};
+}
+
+
+
+
+// const resendOtp = async (req, res) => {
+//   try {
+  
+//     const userId = req.session.userId ;
+    
+
+//     if (!userId) {
+//       return res.json({ success: false, message: "Session expired. Please sign up again." });
+//     }
+
+//     const user = await User.findById(userId);
+//     console.log("User fetched:", user?.email);
+
+//     if (!user) {
+//       return res.json({ success: false, message: "User not found." });
+//     }
+
+//     const otp = generateOtp();
+//     console.log('Generated OTP:', otp);
+
+//     user.otp = otp;
+//     user.otpExpires = Date.now() + 10 * 60 * 1000;
+//     await user.save();
+
+//     await transporter.sendMail({
+//       to: user.email,
+//       subject: 'Your New OTP for Signup',
+//       text: `Your new OTP is ${otp}. It is valid for 10 minutes.`,
+//     });
+
+//     console.log("OTP email sent");
+//     return res.json({ success: true, message: "OTP resent successfully" });
+
+//   } catch (error) {
+//     console.error('Error in resendOtp:', error.stack);
+//     return res.json({ success: false, message: "Server error. Please try again later." });
+//   }
+// };
 
 
 
@@ -261,6 +255,8 @@ const pageNotFound = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+
 
 // Load Login Page
 const loadLogin = async (req, res) => {
@@ -369,7 +365,7 @@ const logout = async (req, res) => {
 
 
 const loadShop = async (req, res) => {
-  console.log('loadShop route accessed');
+  
   try {
   
     const page = parseInt(req.query.page) || 1;

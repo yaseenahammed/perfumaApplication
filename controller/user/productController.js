@@ -8,9 +8,7 @@ const Wishlist = require('../../models/wishlistSchema');
 const productDetails = async (req, res) => {
   try {
     const userId = req.session.userId;
-    console.log('productDetails - Session:', req.session);
    
-
   let userData = null;
 if (userId && mongoose.isValidObjectId(userId)) {
   userData = await User.findById(userId).lean();
@@ -83,6 +81,12 @@ if (userId && mongoose.isValidObjectId(userId)) {
     res.redirect('/shop');
   }
 };
+
+
+
+
+
+
 
 const MAX_ALLOWED_QUANTITY = 5;
 

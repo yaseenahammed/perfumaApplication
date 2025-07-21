@@ -1,308 +1,368 @@
-
-        
-
-
 <%- include("../../views/partials/admin/header") %>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-  
-       .pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 30px 0;
-  flex-wrap: wrap;
-  gap: 8px;
-}
 
-.pagination-container a,
-.pagination-container span {
-  display: inline-block;
-  padding: 8px 14px;
-  font-size: 14px;
-  text-decoration: none;
-  color: #007bff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background-color: #fff;
-  transition: all 0.2s ease-in-out;
-}
-
-.pagination-container a:hover {
-  background-color: #007bff;
-  color: #fff;
-  border-color: #007bff;
-}
-
-.pagination-container .current-page {
-  background-color: #007bff;
-  color: #fff;
-  border-color: #007bff;
-  font-weight: bold;
-  cursor: default;
-}
-   
-</style>
-<section class="content-main">
-  <div class="content-header">
-    <div>
-      <h2 class="content-title card-title">Brands</h2>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-3">
-       
-     <form id="addBrandForm" enctype="multipart/form-data" method="POST" action="/admin/addBrand">
-
-  <div class="mb-4">
-    <label for="product_name" class="form-label">Brand Name</label>
-    <input type="text" name="name" placeholder="Type here" class="form-control" />
-  </div>
-  <label for="product_name" class="form-label">Brand Image</label>
-  <div class="input-upload">
-    <img src="" alt=""/>
-    <input class="form-control border" name="image" type="file" />
-  </div>
-  <div class="d-grid">
-    <button class="btn btn-primary mt-20" type="submit">
-      Add Brand
-    </button>
-  </div>
-</form>
-
-        </div>
-        <div class="col-md-7 ml-105">
-          <div class="table-responsive">
-            <table class="table table-hover">
-              <thead>
-                <tr>
-                  <th>Brand</th>
-                  <th>Logo</th>
-                  <th>Status</th>
-                  <th>Block/Unblock/Delete</th>
-                </tr>
-              </thead>
-              <% data.reverse().forEach((brand) => { %>
-  <tr id="brand-row-<%= brand._id %>">
-    <td><%= brand.name %></td>
-    <td>
-      <img src="<%= brand.brandImage.startsWith('http') ? brand.brandImage : '/uploads/re-image/' + brand.brandImage %>" alt="<%= brand.name %>" width="40" />
-
-
-    </td>
-    <td id="blockBtn-<%=brand._id%>">
-      <% if (brand.isBlocked) { %>
-        <span class="badge bg-danger">Blocked</span>
-      <% } else { %>
-        <span class="badge bg-success">Active</span>
-      <% } %>
-    </td>
-    <td id="blockStatus-<%=brand._id%>">
-      <% if (!brand.isBlocked) { %>
-        
-
-       <button onclick="toggleBlockStatus('<%= brand._id %>', true)" class="btn btn-danger">Block</button>
-
-      <% } else { %>
-       <button onclick="toggleBlockStatus('<%= brand._id %>', false)" class="btn btn-success">Unblock</button>
-
-      <% } %>
-       <button onclick="deleteBrand('<%= brand._id %>')" class="btn btn-danger" style="padding-left: 15px;">Delete</button>
-       
-
-    </td>
-  </tr>
-<% }) %>
-
-</tbody>
-
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-   <!-- Pagination -->
-    <div class="pagination-container">
-      <% if (currentPage > 1) { %>
-      <a href="?page=<%= currentPage - 1 %>">&laquo; Previous</a>
-      <% } %> <% for (let i = 1; i <= totalPages; i++) { %> <% if (i ===
-      currentPage) { %>
-      <span class="current-page"><%= i %></span>
-      <% } else { %>
-      <a href="?page=<%= i %>"><%= i %></a>
-      <% } %> <% } %> <% if (currentPage < totalPages) { %>
-      <a href="?page=<%= currentPage + 1 %>">Next &raquo;</a>
-      <% } %>
-    </div>
-</section>
-<%- include("../../views/partials/admin/footer") %>
-
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
-  <script>
-document.getElementById('addBrandForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
-
-  const formData = new FormData(this);
-  try {
-    const response = await fetch('/admin/addBrand', {
-      method: 'POST',
-      body: formData,
-    });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      Swal.fire({
-        icon: 'success',
-        title: 'Brand added',
-        text: result.message || 'Brand added successfully!',
-      });
-
-      const brand = result.brand;
-      const tableBody = document.querySelector('table tbody');
-      const newRow = document.createElement('tr');
-      newRow.id = `brand-row-${brand._id}`;
-
-      newRow.innerHTML = `
-        <td>${brand.name}</td>
-        <td>
-          <img src="${brand.brandImage.startsWith('http') ? brand.brandImage : '/uploads/re-image/' + brand.brandImage}" alt="${brand.name}" width="40" />
-        </td>
-        <td id="blockBtn-${brand._id}">
-          <span class="badge bg-success">Active</span>
-        </td>
-        <td id="blockStatus-${brand._id}">
-          <button onclick="toggleBlockStatus('${brand._id}', true)" class="btn btn-danger">Block</button>
-          <button onclick="deleteBrand('${brand._id}')" class="btn btn-danger" style="padding-left: 15px;">Delete</button>
-        </td>
-      `;
-
-      tableBody.prepend(newRow);
-      this.reset(); 
-
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: result.error || 'Something went wrong',
-      });
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                animation: {
+                    'fade-in': 'fadeIn 0.5s ease-in-out',
+                    'slide-up': 'slideUp 0.6s ease-out',
+                },
+                keyframes: {
+                    fadeIn: {
+                        '0%': { opacity: '0' },
+                        '100%': { opacity: '1' },
+                    },
+                    slideUp: {
+                        '0%': { transform: 'translateY(30px)', opacity: '0' },
+                        '100%': { transform: 'translateY(0)', opacity: '1' },
+                    }
+                }
+            }
+        }
     }
-
-  } catch (error) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: error.message || 'Something went wrong'
-    });
-  }
-});
-    
-  async function toggleBlockStatus(brandId, block) {
-    const confirmText = block
-      ? "Are you sure you want to block this brand?"
-      : "Are you sure you want to unblock this brand?";
-
-    const result = await Swal.fire({
-      title: confirmText,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes",
-      cancelButtonText: "Cancel",
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      const response = await fetch(`/admin/${block ? "blockBrand" : "unblockBrand"}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: brandId }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error || "Failed");
-
-    
-      const statusCell = document.getElementById(`blockBtn-${brandId}`);
-      const actionCell = document.getElementById(`blockStatus-${brandId}`);
-
-     if (block) {
-  statusCell.innerHTML = `<span class="badge bg-danger">Blocked</span>`;
-  actionCell.innerHTML = `
-    <button onclick="toggleBlockStatus('${brandId}', false)" class="btn btn-success">Unblock</button>
-    <button onclick="deleteBrand('${brandId}')" class="btn btn-danger" style="padding-left: 15px;">Delete</button>`;
-} else {
-  statusCell.innerHTML = `<span class="badge bg-success">Active</span>`;
-  actionCell.innerHTML = `
-    <button onclick="toggleBlockStatus('${brandId}', true)" class="btn btn-danger">Block</button>
-    <button onclick="deleteBrand('${brandId}')" class="btn btn-danger" style="padding-left: 15px;">Delete</button>`;
-}
-
-
-      Swal.fire({
-        icon: "success",
-        title: block ? "Brand Blocked" : "Brand Unblocked",
-        text: data.message || "Operation successful!",
-      });
-
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error.message || "Something went wrong!",
-      });
-    }
-  }
-
-
-    async function deleteBrand(brandId) {
-    const result = await Swal.fire({
-      title: "Are you sure you want to delete this brand?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, delete it",
-      cancelButtonText: "Cancel"
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      const response = await fetch("/admin/deleteBrand", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: brandId })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error || "Delete failed");
-
-    
-      const row = document.getElementById(`brand-row-${brandId}`);
-      if (row) row.remove();
-
-      Swal.fire({
-        icon: "success",
-        title: "Deleted!",
-        text: data.message || "Brand deleted successfully.",
-      });
-
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error.message || "Something went wrong.",
-      });
-    }
-  }
 </script>
 
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<style>
+    /* Custom button styles */
+    .btn-add, .btn-block, .btn-unblock, .btn-delete {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-add:hover, .btn-block:hover, .btn-unblock:hover, .btn-delete:hover {
+        transform: scale(1.05);
+    }
+    
+    .table-row {
+        transition: all 0.3s ease;
+    }
+    
+    .table-row:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+</style>
 
+<body class="bg-gray-50">
+    <!-- Page Header -->
+    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
+        <div class="relative z-10 container mx-auto px-4 text-center text-white">
+            <h1 class="text-4xl lg:text-5xl font-bold mb-4 animate-fade-in">Brands</h1>
+            <nav class="flex items-center justify-center space-x-2 text-lg">
+                <a href="/admin" class="text-gray-300 hover:text-white transition duration-200">Admin Dashboard</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <span class="text-amber-400">Brands</span>
+            </nav>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-list text-amber-500 mr-3"></i>
+                            Brands
+                        </h2>
+                    </div>
+
+                    <!-- Search Bar -->
+                    <header class="text-center mb-8">
+                        <form action="/admin/brands" method="get" class="d-inline">
+                            <div class="flex justify-center">
+                                <div class="relative w-full max-w-md">
+                                    <input 
+                                        type="text" 
+                                        class="w-full border border-gray-200 rounded-full py-3 px-6 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                                        placeholder="Search brands..." 
+                                        name="search"
+                                    >
+                                    <button 
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full hover:from-amber-600 hover:to-orange-600 transition duration-300"
+                                        type="submit"
+                                    >
+                                        Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </header>
+
+                    <!-- Form and Table -->
+                    <div class="grid lg:grid-cols-3 gap-8">
+                        <!-- Form Section -->
+                        <div class="lg:col-span-1">
+                            <form id="addBrandForm" enctype="multipart/form-data" method="POST" action="/admin/addBrand">
+                                <div class="mb-6">
+                                    <label for="product_name" class="block text-gray-700 font-semibold mb-2">Brand Name</label>
+                                    <input 
+                                        type="text" 
+                                        name="name" 
+                                        placeholder="Type here" 
+                                        class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+                                    />
+                                </div>
+                                <div class="mb-6">
+                                    <label class="block text-gray-700 font-semibold mb-2">Brand Image</label>
+                                    <input 
+                                        class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                                        name="image" 
+                                        type="file"
+                                    />
+                                </div>
+                                <div class="mt-6">
+                                    <button 
+                                        class="btn-add w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center"
+                                        type="submit"
+                                    >
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Add Brand
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Table Section -->
+                        <div class="lg:col-span-2">
+                            <div class="overflow-x-auto">
+                                <table class="w-full table-auto">
+                                    <thead>
+                                        <tr class="bg-gray-100 text-gray-900 text-left">
+                                            <th class="px-6 py-4 font-bold">Brand</th>
+                                            <th class="px-6 py-4 font-bold">Logo</th>
+                                            <th class="px-6 py-4 font-bold">Status</th>
+                                            <th class="px-6 py-4 font-bold">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% data.reverse().forEach((brand) => { %>
+                                            <tr id="brand-row-<%= brand._id %>" class="table-row bg-gray-50 border-b border-gray-200 hover:bg-gray-100">
+                                                <td class="px-6 py-4 text-gray-900"><%= brand.name %></td>
+                                                <td class="px-6 py-4">
+                                                    <img 
+                                                        src="<%= brand.brandImage.startsWith('http') ? brand.brandImage : '/Uploads/re-image/' + brand.brandImage %>" 
+                                                        alt="<%= brand.name %>" 
+                                                        class="w-10 h-10 object-cover"
+                                                    />
+                                                </td>
+                                                <td id="blockBtn-<%= brand._id %>" class="px-6 py-4">
+                                                    <% if (brand.isBlocked) { %>
+                                                        <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">Blocked</span>
+                                                    <% } else { %>
+                                                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Active</span>
+                                                    <% } %>
+                                                </td>
+                                                <td id="blockStatus-<%= brand._id %>" class="px-6 py-4 flex gap-2">
+                                                    <% if (!brand.isBlocked) { %>
+                                                        <button 
+                                                            onclick="toggleBlockStatus('<%= brand._id %>', true)" 
+                                                            class="btn-block bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300"
+                                                        >
+                                                            Block
+                                                        </button>
+                                                    <% } else { %>
+                                                        <button 
+                                                            onclick="toggleBlockStatus('<%= brand._id %>', false)" 
+                                                            class="btn-unblock bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300"
+                                                        >
+                                                            Unblock
+                                                        </button>
+                                                    <% } %>
+                                                    <button 
+                                                        onclick="deleteBrand('<%= brand._id %>')" 
+                                                        class="btn-delete bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container mt-8 flex justify-center items-center gap-2">
+                        <% if (currentPage > 1) { %>
+                            <a href="?page=<%= currentPage - 1 %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">« Previous</a>
+                        <% } %>
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <% if (i === currentPage) { %>
+                                <span class="current-page bg-amber-500 text-white border-amber-500 px-4 py-2 rounded-lg font-bold"><%= i %></span>
+                            <% } else { %>
+                                <a href="?page=<%= i %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200"><%= i %></a>
+                            <% } %>
+                        <% } %>
+                        <% if (currentPage < totalPages) { %>
+                            <a href="?page=<%= currentPage + 1 %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">Next »</a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    document.getElementById('addBrandForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        try {
+            const response = await fetch('/admin/addBrand', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Brand added',
+                    text: result.message || 'Brand added successfully!',
+                });
+
+                const brand = result.brand;
+                const tableBody = document.querySelector('table tbody');
+                const newRow = document.createElement('tr');
+                newRow.id = `brand-row-${brand._id}`;
+                newRow.classList.add('table-row', 'bg-gray-50', 'border-b', 'border-gray-200', 'hover:bg-gray-100');
+
+                newRow.innerHTML = `
+                    <td class="px-6 py-4 text-gray-900">${brand.name}</td>
+                    <td class="px-6 py-4">
+                        <img src="${brand.brandImage.startsWith('http') ? brand.brandImage : '/Uploads/re-image/' + brand.brandImage}" alt="${brand.name}" class="w-10 h-10 object-cover" />
+                    </td>
+                    <td id="blockBtn-${brand._id}" class="px-6 py-4">
+                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Active</span>
+                    </td>
+                    <td id="blockStatus-${brand._id}" class="px-6 py-4 flex gap-2">
+                        <button onclick="toggleBlockStatus('${brand._id}', true)" class="btn-block bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300">Block</button>
+                        <button onclick="deleteBrand('${brand._id}')" class="btn-delete bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300">Delete</button>
+                    </td>
+                `;
+
+                tableBody.prepend(newRow);
+                this.reset(); 
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.error || 'Something went wrong',
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Something went wrong'
+            });
+        }
+    });
+    
+    async function toggleBlockStatus(brandId, block) {
+        const confirmText = block
+            ? "Are you sure you want to block this brand?"
+            : "Are you sure you want to unblock this brand?";
+
+        const result = await Swal.fire({
+            title: confirmText,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            cancelButtonText: "Cancel",
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const response = await fetch(`/admin/${block ? "blockBrand" : "unblockBrand"}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: brandId }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.error || "Failed");
+
+            const statusCell = document.getElementById(`blockBtn-${brandId}`);
+            const actionCell = document.getElementById(`blockStatus-${brandId}`);
+
+            if (block) {
+                statusCell.innerHTML = `<span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">Blocked</span>`;
+                actionCell.innerHTML = `
+                    <button onclick="toggleBlockStatus('${brandId}', false)" class="btn-unblock bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300">Unblock</button>
+                    <button onclick="deleteBrand('${brandId}')" class="btn-delete bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300">Delete</button>`;
+            } else {
+                statusCell.innerHTML = `<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Active</span>`;
+                actionCell.innerHTML = `
+                    <button onclick="toggleBlockStatus('${brandId}', true)" class="btn-block bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300">Block</button>
+                    <button onclick="deleteBrand('${brandId}')" class="btn-delete bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300">Delete</button>`;
+            }
+
+            Swal.fire({
+                icon: "success",
+                title: block ? "Brand Blocked" : "Brand Unblocked",
+                text: data.message || "Operation successful!",
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: error.message || "Something went wrong!",
+            });
+        }
+    }
+
+    async function deleteBrand(brandId) {
+        const result = await Swal.fire({
+            title: "Are you sure you want to delete this brand?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete it",
+            cancelButtonText: "Cancel"
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const response = await fetch("/admin/deleteBrand", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: brandId })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.error || "Delete failed");
+
+            const row = document.getElementById(`brand-row-${brandId}`);
+            if (row) row.remove();
+
+            Swal.fire({
+                icon: "success",
+                title: "Deleted!",
+                text: data.message || "Brand deleted successfully.",
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: error.message || "Something went wrong.",
+            });
+        }
+    }
+    </script>
+
+    <%- include("../../views/partials/admin/footer") %>
+</body>

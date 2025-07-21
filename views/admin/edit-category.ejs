@@ -1,71 +1,146 @@
 <%- include("../../views/partials/admin/header") %>
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6 mt-60">
-            <form id="editCategoryForm" method="post" action="/admin/editCategory">
-  <input type="hidden" name="id" value="<%= category._id %>">
 
-  <div class="d-grid text-end mt-30 col-md-5">
-    <button class="btn btn-primary" type="submit">Update category</button>
-  </div>
-
-  <div class="mb-4 mt-30">
-    <label class="form-label">Name</label>
-    <input type="text" name="categoryName" value="<%= category.name %>" class="form-control border" />
-  </div>
-
-  <div class="mb-4">
-    <label class="form-label">Description</label>
-    <textarea name="description" class="form-control border"><%= category.description %></textarea>
-  </div>
-</form>
-
-        </div>
-    </div>
-</div>
-<%- include("../../views/partials/admin/footer") %>
-
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
 <script>
-  document.getElementById('editCategoryForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const form = this;
-    const formData = new FormData(form);
-
-    try {
-      const response = await fetch('/admin/editCategory', {
-        method: 'POST',
-        body: new URLSearchParams(formData)
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Category Updated',
-          text: result.message,
-          timer: 1500,
-          showConfirmButton: false
-        }).then(() => {
-          window.location.href = '/admin/category';
-        });
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: result.error
-        });
-      }
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Server Error',
-        text: 'Something went wrong. Please try again.'
-      });
+    tailwind.config = {
+        theme: {
+            extend: {
+                animation: {
+                    'fade-in': 'fadeIn 0.5s ease-in-out',
+                    'slide-up': 'slideUp 0.6s ease-out',
+                },
+                keyframes: {
+                    fadeIn: {
+                        '0%': { opacity: '0' },
+                        '100%': { opacity: '1' },
+                    },
+                    slideUp: {
+                        '0%': { transform: 'translateY(30px)', opacity: '0' },
+                        '100%': { transform: 'translateY(0)', opacity: '1' },
+                    }
+                }
+            }
+        }
     }
-  });
 </script>
 
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* Custom button styles */
+    .btn-update {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-update:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<body class="bg-gray-50">
+    <!-- Page Header -->
+    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
+        <div class="relative z-10 container mx-auto px-4 text-center text-white">
+            <h1 class="text-4xl lg:text-5xl font-bold mb-4 animate-fade-in">Edit Category</h1>
+            <nav class="flex items-center justify-center space-x-2 text-lg">
+                <a href="/admin" class="text-gray-300 hover:text-white transition duration-200">Admin Dashboard</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <a href="/admin/category" class="text-gray-300 hover:text-white transition duration-200">Categories</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <span class="text-amber-400">Edit Category</span>
+            </nav>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-md mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-edit text-amber-500 mr-3"></i>
+                            Edit Category
+                        </h2>
+                    </div>
+
+                    <form id="editCategoryForm" method="post" action="/admin/editCategory">
+                        <input type="hidden" name="id" value="<%= category._id %>">
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-semibold mb-2">Name</label>
+                            <input 
+                                type="text" 
+                                name="categoryName" 
+                                value="<%= category.name %>" 
+                                class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+                            >
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-semibold mb-2">Description</label>
+                            <textarea 
+                                name="description" 
+                                class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                                rows="4"
+                            ><%= category.description %></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button 
+                                class="btn-update bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center ml-auto"
+                                type="submit"
+                            >
+                                <i class="fas fa-save mr-2"></i>
+                                Update Category
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    document.getElementById('editCategoryForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const form = this;
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('/admin/editCategory', {
+                method: 'POST',
+                body: new URLSearchParams(formData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Category Updated',
+                    text: result.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = '/admin/category';
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.error
+                });
+            }
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Server Error',
+                text: 'Something went wrong. Please try again.'
+            });
+        }
+    });
+    </script>
+
+    <%- include("../../views/partials/admin/footer") %>
+</body>

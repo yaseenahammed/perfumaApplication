@@ -120,14 +120,19 @@ const addAddress = async (req, res) => {
 
     const newAddress = { phone, street, city, state, zip, country };
 
-    const isDigitsOnly = /^\d+$/;
+    const isDigitsOnly = /^(?!([0])\1{9})\d{10}$/;
+    const isValidZip = /^(?!([0-9])\1{5})\d{6}$/;
 
 if (!isDigitsOnly.test(phone) || phone.length !== 10) {
-  return res.status(400).send("Invalid phone number");
+  req.flash('error', 'Invalid phone number');
+
 }
 
-if (!isDigitsOnly.test(zip) || zip.length !== 6) {
-  return res.status(400).send("Invalid pincode");
+
+
+if (!isValidZip.test(zip) || zip.length !== 6) {
+  
+   req.flash('error', 'Invalid pincode');
 }
 
 
@@ -167,13 +172,14 @@ const editAddress = async (req, res) => {
     }
 
 
-    const isDigitsOnly = /^\d+$/;
+    const isDigitsOnly = /^(?!([0])\1{9})\d{10}$/;
+    const isValidZip = /^(?!([0-9])\1{5})\d{6}$/;
 
 if (!isDigitsOnly.test(phone) || phone.length !== 10) {
   return res.status(400).send("Invalid phone number");
 }
 
-if (!isDigitsOnly.test(zip) || zip.length !== 6) {
+if (!isValidZip.test(zip) || zip.length !== 6) {
   return res.status(400).send("Invalid pincode");
 }
 
@@ -216,26 +222,61 @@ const deleteAddress = async (req, res) => {
 
 const sendEmailOtp = async (req, res) => {
   try {
-    const { newEmail } = req.body;
+    const { email, type } = req.body;
     const user = await User.findById(req.session.userId);
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    req.session.otp = otp;
-    req.session.newEmail = newEmail;
-    req.session.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes expiry
+    // Validate type
+    if (!['current', 'new'].includes(type)) {
+      return res.status(400).json({ message: "Invalid type parameter" });
+    }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    // For current email, verify it matches the user's email
+    if (type === 'current' && email !== user.email) {
+      return res.status(400).json({ message: "Email does not match current user email" });
+    }
+
+    // For new email, check if it's the same as the current email or already in use
+    if (type === 'new') {
+      if (email === user.email) {
+        return res.status(400).json({ message: "New email cannot be the same as current email" });
+      }
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(409).json({ message: "This email is already in use" });
+      }
+    }
+
+    // Generate and store OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const sessionKey = type === 'current' ? 'currentOtp' : 'newOtp';
+    req.session[sessionKey] = {
+      otp,
+      email,
+      expires: Date.now() + 10 * 60 * 1000, // 10 minutes expiry
+    };
+
+    console.log(`OTP for ${type} email:`, otp);
+
+    // Send OTP email
     const mailOptions = {
       from: process.env.NODEMAILER_EMAIL,
-      to: newEmail,
+      to: email,
       subject: 'Email Verification OTP',
-      text: `Your OTP for email verification is ${otp}. It expires in 10 minutes.`,
+      text: `Your OTP for ${type === 'current' ? 'verifying your current email' : 'updating your email'} is ${otp}. It expires in 10 minutes.`,
     };
 
     await transporter.sendMail(mailOptions);
-    res.status(200).json({ message: "OTP sent successfully" });
+    res.status(200).json({ message: `OTP sent to ${email}` });
   } catch (error) {
     console.error("Error in sendEmailOtp:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -244,51 +285,57 @@ const sendEmailOtp = async (req, res) => {
 
 const verifyEmailOtp = async (req, res) => {
   try {
-    const { otp } = req.body;
+    const { otp, type } = req.body;
     const user = await User.findById(req.session.userId);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (req.session.otp !== otp || Date.now() > req.session.otpExpires) {
+    // Validate type
+    if (!['current', 'new'].includes(type)) {
+      return res.status(400).json({ message: "Invalid type parameter" });
+    }
+
+    const sessionKey = type === 'current' ? 'currentOtp' : 'newOtp';
+    const storedOtp = req.session[sessionKey];
+
+    if (!storedOtp || storedOtp.otp !== otp || Date.now() > storedOtp.expires) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-  
-    const existingUser = await User.findOne({ email: req.session.newEmail });
-    if (existingUser) {
-      return res.status(409).json({ message: "This email is already in use" });
+    console.log(`Verifying OTP for ${type} email:`, otp);
+
+    if (type === 'current') {
+      // Current email verified, no email update needed
+      delete req.session[sessionKey];
+      return res.status(200).json({ message: "Current email verified successfully" });
     }
 
-    user.email = req.session.newEmail;
-
-   
-    delete req.session.otp;
-    delete req.session.newEmail;
-    delete req.session.otpExpires;
-
+    // For new email, update the user's email
+    user.email = storedOtp.email;
     await user.save();
-    console.log("your otp is:",req.session.otp)
+
+    // Clean up session
+    delete req.session[sessionKey];
 
     res.status(200).json({ message: "Email updated successfully" });
-
   } catch (error) {
     console.error("Error in verifyEmailOtp:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-
 const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
     const user = await User.findById(req.session.userId);
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Compare currentPassword against the hashed password in DB
+
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Current password is incorrect" });
@@ -301,7 +348,8 @@ const changePassword = async (req, res) => {
     user.password = await bcrypt.hash(newPassword, 12);
     await user.save();
 
-    res.redirect('/user-address');
+    
+    return res.status(200).json({ success: true, message: "Password changed successfully" });
   } catch (error) {
     console.error("Error in changePassword:", error);
     res.status(500).json({ message: "Internal Server Error" });

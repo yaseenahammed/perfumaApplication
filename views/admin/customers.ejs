@@ -1,102 +1,206 @@
-
-
 <%- include("../../views/partials/admin/header") %>
+
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                animation: {
+                    'fade-in': 'fadeIn 0.5s ease-in-out',
+                    'slide-up': 'slideUp 0.6s ease-out',
+                },
+                keyframes: {
+                    fadeIn: {
+                        '0%': { opacity: '0' },
+                        '100%': { opacity: '1' },
+                    },
+                    slideUp: {
+                        '0%': { transform: 'translateY(30px)', opacity: '0' },
+                        '100%': { transform: 'translateY(0)', opacity: '1' },
+                    }
+                }
+            }
+        }
+    }
+</script>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
-    .pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 30px 0;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.pagination-container a,
-.pagination-container span {
-  display: inline-block;
-  padding: 8px 14px;
-  font-size: 14px;
-  text-decoration: none;
-  color: #007bff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background-color: #fff;
-  transition: all 0.2s ease-in-out;
-}
-
-.pagination-container a:hover {
-  background-color: #007bff;
-  color: #fff;
-  border-color: #007bff;
-}
-
-.pagination-container .current-page {
-  background-color: #007bff;
-  color: #fff;
-  border-color: #007bff;
-  font-weight: bold;
-  cursor: default;
-}
-
+    /* Custom button styles */
+    .btn-block, .btn-unblock {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-block:hover, .btn-unblock:hover {
+        transform: scale(1.05);
+    }
+    
+    .table-row {
+        transition: all 0.3s ease;
+    }
+    
+    .table-row:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
 </style>
 
- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> 
+<body class="bg-gray-50">
+    <!-- Page Header -->
+    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
+        <div class="relative z-10 container mx-auto px-4 text-center text-white">
+            <h1 class="text-4xl lg:text-5xl font-bold mb-4 animate-fade-in">Customers</h1>
+            <nav class="flex items-center justify-center space-x-2 text-lg">
+                <a href="/admin" class="text-gray-300 hover:text-white transition duration-200">Admin Dashboard</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <span class="text-amber-400">Customers</span>
+            </nav>
+        </div>
+    </section>
 
-<div class="content-header row">
-    <div class="d-flex justify-content-between align-items-center">
-        <h2 class="content-title card-title">Customers</h2>
-       
-    </div>
-</div>         
-        </div>
-        
-            <header class="card-header text-center mb-20">
-                <form action="/admin/users" method="get" class="d-inline">
-                    <div class="input-group input-group-sm border border-1 border-grey rounded-pill" style="width: 500px; margin-left: 230px;">
-                        <input type="text" class="form-control border-0 rounded-pill" placeholder="Search customers..." name="search">
-                        <button class="btn  border-0" type="submit">Search</button>
+    <!-- Main Content -->
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-users text-amber-500 mr-3"></i>
+                            Customers
+                        </h2>
                     </div>
-                </form>
-            </header>
-            <div class="right mt-5">
-                <table class="table table-striped">
-                    <thead>
-                      <tr>
-                        <th scope="col"><b>Name</b></th>
-                        <th scope="col"><b>Email</b></th>
-                        <th scope="col"><b>Action</b></th>
-                      </tr>
-                    </thead>
-                       <tbody>
-                    <% for(let i=0; i < data.length; i++) { %>
-                        <tr>
-                            <td><%= data[i].name %></td>
-                            <td><%= data[i].email %></td>
-                            <td>
-                                <% if(data[i].isBlocked === false) { %>
-                                    <a href="/admin/blockCustomer?id=<%= data[i]._id %>" class="btn btn-danger btn-sm" style="width: 80px;" onclick="return confirmBlock()">Block</a>
-                                <% } else { %>
-                                    <a href="/admin/unblockCustomer?id=<%= data[i]._id %>" class="btn btn-success btn-sm" style="width: 80px;" onclick="return confirmUnblock()">Unblock</a>
+
+                    <!-- Search Bar -->
+                    <header class="text-center mb-8">
+                        <form action="/admin/users" method="get" class="d-inline">
+                            <div class="flex justify-center">
+                                <div class="relative w-full max-w-md">
+                                    <input 
+                                        type="text" 
+                                        class="w-full border border-gray-200 rounded-full py-3 px-6 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                                        placeholder="Search customers..." 
+                                        name="search"
+                                    >
+                                    <button 
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full hover:from-amber-600 hover:to-orange-600 transition duration-300"
+                                        type="submit"
+                                    >
+                                        Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </header>
+
+                    <!-- Customers Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-900 text-left">
+                                    <th class="px-6 py-4 font-bold">Name</th>
+                                    <th class="px-6 py-4 font-bold">Email</th>
+                                    <th class="px-6 py-4 font-bold">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% for(let i=0; i < data.length; i++) { %>
+                                    <tr class="table-row bg-gray-50 border-b border-gray-200 hover:bg-gray-100">
+                                        <td class="px-6 py-4 text-gray-900"><%= data[i].name %></td>
+                                        <td class="px-6 py-4 text-gray-600"><%= data[i].email %></td>
+                                        <td class="px-6 py-4">
+                                            <% if(data[i].isBlocked === false) { %>
+                                                <a 
+                                                    href="/admin/blockCustomer?id=<%= data[i]._id %>" 
+                                                    class="btn-block bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 inline-flex items-center"
+                                                    style="width: 100px;"
+                                                    onclick="return confirmBlock(event)"
+                                                >
+                                                    <i class="fas fa-ban mr-2"></i>
+                                                    Block
+                                                </a>
+                                            <% } else { %>
+                                                <a 
+                                                    href="/admin/unblockCustomer?id=<%= data[i]._id %>" 
+                                                    class="btn-unblock bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 inline-flex items-center"
+                                                    style="width: 100px;"
+                                                    onclick="return confirmUnblockWithSwal(event)"
+                                                >
+                                                    <i class="fas fa-check mr-2"></i>
+                                                    Unblock
+                                                </a>
+                                            <% } %>
+                                        </td>
+                                    </tr>
                                 <% } %>
-                            </td>
-                        </tr>
-                    <% } %>
-                </tbody>
-                  </table>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container mt-8">
+                        <% if (currentPage > 1) { %>
+                            <a href="?page=<%= currentPage - 1 %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">« Previous</a>
+                        <% } %>
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <% if (i === currentPage) { %>
+                                <span class="current-page bg-amber-500 text-white border-amber-500 px-4 py-2 rounded-lg font-bold"><%= i %></span>
+                            <% } else { %>
+                                <a href="?page=<%= i %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200"><%= i %></a>
+                            <% } %>
+                        <% } %>
+                        <% if (currentPage < totalPages) { %>
+                            <a href="?page=<%= currentPage + 1 %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">Next »</a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-         <!-- Pagination -->
-    <div class="pagination-container">
-      <% if (currentPage > 1) { %>
-      <a href="?page=<%= currentPage - 1 %>">&laquo; Previous</a>
-      <% } %> <% for (let i = 1; i <= totalPages; i++) { %> <% if (i ===
-      currentPage) { %>
-      <span class="current-page"><%= i %></span>
-      <% } else { %>
-      <a href="?page=<%= i %>"><%= i %></a>
-      <% } %> <% } %> <% if (currentPage < totalPages) { %>
-      <a href="?page=<%= currentPage + 1 %>">Next &raquo;</a>
-      <% } %>
-    </div>
-        
-        <%- include("../../views/partials/admin/footer") %>
+    </main>
+
+    <script>
+        function confirmBlock(event) {
+            event.preventDefault();
+            const url = event.currentTarget.getAttribute('href');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Do you want to block this customer?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, block it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+            return false;
+        }
+
+        function confirmUnblockWithSwal(event) {
+            event.preventDefault();
+            const url = event.currentTarget.getAttribute('href');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Do you want to unblock this customer?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, unblock it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+            return false;
+        }
+    </script>
+
+    <%- include("../../views/partials/admin/footer") %>
+</body>

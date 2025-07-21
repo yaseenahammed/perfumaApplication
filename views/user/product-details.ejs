@@ -519,24 +519,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="flex items-center space-x-3">
-                                        <!-- <div class="detail-qty">
-                                            <a href="#" class="qty-down"><i class="fas fa-minus"></i></a>
-                                            <span class="qty-val" id="similar-quantity-<%= similarProduct._id %>">1</span>
-                                            <a href="#" class="qty-up"><i class="fas fa-plus"></i></a>
-                                        </div> -->
-                                        <button 
-                                            type="button" 
-                                            class="button-add-to-cart flex-1" 
-                                            id="addToCartBtn-<%= similarProduct._id %>" 
-                                            data-product-id="<%= similarProduct._id %>" 
-                                            data-max-stock="<%= similarProduct.quantity %>" 
-                                            <%= similarProduct.quantity <= 0 || !similarProduct.isListed || similarProduct.isBlocked ? 'disabled' : '' %>
-                                        >
-                                            <i class="fas fa-shopping-cart mr-2"></i>
-                                            Add to Cart
-                                        </button>
-                                    </div>
+                                    
                                 </div>
                             </div>
                         <% }) %>
@@ -716,51 +699,6 @@ if (data.success) {
 }
 
 
-            // Similar products functionality
-            // document.querySelectorAll('[id^="addToCartBtn-"]').forEach(button => {
-            //     const productId = button.getAttribute('data-product-id');
-            //     const qtyVal = document.getElementById(`similar-quantity-${productId}`);
-            //     const qtyDown = button.closest('.product-cart-wrap').querySelector('.qty-down');
-            //     const qtyUp = button.closest('.product-cart-wrap').querySelector('.qty-up');
-            //     const maxStock = parseInt(button.getAttribute('data-max-stock')) || 0;
-
-            //     qtyDown.addEventListener('click', (e) => {
-            //         e.preventDefault();
-            //         let value = parseInt(qtyVal.textContent);
-            //         if (value > 1) qtyVal.textContent = value - 1;
-            //     });
-
-            //     qtyUp.addEventListener('click', (e) => {
-            //         e.preventDefault();
-            //         let value = parseInt(qtyVal.textContent);
-            //         if (value < maxStock) qtyVal.textContent = value + 1;
-            //     });
-
-            //     button.addEventListener('click', async () => {
-            //         const quantity = parseInt(qtyVal.textContent);
-            //         button.classList.add('loading');
-                    
-            //         try {
-            //             const response = await fetch(`/add-to-cart/${productId}`, {
-            //                 method: 'POST',
-            //                 headers: { 'Content-Type': 'application/json' },
-            //                 body: JSON.stringify({ quantity }),
-            //             });
-            //             const data = await response.json();
-                        
-            //             if (data.success) {
-            //                 alert(data.message || 'Product added to cart successfully!');
-            //                 window.location.href = '/cart';
-            //             } else {
-            //                 alert(data.error || 'Failed to add to cart');
-            //             }
-            //         } catch (error) {
-            //             alert('An error occurred. Please try again.');
-            //         } finally {
-            //             button.classList.remove('loading');
-            //         }
-            //     });
-            // });
 
             // Wishlist functionality
             window.addToWishlist = (productId) => {

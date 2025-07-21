@@ -6,6 +6,8 @@
     <title>Edit Profile - Perfuma</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -109,7 +111,7 @@
                         </div>
                     </form>
                     <div class="button-group flex justify-center gap-4 mt-6">
-                        <button class="btn-custom inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300" data-bs-toggle="modal" data-bs-target="#emailModal">
+                        <button class="btn-custom inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300" data-bs-toggle="modal" data-bs-target="#currentEmailModal">
                             <i class="fas fa-envelope mr-2"></i>
                             Update Email
                         </button>
@@ -123,16 +125,51 @@
         </div>
     </main>
 
-    <!-- Email Update Modal -->
-    <div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
+    <!-- Current Email Modal -->
+    <div class="modal fade" id="currentEmailModal" tabindex="-1" aria-labelledby="currentEmailModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="emailModalLabel">Update Email</h5>
+                    <h5 class="modal-title" id="currentEmailModalLabel">Verify Current Email</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="emailForm">
+                    <form id="currentEmailForm">
+                        <div class="mb-3">
+                            <label for="currentEmail" class="form-label text-gray-900">Current Email</label>
+                            <input type="email" class="form-control w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-amber-500 transition duration-300" id="currentEmail" name="currentEmail" required>
+                        </div>
+                        <button type="submit" class="btn-custom inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Send OTP
+                        </button>
+                    </form>
+                    <form id="currentOtpForm" style="display: none;">
+                        <div class="mb-3">
+                            <label for="currentOtp" class="form-label text-gray-900">Enter OTP</label>
+                            <input type="text" class="form-control w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-amber-500 transition duration-300" id="currentOtp" name="currentOtp" required>
+                        </div>
+                        <button type="submit" class="btn-custom inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
+                            <i class="fas fa-check mr-2"></i>
+                            Verify OTP
+                        </button>
+                    </form>
+                    <div id="currentEmailMessage" class="mt-3 text-sm font-medium"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Email Modal -->
+    <div class="modal fade" id="newEmailModal" tabindex="-1" aria-labelledby="newEmailModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newEmailModalLabel">Update Email</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newEmailForm">
                         <div class="mb-3">
                             <label for="newEmail" class="form-label text-gray-900">New Email</label>
                             <input type="email" class="form-control w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-amber-500 transition duration-300" id="newEmail" name="newEmail" required>
@@ -142,19 +179,17 @@
                             Send OTP
                         </button>
                     </form>
-                    <form id="otpForm" style="display: none;">
+                    <form id="newOtpForm" style="display: none;">
                         <div class="mb-3">
-                            <label for="otp" class="form-label text-gray-900">Enter OTP</label>
-                            <input type="text" class="form-control w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-amber-500 transition duration-300" id="otp" name="otp" required>
+                            <label for="newOtp" class="form-label text-gray-900">Enter OTP</label>
+                            <input type="text" class="form-control w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-amber-500 transition duration-300" id="newOtp" name="newOtp" required>
                         </div>
                         <button type="submit" class="btn-custom inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
                             <i class="fas fa-check mr-2"></i>
                             Verify OTP
                         </button>
                     </form>
-                    <div id="message" class="mt-3 text-sm font-medium <% if (message && message.includes('Error')) { %>text-red-500<% } else { %>text-green-500<% } %>">
-                        <% if (message) { %><%= message %><% } %>
-                    </div>
+                    <div id="newEmailMessage" class="mt-3 text-sm font-medium"></div>
                 </div>
             </div>
         </div>
@@ -169,7 +204,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="/change-password" method="POST">
+                    <form id="changePasswordForm" method="POST">
                         <div class="mb-3">
                             <label for="currentPassword" class="form-label text-gray-900">Current Password</label>
                             <input type="password" class="form-control w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:border-amber-500 transition duration-300" id="currentPassword" name="currentPassword" required>
@@ -199,41 +234,263 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
 
     <script>
-        $(document).ready(function() {
-            $('#emailForm').on('submit', function(e) {
-                e.preventDefault();
-                const newEmail = $('#newEmail').val();
-                $.ajax({
-                    url: '/send-email-otp',
-                    type: 'POST',
-                    data: { newEmail },
-                    success: function(response) {
-                        $('#message').text(response.message).removeClass('text-danger').addClass('text-success');
-                        $('#emailForm').hide();
-                        $('#otpForm').show();
-                    },
-                    error: function(xhr) {
-                        $('#message').text(xhr.responseJSON.message).addClass('text-danger');
-                    }
-                });
-            });
+        // Edit Profile Validation
+        document.querySelector('form[action="/edit-profile"]').addEventListener('submit', function (e) {
+            const nameInput = document.getElementById('name');
+            const profileImageInput = document.getElementById('profileImage');
+            const name = nameInput.value.trim();
+            const file = profileImageInput.files[0];
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            const nameRegex = /^[A-Za-z\s]{3,}$/;
 
-            $('#otpForm').on('submit', function(e) {
+            if (!nameRegex.test(name)) {
                 e.preventDefault();
-                const otp = $('#otp').val();
-                $.ajax({
-                    url: '/verify-email-otp',
-                    type: 'POST',
-                    data: { otp },
-                    success: function(response) {
-                        $('#message').text(response.message).removeClass('text-danger').addClass('text-success');
-                        setTimeout(() => location.reload(), 1000);
-                    },
-                    error: function(xhr) {
-                        $('#message').text(xhr.responseJSON.message).addClass('text-danger');
-                    }
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Name',
+                    text: 'Name must contain only letters and spaces, and be at least 3 characters long.',
                 });
+                return;
+            }
+
+            if (file && !allowedTypes.includes(file.type)) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Image Format',
+                    text: 'Only JPEG, PNG, or WEBP files are allowed.',
+                });
+                return;
+            }
+        });
+
+
+      
+    // jQuery Document Ready
+    $(document).ready(function () {
+        // Current Email Form
+        $('#currentEmailForm').on('submit', function (e) {
+            e.preventDefault();
+            const currentEmail = $('#currentEmail').val().trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(currentEmail)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Email',
+                    text: 'Please enter a valid email address.',
+                });
+                return;
+            }
+
+            $.ajax({
+                url: '/send-email-otp',
+                type: 'POST',
+                data: { email: currentEmail, type: 'current' }, // Add type parameter
+                success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'OTP Sent',
+                        text: response.message,
+                    });
+                    $('#currentEmailForm').hide();
+                    $('#currentOtpForm').show();
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: xhr.responseJSON?.message || 'Something went wrong!',
+                    });
+                }
             });
+        });
+
+        // Current OTP Form
+        $('#currentOtpForm').on('submit', function (e) {
+            e.preventDefault();
+            const otp = $('#currentOtp').val().trim();
+
+            if (otp.length !== 6) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid OTP',
+                    text: 'OTP should be 6 digits.',
+                });
+                return;
+            }
+
+            $.ajax({
+                url: '/verify-email-otp',
+                type: 'POST',
+                data: { otp, type: 'current' }, // Add type parameter
+                success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Verified',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    $('#currentEmailModal').modal('hide');
+                    setTimeout(() => $('#newEmailModal').modal('show'), 1500);
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Verification Failed',
+                        text: xhr.responseJSON?.message || 'Invalid OTP.'
+                    });
+                }
+            });
+        });
+
+        // New Email Form
+        $('#newEmailForm').on('submit', function (e) {
+            e.preventDefault();
+            const newEmail = $('#newEmail').val().trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(newEmail)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Email',
+                    text: 'Please enter a valid email address.',
+                });
+                return;
+            }
+
+            $.ajax({
+                url: '/send-email-otp',
+                type: 'POST',
+                data: { email: newEmail, type: 'new' }, // Add type parameter
+                success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'OTP Sent',
+                        text: response.message,
+                    });
+                    $('#newEmailForm').hide();
+                    $('#newOtpForm').show();
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: xhr.responseJSON?.message || 'Something went wrong!',
+                    });
+                }
+            });
+        });
+
+        // New OTP Form
+        $('#newOtpForm').on('submit', function (e) {
+            e.preventDefault();
+            const otp = $('#newOtp').val().trim();
+
+            if (otp.length !== 6) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid OTP',
+                    text: 'OTP should be 6 digits.',
+                });
+                return;
+            }
+
+            $.ajax({
+                url: '/verify-email-otp',
+                type: 'POST',
+                data: { otp, type: 'new' }, // Add type parameter
+                success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Email Updated',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    setTimeout(() => location.reload(), 1500);
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Verification Failed',
+                        text: xhr.responseJSON?.message || 'Invalid OTP.'
+                    });
+                }
+            });
+        });
+    });
+
+   
+
+        // Password Change Form
+        document.getElementById('changePasswordForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const currentPassword = document.getElementById('currentPassword').value.trim();
+            const newPassword = document.getElementById('newPassword').value.trim();
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+            // Client-side validation
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                return Swal.fire({
+                    icon: 'warning',
+                    title: 'All fields required',
+                    text: 'Please fill in all fields.'
+                });
+            }
+
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+            if (!passwordRegex.test(newPassword)) {
+                return Swal.fire({
+                    icon: 'warning',
+                    title: 'Weak Password',
+                    text: 'Password must contain letters and numbers and be at least 6 characters long.'
+                });
+            }
+
+            if (newPassword !== confirmPassword) {
+                return Swal.fire({
+                    icon: 'error',
+                    title: 'Password Mismatch',
+                    text: 'New password and confirmation do not match.'
+                });
+            }
+
+            try {
+                const response = await fetch('/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword, confirmPassword })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: data.message
+                    }).then(() => {
+                        window.location.href = '/user-address';
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: 'Something went wrong.'
+                });
+            }
         });
     </script>
 </body>

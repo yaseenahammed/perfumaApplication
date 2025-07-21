@@ -79,6 +79,19 @@ const addCategory = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 const addOffer = async (req, res) => {
   try {
     const { categoryId, offer } = req.body;
@@ -142,6 +155,9 @@ const listCategory = async (req, res) => {
     res.status(500).json({ error: 'Something went wrong.' });
   }
 };
+
+
+
 
 
 

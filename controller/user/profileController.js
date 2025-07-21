@@ -58,8 +58,7 @@ const getForgotPassword = async (req, res) => {
 const forgotEmailValid = async (req, res) => {
   try {
     const { email } = req.body;
-  console.log("body is:",req.body)
-    console.log('Email received in forgotEmailValid:', email);
+
     const findUser = await User.findOne({ email });
     if (findUser) {
       const otp = generateOtp();
@@ -71,6 +70,7 @@ req.session.userOtp = otp;
 req.session.otpCreatedAt = Date.now();
 
         console.log('Session set in forgotEmailValid:', req.session); 
+
         req.session.save(err => {
           if (err) {
             console.error('Session save error in forgotEmailValid:', err);
@@ -108,7 +108,7 @@ const verifyForgotPassOtp = async (req, res) => {
       return res.json({ success: false, message: 'Session expired or invalid' });
     }
 
-    // Check OTP expiration (60 seconds = 60 * 1000 ms)
+
     const otpAge = Date.now() - req.session.otpCreatedAt;
     if (otpAge > 60 * 1000) {
       delete req.session.userOtp;
@@ -141,9 +141,9 @@ const verifyForgotPassOtp = async (req, res) => {
 
 const getResetPassPage = async (req, res) => {
   try {
-    console.log('Session in getResetPassPage:', req.session);
+   
     if (!req.session.otpVerified || !req.session.userEmail) {
-      console.log('Redirecting to /forgot-password due to missing otpVerified or userEmail');
+   
       return res.redirect('/forgot-password');
     }
     res.render('reset-password', { user: null, message: '' });
@@ -204,8 +204,7 @@ const resetPassword = async (req, res) => {
 
 const resendOtp = async (req, res) => {
   try {
-    console.log('resendOtp triggered');
-    console.log('Session:', req.session);
+
 
     const email = req.session.userEmail;
     if (!email) {
@@ -218,7 +217,7 @@ const resendOtp = async (req, res) => {
 
     const findUser = await User.findOne({ email });
     if (!findUser) {
-      console.log('User not found for email:', email);
+   
       return res.render('forgot-password', {
         user: null,
         message: 'User with this email does not exist',

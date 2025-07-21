@@ -274,7 +274,61 @@
             this.querySelector('#editCountry').value = country;
         });
     });
+
+
+
+
+ 
+document.addEventListener('DOMContentLoaded', () => {
+  const addForm = document.getElementById('addAddressForm');
+
+  addForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const phone = this.phone.value.trim();
+    const street = this.street.value.trim();
+    const city = this.city.value.trim();
+    const state = this.state.value.trim();
+    const zip = this.zip.value.trim();
+    const country = this.country.value.trim();
+
+    const phoneRegex = /^(?!([0-9])\1{9})\d{10}$/;
+    const zipRegex = /^(?!([0-9])\1{5})\d{6}$/;
+
+    if (!phoneRegex.test(phone)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid Phone Number',
+        text: 'Phone must be exactly 10 digits and not all the same.',
+      });
+      return;
+    }
+
+    if (!zipRegex.test(zip)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid Pincode',
+        text: 'Pincode must be 6 digits and not all the same.',
+      });
+      return;
+    }
+
+    if (!street || !city || !state || !country) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Missing Fields',
+        text: 'Please fill in all address fields.',
+      });
+      return;
+    }
+
+    // All validations passed, submit form
+    this.submit();
+  });
+});
 </script>
+
+
 
 </body>
 </html>
