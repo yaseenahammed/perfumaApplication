@@ -6,6 +6,7 @@ const profileController = require('../controller/user/profileController');
 const userProfileController=require('../controller/user/userProfileController')
 const CartController=require('../controller/user/cartController')
 const checkoutController=require('../controller/user/checkoutController')
+const orderController=require('../controller/user/orderController')
 const passport = require('../config/passport');
 const uploads = require('../helpers/multer');
 const nocache=require('nocache')
@@ -102,8 +103,16 @@ router.delete('/cart/remove/:productId', userAuth,CartController.removeFromCart)
 router.get('/checkout',userAuth,checkoutController.getCheckout)
 router.post('/addressAdd',userAuth,checkoutController.addAddress)
 router.post('/addressEdit',userAuth,checkoutController.editAddress)
-router.get('/order-details/:orderId', userAuth, checkoutController.orderConfirm);
-router.post('/place-order',userAuth,checkoutController.placeOrder)
+
+
+//order
+router.get('/order-details/:orderId', userAuth,orderController.orderConfirm);
+router.post('/place-order',userAuth,orderController.placeOrder)
+router.get('/my-orders',userAuth,orderController.getOrders)
+router.post('/cancel-order/:orderID', userAuth, orderController.cancelOrder);
+// router.post('/return-order/:orderID', userAuth, orderController.returnOrder);
+// router.get('/download-invoice/:orderID', userAuth, orderController.downloadInvoice);
+
 
 
 module.exports = router;

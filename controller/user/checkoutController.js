@@ -109,16 +109,25 @@ const addAddress = async (req, res) => {
     const { phone, street, city, state, zip, country } = req.body;
 
     const isDigitsOnly = /^\d+$/;
-    if (!isDigitsOnly.test(phone) || phone.length !== 10) {
+    const isValidText = (text) => typeof text === 'string' && text.trim() !== '' && !/[^\w\s\-.,]/.test(text); // blocks symbols
+
+    // Phone validation
+    if (!isDigitsOnly.test(phone) || phone.length !== 10 || /^0+$/.test(phone)) {
       return res.status(400).send("Invalid phone number");
     }
 
-    if (!isDigitsOnly.test(zip) || zip.length !== 6) {
+    // Pincode validation
+    if (!isDigitsOnly.test(zip) || zip.length !== 6 || /^0+$/.test(zip)) {
       return res.status(400).send("Invalid pincode");
     }
 
-    const newAddress = { phone, street, city, state, zip, country };
+    // Address fields validation
+    const fieldsToValidate = [street, city, state, country];
+    if (!fieldsToValidate.every(isValidText)) {
+      return res.status(400).send("Invalid characters in address fields");
+    }
 
+    const newAddress = { phone, street, city, state, zip, country };
     let userAddress = await Address.findOne({ userId });
 
     if (!userAddress) {
@@ -135,22 +144,29 @@ const addAddress = async (req, res) => {
   }
 };
 
+
 const editAddress = async (req, res) => {
   try {
     const { addressId, phone, street, city, state, zip, country } = req.body;
     const userId = req.session.userId;
 
     const isDigitsOnly = /^\d+$/;
-    if (!isDigitsOnly.test(phone) || phone.length !== 10) {
+    const isValidText = (text) => typeof text === 'string' && text.trim() !== '' && !/[^\w\s\-.,]/.test(text); // no special chars
+
+    if (!isDigitsOnly.test(phone) || phone.length !== 10 || /^0+$/.test(phone)) {
       return res.status(400).send("Invalid phone number");
     }
 
-    if (!isDigitsOnly.test(zip) || zip.length !== 6) {
+    if (!isDigitsOnly.test(zip) || zip.length !== 6 || /^0+$/.test(zip)) {
       return res.status(400).send("Invalid pincode");
     }
 
-    const addressDoc = await Address.findOne({ userId });
+    const fieldsToValidate = [street, city, state, country];
+    if (!fieldsToValidate.every(isValidText)) {
+      return res.status(400).send("Invalid characters in address fields");
+    }
 
+    const addressDoc = await Address.findOne({ userId });
     if (!addressDoc) {
       return res.status(404).json({ message: "Address document not found" });
     }
@@ -170,94 +186,6 @@ const editAddress = async (req, res) => {
   }
 };
 
-const orderConfirm = async (req, res) => {
-  try {
-    const userId = req.session.userId;
-    const user = await User.findById(userId).lean();
-
-    const orderId = req.params.orderId;
-    const order = await Order.findById(orderId).populate('items.product').lean();
-
-    if (!order) {
-      req.flash('error', 'Order not found');
-      return res.redirect('/shop');
-    }
-
-    res.render('order-confirmation', {
-      user,
-      order
-    });
-  } catch (error) {
-    console.error('error in order details page', error);
-    res.redirect('/pageNotFound');
-  }
-};
-
-
-
-const placeOrder = async (req, res) => {
-  try {
-    const { addressId, paymentMethod } = req.body;
-    const userId = req.session.userId;
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'User not found' });
-    }
-
-    const addressDoc = await Address.findOne({ userId });
-    if (!addressDoc) {
-      return res.status(400).json({ success: false, message: 'Invalid address' });
-    }
-
-    const selectedAddress = addressDoc.addresses.find(addr => addr._id.toString() === addressId);
-    if (!selectedAddress) {
-      return res.status(400).json({ success: false, message: 'Selected address not found' });
-    }
-
-    const cart = await Cart.findOne({ user: userId }).populate('items.product');
-    if (!cart || !cart.items.length) {
-      return res.status(400).json({ success: false, message: 'Cart is empty' });
-    }
-
-    const items = cart.items.map(item => ({
-      product: item.product._id,
-      quantity: item.quantity,
-      price: item.product.salePrice,
-    }));
-
-    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const shipping = 499;
-    const tax = 599;
-    const discount = 0;
-    const total = subtotal + shipping + tax - discount;
-
-    const method = paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod;
-
-    const order = new Order({
-      user: user._id,
-      address: selectedAddress,
-      paymentMethod: method,
-      items,
-      subtotal,
-      shipping,
-      tax,
-      discount,
-      totalAmount: total,
-      status: 'Confirmed',
-    });
-
-    await order.save();
-    await Cart.findOneAndUpdate({ user: user._id }, { items: [] });
-
-    res.status(200).json({ success: true, orderId: order._id });
-
-  } catch (error) {
-    console.error('Error placing order:', error.stack);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
 
    
 
@@ -266,6 +194,5 @@ module.exports = {
   getCheckout,
   addAddress,
   editAddress,
-  orderConfirm,
-  placeOrder
+ 
 };

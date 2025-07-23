@@ -6,6 +6,8 @@
     <title>Checkout - Perfuma</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     
     <script>
         tailwind.config = {
@@ -434,83 +436,130 @@
 
             // --- Add New Address Functionality ---
             addNewAddressBtn.addEventListener('click', () => {
-                addAddressForm.reset();
-                openModal(addAddressModal, addAddressContent);
+    addAddressForm.reset();
+    openModal(addAddressModal, addAddressContent);
+});
+
+addAddressForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(addAddressForm);
+    const addressData = Object.fromEntries(formData.entries());
+
+    const phone = addressData.phone.trim();
+    const zip = addressData.zip.trim();
+    const street = addressData.street.trim();
+    const city = addressData.city.trim();
+    const state = addressData.state.trim();
+    const country = addressData.country.trim();
+
+    // Simple regex for validation
+    const digitOnly = /^\d+$/;
+    const textValid = /^[a-zA-Z0-9\s,.'-]{2,}$/;
+
+    if (!digitOnly.test(phone) || phone.length !== 10 || /^0+$/.test(phone)) {
+        return Swal.fire("Invalid", "Phone must be 10 digits and not all zeroes.", "error");
+    }
+
+    if (!digitOnly.test(zip) || zip.length !== 6 || /^0+$/.test(zip)) {
+        return Swal.fire("Invalid", "Pincode must be 6 digits and not all zeroes.", "error");
+    }
+
+    if (!textValid.test(street) || !textValid.test(city) || !textValid.test(state) || !textValid.test(country)) {
+        return Swal.fire("Invalid", "Please enter valid address details.", "error");
+    }
+
+    try {
+        const response = await fetch('/addressAdd', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(addressData)
+        });
+
+        if (response.ok) {
+            Swal.fire("Success", "Address added successfully!", "success").then(() => {
+                closeModal(addAddressModal, addAddressContent);
+                window.location.reload();
             });
+        } else {
+            const errorData = await response.json();
+            Swal.fire("Failed", errorData.message || "Unknown error", "error");
+        }
+    } catch (error) {
+        console.error('Error adding address:', error);
+        Swal.fire("Error", "An error occurred while adding the address.", "error");
+    }
+});
 
-            addAddressForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
-                const formData = new FormData(addAddressForm);
-                const addressData = Object.fromEntries(formData.entries());
+// --- Edit Address ---
+document.querySelectorAll('.edit-address-btn').forEach(button => {
+    button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const address = event.currentTarget.dataset;
 
-                try {
-                    const response = await fetch('/addressAdd', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(addressData)
-                    });
+        editAddressIdInput.value = address.id;
+        editStreetInput.value = address.street;
+        editLocalityInput.value = address.country;
+        editCityInput.value = address.city;
+        editStateInput.value = address.state;
+        editPincodeInput.value = address.zip;
+        editPhoneInput.value = address.phone;
 
-                    if (response.ok) {
-                        alert('Address added successfully!');
-                        closeModal(addAddressModal, addAddressContent);
-                        window.location.reload();
-                    } else {
-                        const errorData = await response.json();
-                        alert(`Failed to add address: ${errorData.message || 'Unknown error'}`);
-                    }
-                } catch (error) {
-                    console.error('Error adding address:', error);
-                    alert('An error occurred while adding the address.');
-                }
+        openModal(editAddressModal, editAddressContent);
+    });
+});
+
+editAddressForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(editAddressForm);
+    const addressData = Object.fromEntries(formData.entries());
+    const phone = addressData.phone.trim();
+    const zip = addressData.zip.trim();
+    const street = addressData.street.trim();
+    const city = addressData.city.trim();
+    const state = addressData.state.trim();
+    const country = addressData.country.trim();
+
+    const digitOnly = /^\d+$/;
+    const textValid = /^[a-zA-Z0-9\s,.'-]{2,}$/;
+
+    if (!digitOnly.test(phone) || phone.length !== 10 || /^0+$/.test(phone)) {
+        return Swal.fire("Invalid", "Phone must be 10 digits and not all zeroes.", "error");
+    }
+
+    if (!digitOnly.test(zip) || zip.length !== 6 || /^0+$/.test(zip)) {
+        return Swal.fire("Invalid", "Pincode must be 6 digits and not all zeroes.", "error");
+    }
+
+    if (!textValid.test(street) || !textValid.test(city) || !textValid.test(state) || !textValid.test(country)) {
+        return Swal.fire("Invalid", "Please enter valid address details.", "error");
+    }
+
+    try {
+        const response = await fetch(`/addressEdit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(addressData)
+        });
+
+        if (response.ok) {
+            Swal.fire("Success", "Address updated successfully!", "success").then(() => {
+                closeModal(editAddressModal, editAddressContent);
+                window.location.reload();
             });
+        } else {
+            const errorData = await response.json();
+            Swal.fire("Failed", errorData.message || "Unknown error", "error");
+        }
+    } catch (error) {
+        console.error('Error updating address:', error);
+        Swal.fire("Error", "An error occurred while updating the address.", "error");
+    }
+});
 
-            // --- Edit Address Functionality ---
-            document.querySelectorAll('.edit-address-btn').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    const address = event.currentTarget.dataset;
-                    editAddressIdInput.value = address.id;
-                    editStreetInput.value = address.street;
-                    editLocalityInput.value = address.country;
-                    editCityInput.value = address.city;
-                    editStateInput.value = address.state;
-                    editPincodeInput.value = address.zip;
-                    editPhoneInput.value = address.phone;
-
-                    openModal(editAddressModal, editAddressContent);
-                });
-            });
-
-            editAddressForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
-                const formData = new FormData(editAddressForm);
-                const addressData = Object.fromEntries(formData.entries());
-                const addressId = editAddressIdInput.value;
-
-                try {
-                    const response = await fetch(`/addressEdit`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(addressData)
-                    });
-
-                    if (response.ok) {
-                        alert('Address updated successfully!');
-                        closeModal(editAddressModal, editAddressContent);
-                        window.location.reload();
-                    } else {
-                        const errorData = await response.json();
-                        alert(`Failed to update address: ${errorData.message || 'Unknown error'}`);
-                    }
-                } catch (error) {
-                    console.error('Error updating address:', error);
-                    alert('An error occurred while updating the address.');
-                }
-            });
 
             // --- Place Order Logic ---
             placeOrderBtn.addEventListener('click', () => {

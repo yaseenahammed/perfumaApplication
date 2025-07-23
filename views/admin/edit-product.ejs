@@ -1,123 +1,152 @@
-<%- include("../../views/partials/admin/header") %>
-
-<!-- Tailwind CSS CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                animation: {
-                    'fade-in': 'fadeIn 0.5s ease-in-out',
-                    'slide-up': 'slideUp 0.6s ease-out',
-                },
-                keyframes: {
-                    fadeIn: {
-                        '0%': { opacity: '0' },
-                        '100%': { opacity: '1' },
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product - Admin</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
                     },
-                    slideUp: {
-                        '0%': { transform: 'translateY(30px)', opacity: '0' },
-                        '100%': { transform: 'translateY(0)', opacity: '1' },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
                     }
                 }
             }
         }
-    }
-</script>
+    </script>
 
-<!-- SweetAlert2 CDN -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!-- Cropper.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css">
+    <!-- Cropper.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css">
 
-<!-- jQuery CDN (retained for existing functionality) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- jQuery CDN (retained for existing functionality) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
-<style>
-    /* Custom button styles */
-    .btn-update, .btn-save-crop {
-        transition: all 0.3s ease;
-    }
-    
-    .btn-update:hover, .btn-save-crop:hover {
-        transform: scale(1.05);
-    }
-    
-    .error-message {
-        color: #ef4444; /* Tailwind red-500 */
-        font-size: 0.875rem;
-        display: none;
-    }
-    
-    .thumbnails-container {
-        display: flex;
-        overflow-x: auto;
-        gap: 10px;
-        padding: 10px;
-    }
-    
-    .thumbnail {
-        position: relative;
-    }
-    
-    .remove-icon {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        background: #ef4444; /* Tailwind red-500 */
-        color: white;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        text-align: center;
-        cursor: pointer;
-        line-height: 20px;
-        transition: all 0.3s ease;
-    }
-    
-    .remove-icon:hover {
-        background: #dc2626; /* Tailwind red-600 */
-    }
-    
-    .cropper-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        width: 300px;
-        height: 200px;
-        margin-bottom: 20px;
-    }
-    
-    img[id^="croppedImg"] {
-        max-width: 100%;
-        width: 300px;
-        height: 200px;
-        display: block;
-    }
-</style>
+    <style>
+        /* Custom button styles */
+        .btn-update, .btn-save-crop {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-update:hover, .btn-save-crop:hover {
+            transform: scale(1.05);
+        }
+        
+        .error-message {
+            color: #ef4444; /* Tailwind red-500 */
+            font-size: 0.875rem;
+            display: none;
+        }
+        
+        .thumbnails-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 10px;
+        }
+        
+        .thumbnail {
+            position: relative;
+        }
+        
+        .remove-icon {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444; /* Tailwind red-500 */
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            cursor: pointer;
+            line-height: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .remove-icon:hover {
+            background: #dc2626; /* Tailwind red-600 */
+        }
+        
+        .cropper-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 300px;
+            height: 200px;
+            margin-bottom: 20px;
+        }
+        
+        img[id^="croppedImg"] {
+            max-width: 100%;
+            width: 300px;
+            height: 200px;
+            display: block;
+        }
 
+        /* Sidebar and Layout Styles */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #1f2937;
+            padding-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 16px;
+            color: #d1d5db;
+            display: block;
+        }
+
+        .sidebar a:hover {
+            color: #f59e0b;
+            background-color: #374151;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+    </style>
+</head>
 <body class="bg-gray-50">
-    <!-- Page Header -->
-    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
-        <div class="relative z-10 container mx-auto px-4 text-center text-white">
-            <h1 class="text-4xl lg:text-5xl font-bold mb-4 animate-fade-in">Edit Product</h1>
-            <nav class="flex items-center justify-center space-x-2 text-lg">
-                <a href="/admin" class="text-gray-300 hover:text-white transition duration-200">Admin Dashboard</a>
-                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
-                <span class="text-amber-400">Edit Product</span>
-            </nav>
-        </div>
-    </section>
+  
+
+
+
+        <%- include("../../views/partials/admin/header") %>
+
 
     <!-- Main Content -->
-    <main class="py-16">
+    <main class="pt-20 pl-64"> 
         <div class="container mx-auto px-4">
             <div class="max-w-7xl mx-auto">
-                <div class="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
-                    <div class="flex items-center justify-between mb-8">
+                <div class="bg-white rounded-2xl shadow-xl p-6 animate-slide-up mt-6">
+                    <div class="flex items-center justify-between mb-6">
                         <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center">
                             <i class="fas fa-edit text-amber-500 mr-3"></i>
                             Edit Product
@@ -516,3 +545,4 @@
 
     <%- include("../../views/partials/admin/footer") %>
 </body>
+</html>

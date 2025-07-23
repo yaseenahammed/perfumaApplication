@@ -1,778 +1,834 @@
 <%- include("../../views/partials/admin/header") %>
-<head>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
-  <style>
-    .pagination-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 30px 0;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .pagination-container a,
-    .pagination-container span {
-      display: inline-block;
-      padding: 8px 14px;
-      font-size: 14px;
-      text-decoration: none;
-      color: #007bff;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      background-color: #fff;
-      transition: all 0.2s ease-in-out;
-    }
-    .pagination-container a:hover {
-      background-color: #007bff;
-      color: #fff;
-      border-color: #007bff;
-    }
-    .pagination-container .current-page {
-      background-color: #007bff;
-      color: #fff;
-      border-color: #007bff;
-      font-weight: bold;
-      cursor: default;
-    }
-    .content-main {
-      margin-left: 250px;
-      padding: 20px;
-    }
-    .thumbnails-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      padding: 10px;
-    }
-    .thumbnail {
-      position: relative;
-      display: inline-block;
-    }
-    .remove-icon {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: red;
-      color: white;
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      text-align: center;
-      cursor: pointer;
-      line-height: 20px;
-    }
-    .error-message {
-      color: red;
-      font-size: 0.875rem;
-      display: none;
-    }
-    .btn-sm {
-      padding: 5px 10px;
-      font-size: 0.875rem;
-    }
-    img {
-      max-width: 100%;
-      height: auto;
-    }
-    img[id^="imgView"] {
-      max-width: 300px;
-      max-height: 200px;
-      display: none;
-    }
-    .cropper-modal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      padding: 15px;
-     
-      z-index: 1000;
-      border-radius: 8px;
-      width: 400px;
-      height: 350px;
-      max-width: 90%;
-    }
-    .cropper-modal h3 {
-      margin: 0 0 8px;
-      font-size: 16px;
-    }
-    .cropper-modal p {
-      margin: 0 0 15px;
-      color: #666;
-      font-size: 12px;
-    }
-    .cropper-container {
-      max-height: 200px;
-      overflow: hidden;
-    }
-    .cropper-container img {
-      max-width: 100%;
-    }
-    .modal-buttons {
-      margin-top: 15px;
-      text-align: right;
-    }
-    .modal-buttons button {
-      padding: 6px 12px;
-      margin-left: 8px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .cancel-btn {
-      background: #f0f0f0;
-      color: #333;
-    }
-    .crop-btn {
-      background: #007bff;
-      color: white;
-    }
-    .backdrop {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 999;
-    }
-  </style>
-</head>
 
-<div class="content-header">
-  <div>
-    <h2 class="content-title card-title">Products</h2>
-    
-  </div>
-</div>
-<header class="card-header text-center mb-20">
-  <form action="/admin/products" method="get" class="d-inline">
-    <div class="input-group input-group-sm border border-1 border-grey rounded-pill" style="width: 500px; margin-left: 230px;">
-      <input type="text" class="form-control border-0 rounded-pill" placeholder="Search products or brands" name="search">
-      <button class="btn border-0" type="submit">Search</button>
-    </div>
-  </form>
-</header>
-
-<div class="right mt-5">
-  
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Product Name</th>
-        <th>Brand</th>
-        <th>Category</th>
-        <th>Sale Price</th>
-        <th>Regular Price</th>
-        <th>Discount</th>
-        <th>Offer</th>
-        <th>Add Offer</th>
-        <th>Quantity</th>
-        <th>Status</th>
-        <th>Action</th>
-        <th>Edit</th>
-       
-      </tr>
-    </thead>
- <tbody>
-  <% for (let i = 0; i < productData.length; i++) { %>
-  <tr>
-    <td><%= productData[i].name %></td>
-    <td><%= productData[i].brand && productData[i].brand.name ? productData[i].brand.name : 'Unknown Brand' %></td>
-    <td><%= productData[i].category && productData[i].category.name ? productData[i].category.name : 'Unknown Category' %></td>
-    <td><%= productData[i].salePrice %></td>
-    <td><%= productData[i].regularPrice %></td>
-    <td><%= productData[i].discount > 0 ? productData[i].discount + '%' : 'None' %></td>
-    
-    <td id="offerValue-<%= productData[i]._id %>">
-  <%= typeof productData[i].offer === 'number' && productData[i].offer > 0 ? productData[i].offer + '%' : 'None' %>
-</td>
-    <td id="offerCell-<%= productData[i]._id %>">
-      <% if (productData[i].offer > 0) { %>
-        <button class="btn btn-warning text-white btn-sm" onclick="removeOffer('<%= productData[i]._id %>')">Remove Offer</button>
-      <% } else { %>
-        <button class="btn btn-info text-white btn-sm" onclick="openOfferPrompt('<%= productData[i]._id %>')">Add Offer</button>
-      <% } %>
-    </td>
-    <td><%= productData[i].quantity %></td>
-    <td id="status-<%= productData[i]._id %>"><%= productData[i].status %></td>
-    <td>
-      <% if (productData[i].status === 'available' || productData[i].status === 'discounted') { %>
-        <button class="btn btn-danger text-white btn-sm" onclick="blockProduct('<%= productData[i]._id %>')">Block</button>
-      <% } else { %>
-        <button class="btn btn-success text-white btn-sm" onclick="unblockProduct('<%= productData[i]._id %>')">Unblock</button>
-      <% } %>
-    </td>
-    <td>
-      <a href="/admin/editProduct/<%= productData[i]._id %>" class="btn btn-primary text-white btn-sm">Edit</a>
-    </td>
-  </tr>
-  <% } %>
-</tbody>
-
-
- 
-  </table>
-  
-</div>
-
-
-<!-- Pagination -->
-<div class="pagination-container">
-  <% if (currentPage > 1) { %>
-  <a href="?page=<%= currentPage - 1 %>&search=<%= search || '' %>">« Previous</a>
-  <% } %>
-  <% for (let i = 1; i <= totalPages; i++) { %>
-    <% if (i === currentPage) { %>
-    <span class="current-page"><%= i %></span>
-    <% } else { %>
-    <a href="?page=<%= i %>&search=<%= search || '' %>"><%= i %></a>
-    <% } %>
-  <% } %>
-  <% if (currentPage < totalPages) { %>
-  <a href="?page=<%= currentPage + 1 %>&search=<%= search || '' %>">Next »</a>
-  <% } %>
-</div>
-
-
-
-<section class="content-main">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-12">
-        <div class="content-header">
-          <h2 class="content-title">Add New Product</h2>
-        </div>
-      </div>
-      <div class="col-12">
-        <div class="card mb-4">
-          <div class="card-body">
-            <% if (messages.error) { %>
-              <div class="alert alert-danger"><%= messages.error %></div>
-            <% } %>
-            <% if (messages.success) { %>
-              <div class="alert alert-success"><%= messages.success %></div>
-            <% } %>
-            <form id="addProductForm" method="post" action="/admin/addProducts" enctype="multipart/form-data" >
-              <div class="mb-4">
-                <label for="product_name" class="form-label">Product Name</label>
-                <input type="text" name="name" id="product_name" class="form-control border">
-                <div id="name-error" class="error-message"></div>
-              </div>
-
-              <div class="mb-4">
-                <label class="form-label">Brand</label>
-                <select class="form-select border" name="brand" id="brand">
-                  <option value="" disabled selected>Select a brand</option>
-                  <% for (let i = 0; i < brand.length; i++) { %>
-                    <option value="<%= brand[i]._id %>"><%= brand[i].name %></option>
-                  <% } %>
-                </select>
-                <div id="brand-error" class="error-message"></div>
-              </div>
-
-              <div class="mb-4">
-                <label class="form-label">Full Description</label>
-                <textarea id="descriptionid" name="description" class="form-control border" rows="4"></textarea>
-                <div id="description-error" class="error-message"></div>
-              </div>
-
-              <div class="mb-4">
-                <label class="form-label">Category</label>
-                <select class="form-select border" name="category" id="category">
-                  <option value="" disabled selected>Select a category</option>
-                  <% for (let i = 0; i < cat.length; i++) { %>
-                    <option value="<%= cat[i]._id %>"><%= cat[i].name %></option>
-                  <% } %>
-                </select>
-                <div id="category-error" class="error-message"></div>
-              </div>
-
-              <div class="mb-4">
-                <label class="form-label">Status</label>
-                <select class="form-select border" name="status" id="status">
-                  <option value="" disabled selected>Select status</option>
-                  <option value="available">Available</option>
-                  <option value="out-of-stock">Out of Stock</option>
-                </select>
-                <div id="status-error" class="error-message"></div>
-              </div>
-
-              <div class="row">
-                <div class="col-lg-4">
-                  <div class="mb-4">
-                    <label class="form-label">Regular Price</label>
-                    <input name="regularPrice" id="regularPrice" type="text" class="form-control border">
-                    <div id="regularPrice-error" class="error-message"></div>
-                  </div>
-                </div>
-                <div class="col-lg-4">
-                  <div class="mb-4">
-                    <label class="form-label">Discount (%)</label>
-                    <input name="discount" id="discount" type="text" class="form-control border">
-                    <div id="discount-error" class="error-message"></div>
-                  </div>
-                </div>
-                <div class="col-lg-4">
-                  <div class="mb-4">
-                    <label class="form-label">Quantity</label>
-                    <input name="quantity" id="quantity" type="text" class="form-control border">
-                    <div id="quantity-error" class="error-message"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mb-4">
-                <label class="form-label">Offer (%)</label>
-                <input name="offer" id="offer" type="text" class="form-control border">
-                <div id="offer-error" class="error-message"></div>
-              </div>
-
-              <div class="card mb-4">
-                <div class="card-header">
-                  <h4>Choose Images</h4>
-                </div>
-                <div class="card-body">
-                  <div class="thumbnails-container" id="addedImagesContainer"></div>
-                  <div id="productImages-error" class="error-message"></div>
-                  <% for (let i = 1; i <= 4; i++) { %>
-                    <div class="mb-3">
-                      <label class="form-label">Image <%= i %></label>
-                      <input 
-                        class="form-control" 
-                        type="file" 
-                        name="productImages" 
-                        id="input<%= i %>" 
-                        accept="image/png,image/jpeg,image/jpg"
-                        onchange="viewImage(event)">
-                      <div class="mt-2">
-                        <img 
-                          id="imgView<%= i %>" 
-                          src="" 
-                          style="max-width: 300px; max-height: 200px; display: none;">
-                      </div>
-                    </div>
-                  <% } %>
-                </div>
-              </div>
-
-              <div class="backdrop" id="backdrop"></div>
-              <% for (let i = 1; i <= 4; i++) { %>
-                <div class="cropper-modal" id="cropperContainer<%= i %>">
-                  <h3>Crop Image</h3>
-                  <p>Adjust the crop area to get the perfect product image</p>
-                  <div class="cropper-container">
-                    <img id="croppedImg<%= i %>" alt="Image to crop">
-                  </div>
-                  <div class="modal-buttons">
-                    <button type="button" class="cancel-btn" onclick="cancelCrop(<%= i %>)">Cancel</button>
-                    <button type="button" class="crop-btn" id="saveButton<%= i %>">Crop & Keep</button>
-                  </div>
-                </div>
-              <% } %>
-
-              <div>
-                <button class="btn btn-md rounded font-sm hover-up btn-success" type="submit">Publish</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<%- include("../../views/partials/admin/footer") %>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
 <script>
-let croppers = {};
-
-function viewImage(event) {
-
-  const input = event.target;
-  const index = input.id.replace('input', '');
-
-  const imgView = document.getElementById(`imgView${index}`);
-  const cropperContainer = document.getElementById(`cropperContainer${index}`);
-  const croppedImage = document.getElementById(`croppedImg${index}`);
-  const saveBtn = document.getElementById(`saveButton${index}`);
-  const imageError = document.getElementById('productImages-error');
-  const backdrop = document.getElementById('backdrop');
-
-  const file = input.files[0];
-  if (file) {
-    if (!file.type.startsWith("image/")) {
-      imageError.innerText = `Please upload a valid image file for Image ${index}`;
-      imageError.style.display = 'block';
-      input.value = '';
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      imgView.src = reader.result;
-      
-      imgView.style.display = "block";
-      croppedImage.src = reader.result;
-      cropperContainer.style.display = 'block';
-      backdrop.style.display = 'block';
-      imageError.style.display = 'none';
-
-      if (croppers[index]) {
-        croppers[index].destroy();
-      }
-
-      croppers[index] = new Cropper(croppedImage, {
-        aspectRatio: NaN, 
-        viewMode: 1,
-        autoCropArea: 0.8,
-        responsive: true,
-        movable: true,
-        zoomable: true,
-        scalable: true,
-        cropBoxResizable: true,
-      });
-
-      input.dataset.cropped = 'false';
-    };
-    reader.readAsDataURL(file);
-  }
-
-  saveBtn.onclick = function () {
-    if (croppers[index]) {
-      const canvas = croppers[index].getCroppedCanvas({ width: 440, height: 440 });
-      canvas.toBlob((blob) => {
-        const fileInput = document.getElementById(`input${index}`);
-        const file = new File([blob], `cropped_image_${index}.jpg`, { type: 'image/jpeg' });
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        fileInput.files = dataTransfer.files;
-        cropperContainer.style.display = 'none';
-        backdrop.style.display = 'none';
-        imgView.src = URL.createObjectURL(blob);
-        fileInput.dataset.cropped = 'true';
-        croppers[index].destroy();
-        delete croppers[index];
-      }, 'image/jpeg', 0.9);
-    }
-  };
-}
-
-function cancelCrop(index) {
-  const cropperContainer = document.getElementById(`cropperContainer${index}`);
-  const imgView = document.getElementById(`imgView${index}`);
-  const fileInput = document.getElementById(`input${index}`);
-  const backdrop = document.getElementById('backdrop');
-
-  cropperContainer.style.display = 'none';
-  backdrop.style.display = 'none';
-  imgView.style.display = 'none';
-  fileInput.value = '';
-  if (croppers[index]) {
-    croppers[index].destroy();
-    delete croppers[index];
-  }
-}
-
-document.getElementById('addProductForm').addEventListener('submit', async function (event) {
-  event.preventDefault();
-
-
-  let isValid = true;
-  const requiredFields = [
-    { id: 'product_name', errorId: 'name-error', message: 'Product name is required' },
-    { id: 'descriptionid', errorId: 'description-error', message: 'Description is required' },
-    { id: 'regularPrice', errorId: 'regularPrice-error', message: 'Regular price is required' },
-    { id: 'quantity', errorId: 'quantity-error', message: 'Quantity is required' },
-    { id: 'brand', errorId: 'brand-error', message: 'Brand is required' },
-    { id: 'category', errorId: 'category-error', message: 'Category is required' },
-    { id: 'status', errorId: 'status-error', message: 'Status is required' },
-  ];
-
-  for (let field of requiredFields) {
-    const input = document.getElementById(field.id);
-    const errorDiv = document.getElementById(field.errorId);
-    if (!input.value.trim()) {
-      errorDiv.innerText = field.message;
-      errorDiv.style.display = 'block';
-      isValid = false;
-    } else {
-      errorDiv.innerText = '';
-      errorDiv.style.display = 'none';
-    }
-  }
-
-  const numericFields = [
-    { id: 'regularPrice', errorId: 'regularPrice-error', message: 'Regular price must be a positive number' },
-    { id: 'quantity', errorId: 'quantity-error', message: 'Quantity must be a positive number' },
-    { id: 'discount', errorId: 'discount-error', message: 'Discount must be between 0 and 100' },
-    { id: 'offer', errorId: 'offer-error', message: 'Offer must be between 0 and 100' },
-  ];
-
-  for (let field of numericFields) {
-    const input = document.querySelector(`[name="${field.id}"]`);
-    const errorDiv = document.getElementById(field.errorId);
-    const value = input.value.trim();
-    if (field.id === 'discount' || field.id === 'offer') {
-      if (value && (isNaN(value) || Number(value) < 0 || Number(value) > 100)) {
-        errorDiv.innerText = field.message;
-        errorDiv.style.display = 'block';
-        isValid = false;
-      }
-    } else if (value && (isNaN(value) || Number(value) <= 0)) {
-      errorDiv.innerText = field.message;
-      errorDiv.style.display = 'block';
-      isValid = false;
-    }
-  }
-
-  const imageInputs = ['input1', 'input2', 'input3', 'input4'];
-  let hasImage = false;
-  for (let id of imageInputs) {
-    const input = document.getElementById(id);
-    if (input.files.length > 0) {
-      hasImage = true;
-      if (input.dataset.cropped === 'false') {
-        Swal.fire('Error', `Please click "Crop & Keep" for Image ${id.replace('input', '')} before submitting.`, 'error');
-        isValid = false;
-      }
-    }
-  }
-
-  const imageError = document.getElementById('productImages-error');
-  if (!hasImage) {
-    imageError.innerText = 'Please upload at least one image';
-    imageError.style.display = 'block';
-    isValid = false;
-  } else {
-    imageError.innerText = '';
-    imageError.style.display = 'none';
-  }
-
-  if (!isValid) {
-    return;
-  }
-
-
-  const form = event.target;
-  const formData = new FormData(form);
-
-  try {
-    const response = await fetch(form.action, {
-      method: 'POST',
-      body: formData,
-    });
-
-    const data = await response.json();
-
-   if (response.ok && data.success) {
-      Swal.fire({
-        title: 'Success!',
-        text: 'Product added successfully',
-        icon: 'success',
-        confirmButtonText: 'OK',
-      }).then(() => {
-        form.reset(); 
-       
-        imageInputs.forEach(id => {
-          const img = document.getElementById(`imgView${id.replace('input', '')}`);
-          img.src = '';
-          img.style.display = 'none';
-          const input = document.getElementById(id);
-          input.value = '';
-          input.dataset.cropped = '';
-          if (croppers[id.replace('input', '')]) {
-            croppers[id.replace('input', '')].destroy();
-            delete croppers[id.replace('input', '')];
-          }
-        });
-        location.reload();
-      });
-    } else {
-      Swal.fire({
-        title: 'Error!',
-        text: data.error || 'Failed to add product',
-        icon: 'error',
-      });
-    }
-  } catch (error) {
-    Swal.fire({
-      title: 'Error!',
-      text: 'An unexpected error occurred',
-      icon: 'error',
-    });
-  }
-});
-
-
-// Add Offer
-function openOfferPrompt(productId) {
-  Swal.fire({
-    title: 'Enter Offer %',
-    input: 'number',
-    inputAttributes: {
-      min: 1,
-      max: 99,
-      step: 1
-    },
-    showCancelButton: true,
-    confirmButtonText: 'Add Offer',
-    showLoaderOnConfirm: true,
-    preConfirm: async (value) => {
-      if (!value || value <= 0 || value >= 100) {
-        Swal.showValidationMessage('Offer must be between 1 and 99');
-        return false;
-      }
-      try {
-        const response = await fetch(`/admin/products/${productId}/add-offer`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ offer: value })
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Failed to add offer');
-        return data;
-      } catch (error) {
-        Swal.showValidationMessage(`Request failed: ${error.message}`);
-        return false;
-      }
-    },
-    allowOutsideClick: () => !Swal.isLoading()
-  }).then((result) => {
-    if (result.isConfirmed && result.value) {
-      Swal.fire('Success!', 'Offer added successfully.', 'success');
-      
-      const offerValue = document.getElementById(`offerValue-${productId}`);
-      if (offerValue) {
-        offerValue.textContent = `${result.value.offer}%`;
-      }
-   
-      const offerCell = document.getElementById(`offerCell-${productId}`);
-      if (offerCell) {
-        offerCell.innerHTML = `
-          <button class="btn btn-warning text-white btn-sm" onclick="removeOffer('${productId}')">Remove Offer</button>
-        `;
-      }
-    }
-  });
-}
-
-// Remove Offer
-function removeOffer(productId) {
-  Swal.fire({
-    title: 'Are you sure?',
-    text: 'Remove this offer?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, remove it!',
-    showLoaderOnConfirm: true
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      try {
-        const response = await fetch(`/admin/products/${productId}/remove-offer`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Failed to remove offer');
-        Swal.fire('Success!', 'Offer removed successfully.', 'success');
-        
-        const offerValue = document.getElementById(`offerValue-${productId}`);
-        if (offerValue) {
-          offerValue.textContent = 'None';
+    tailwind.config = {
+        theme: {
+            extend: {
+                animation: {
+                    'fade-in': 'fadeIn 0.5s ease-in-out',
+                    'slide-up': 'slideUp 0.6s ease-out',
+                },
+                keyframes: {
+                    fadeIn: {
+                        '0%': { opacity: '0' },
+                        '100%': { opacity: '1' },
+                    },
+                    slideUp: {
+                        '0%': { transform: 'translateY(30px)', opacity: '0' },
+                        '100%': { transform: 'translateY(0)', opacity: '1' },
+                    }
+                }
+            }
         }
-      
-        const offerCell = document.getElementById(`offerCell-${productId}`);
-        if (offerCell) {
-          offerCell.innerHTML = `
-            <button class="btn btn-info text-white btn-sm" onclick="openOfferPrompt('${productId}')">Add Offer</button>
-          `;
-        }
-      } catch (error) {
-        Swal.fire('Error!', error.message || 'Failed to remove offer.', 'error');
-      }
     }
-  });
-}
-
-// Block Product
-function blockProduct(productId) {
-  Swal.fire({
-    title: 'Are you sure?',
-    text: 'Block this product?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, block it!',
-    showLoaderOnConfirm: true
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      try {
-        const response = await fetch(`/admin/products/${productId}/block`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Failed to block product');
-        Swal.fire('Success!', 'Product blocked successfully.', 'success');
-        const statusCell = document.getElementById(`status-${productId}`);
-        if (statusCell) {
-          statusCell.textContent = 'blocked';
-        }
-        const actionCell = document.getElementById(`status-${productId}`).nextElementSibling;
-        if (actionCell) {
-          actionCell.innerHTML = `
-            <button class="btn btn-success text-white btn-sm" onclick="unblockProduct('${productId}')">Unblock</button>
-          `;
-        }
-      } catch (error) {
-        Swal.fire('Error!', error.message || 'Failed to block product.', 'error');
-      }
-    }
-  });
-}
-
-// Unblock Product
-function unblockProduct(productId) {
-  Swal.fire({
-    title: 'Are you sure?',
-    text: 'Unblock this product?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, unblock it!',
-    showLoaderOnConfirm: true
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      try {
-        const response = await fetch(`/admin/products/${productId}/unblock`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Failed to unblock product');
-        Swal.fire('Success!', 'Product unblocked successfully.', 'success');
-        const statusCell = document.getElementById(`status-${productId}`);
-        if (statusCell) {
-          statusCell.textContent = 'available';
-        }
-        const actionCell = document.getElementById(`status-${productId}`).nextElementSibling;
-        if (actionCell) {
-          actionCell.innerHTML = `
-            <button class="btn btn-danger text-white btn-sm" onclick="blockProduct('${productId}')">Block</button>
-          `;
-        }
-      } catch (error) {
-        Swal.fire('Error!', error.message || 'Failed to unblock product.', 'error');
-      }
-    }
-  });
-}
 </script>
 
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<!-- Cropper JS CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
+
+<style>
+    /* Custom button styles */
+    .btn-add, .btn-block, .btn-unblock, .btn-delete {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-add:hover, .btn-block:hover, .btn-unblock:hover, .btn-delete:hover {
+        transform: scale(1.05);
+    }
+    
+    .table-row {
+        transition: all 0.3s ease;
+    }
+    
+    .table-row:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Override to align with header */
+    .main-wrap {
+        padding-top: 0;
+    }
+
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+    .modal-content {
+        background: #fff;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 600px;
+        animation: slideUp 0.6s ease-out;
+    }
+    .close {
+        color: #888;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .close:hover,
+    .close:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    /* Cropper Modal */
+    .cropper-modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        padding: 15px;
+        z-index: 1100;
+        border-radius: 8px;
+        width: 400px;
+        height: 350px;
+        max-width: 90%;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .cropper-modal h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+        color: #333;
+    }
+    .cropper-modal p {
+        margin: 0 0 15px;
+        color: #666;
+        font-size: 12px;
+    }
+    .cropper-container {
+        max-height: 200px;
+        overflow: hidden;
+    }
+    .cropper-container img {
+        max-width: 100%;
+    }
+    .modal-buttons {
+        margin-top: 15px;
+        text-align: right;
+    }
+    .modal-buttons button {
+        padding: 6px 12px;
+        margin-left: 8px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .cancel-btn {
+        background: #f0f0f0;
+        color: #333;
+    }
+    .crop-btn {
+        background: #f59e0b;
+        color: #fff;
+    }
+    .backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1050;
+    }
+</style>
+
+<body class="bg-gray-50">
+    <!-- Main Content -->
+    <main class="main-wrap">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-list text-amber-500 mr-3"></i>
+                            Products
+                        </h2>
+                        <button 
+                            class="btn-add bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300"
+                            onclick="document.getElementById('addProductModal').style.display='block'"
+                        >
+                            <i class="fas fa-plus mr-2"></i>
+                            Add New Product
+                        </button>
+                    </div>
+
+                    <!-- Search Bar -->
+                    <header class="text-center mb-8">
+                        <form action="/admin/products" method="get" class="d-inline">
+                            <div class="flex justify-center">
+                                <div class="relative w-full max-w-md">
+                                    <input 
+                                        type="text" 
+                                        class="w-full border border-gray-200 rounded-full py-3 px-6 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                                        placeholder="Search products or brands" 
+                                        name="search"
+                                    >
+                                    <button 
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full hover:from-amber-600 hover:to-orange-600 transition duration-300"
+                                        type="submit"
+                                    >
+                                        Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </header>
+
+                    <!-- Table Section -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-900 text-left">
+                                    <th class="px-6 py-4 font-bold">Product Name</th>
+                                    <th class="px-6 py-4 font-bold">Brand</th>
+                                    <th class="px-6 py-4 font-bold">Category</th>
+                                    <th class="px-6 py-4 font-bold">Sale Price</th>
+                                    <th class="px-6 py-4 font-bold">Regular Price</th>
+                                    <th class="px-6 py-4 font-bold">Discount</th>
+                                    <th class="px-6 py-4 font-bold">Offer</th>
+                                    <th class="px-6 py-4 font-bold">Add Offer</th>
+                                    <th class="px-6 py-4 font-bold">Quantity</th>
+                                    <th class="px-6 py-4 font-bold">Status</th>
+                                    <th class="px-6 py-4 font-bold">Action</th>
+                                    <th class="px-6 py-4 font-bold">Edit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% for (let i = 0; i < productData.length; i++) { %>
+                                    <tr id="product-row-<%= productData[i]._id %>" class="table-row bg-gray-50 border-b border-gray-200 hover:bg-gray-100">
+                                        <td class="px-6 py-4 text-gray-900"><%= productData[i].name %></td>
+                                        <td class="px-6 py-4"><%= productData[i].brand && productData[i].brand.name ? productData[i].brand.name : 'Unknown Brand' %></td>
+                                        <td class="px-6 py-4"><%= productData[i].category && productData[i].category.name ? productData[i].category.name : 'Unknown Category' %></td>
+                                        <td class="px-6 py-4"><%= productData[i].salePrice %></td>
+                                        <td class="px-6 py-4"><%= productData[i].regularPrice %></td>
+                                        <td class="px-6 py-4"><%= productData[i].discount > 0 ? productData[i].discount + '%' : 'None' %></td>
+                                        <td id="offerValue-<%= productData[i]._id %>" class="px-6 py-4">
+                                            <%= typeof productData[i].offer === 'number' && productData[i].offer > 0 ? productData[i].offer + '%' : 'None' %>
+                                        </td>
+                                        <td id="offerCell-<%= productData[i]._id %>" class="px-6 py-4">
+                                            <% if (productData[i].offer > 0) { %>
+                                                <button class="btn-delete bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="removeOffer('<%= productData[i]._id %>')">Remove Offer</button>
+                                            <% } else { %>
+                                                <button class="btn-add bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="openOfferPrompt('<%= productData[i]._id %>')">Add Offer</button>
+                                            <% } %>
+                                        </td>
+                                        <td class="px-6 py-4"><%= productData[i].quantity %></td>
+                                        <td id="status-<%= productData[i]._id %>" class="px-6 py-4">
+                                            <% if (productData[i].status === 'available' || productData[i].status === 'discounted') { %>
+                                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Active</span>
+                                            <% } else { %>
+                                                <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">Blocked</span>
+                                            <% } %>
+                                        </td>
+                                        <td id="blockStatus-<%= productData[i]._id %>" class="px-6 py-4 flex gap-2">
+                                            <% if (productData[i].status === 'available' || productData[i].status === 'discounted') { %>
+                                                <button class="btn-block bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="blockProduct('<%= productData[i]._id %>')">Block</button>
+                                            <% } else { %>
+                                                <button class="btn-unblock bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="unblockProduct('<%= productData[i]._id %>')">Unblock</button>
+                                            <% } %>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <a href="/admin/editProduct/<%= productData[i]._id %>" class="btn-add bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300">Edit</a>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container mt-8 flex justify-center items-center gap-2">
+                        <% if (currentPage > 1) { %>
+                            <a href="?page=<%= currentPage - 1 %>&search=<%= search || '' %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">« Previous</a>
+                        <% } %>
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <% if (i === currentPage) { %>
+                                <span class="current-page bg-amber-500 text-white border-amber-500 px-4 py-2 rounded-lg font-bold"><%= i %></span>
+                            <% } else { %>
+                                <a href="?page=<%= i %>&search=<%= search || '' %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200"><%= i %></a>
+                            <% } %>
+                        <% } %>
+                        <% if (currentPage < totalPages) { %>
+                            <a href="?page=<%= currentPage + 1 %>&search=<%= search || '' %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">Next »</a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('addProductModal').style.display='none'">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Add New Product</h2>
+            <% if (messages.error) { %>
+                <div class="alert bg-red-100 text-red-800 px-4 py-2 rounded-lg mb-4"><%= messages.error %></div>
+            <% } %>
+            <% if (messages.success) { %>
+                <div class="alert bg-green-100 text-green-800 px-4 py-2 rounded-lg mb-4"><%= messages.success %></div>
+            <% } %>
+            <form id="addProductForm" method="post" action="/admin/addProducts" enctype="multipart/form-data">
+                <div class="mb-6">
+                    <label for="product_name" class="block text-gray-700 font-semibold mb-2">Product Name</label>
+                    <input 
+                        type="text" 
+                        name="name" 
+                        id="product_name" 
+                        placeholder="Type here" 
+                        class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+                    >
+                    <div id="name-error" class="error-message text-red-500 text-sm mt-1"></div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Brand</label>
+                    <select 
+                        class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                        name="brand" 
+                        id="brand"
+                    >
+                        <option value="" disabled selected>Select a brand</option>
+                        <% for (let i = 0; i < brand.length; i++) { %>
+                            <option value="<%= brand[i]._id %>"><%= brand[i].name %></option>
+                        <% } %>
+                    </select>
+                    <div id="brand-error" class="error-message text-red-500 text-sm mt-1"></div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Full Description</label>
+                    <textarea 
+                        id="descriptionid" 
+                        name="description" 
+                        class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                        rows="4"
+                    ></textarea>
+                    <div id="description-error" class="error-message text-red-500 text-sm mt-1"></div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Category</label>
+                    <select 
+                        class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                        name="category" 
+                        id="category"
+                    >
+                        <option value="" disabled selected>Select a category</option>
+                        <% for (let i = 0; i < cat.length; i++) { %>
+                            <option value="<%= cat[i]._id %>"><%= cat[i].name %></option>
+                        <% } %>
+                    </select>
+                    <div id="category-error" class="error-message text-red-500 text-sm mt-1"></div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Status</label>
+                    <select 
+                        class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                        name="status" 
+                        id="status"
+                    >
+                        <option value="" disabled selected>Select status</option>
+                        <option value="available">Available</option>
+                        <option value="out-of-stock">Out of Stock</option>
+                    </select>
+                    <div id="status-error" class="error-message text-red-500 text-sm mt-1"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Regular Price</label>
+                        <input 
+                            name="regularPrice" 
+                            id="regularPrice" 
+                            type="text" 
+                            class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+                        >
+                        <div id="regularPrice-error" class="error-message text-red-500 text-sm mt-1"></div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Discount (%)</label>
+                        <input 
+                            name="discount" 
+                            id="discount" 
+                            type="text" 
+                            class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+                        >
+                        <div id="discount-error" class="error-message text-red-500 text-sm mt-1"></div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Quantity</label>
+                        <input 
+                            name="quantity" 
+                            id="quantity" 
+                            type="text" 
+                            class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+                        >
+                        <div id="quantity-error" class="error-message text-red-500 text-sm mt-1"></div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Offer (%)</label>
+                    <input 
+                        name="offer" 
+                        id="offer" 
+                        type="text" 
+                        class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+                    >
+                    <div id="offer-error" class="error-message text-red-500 text-sm mt-1"></div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Choose Images</label>
+                    <div class="thumbnails-container" id="addedImagesContainer"></div>
+                    <div id="productImages-error" class="error-message text-red-500 text-sm mt-1"></div>
+                    <% for (let i = 1; i <= 4; i++) { %>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-semibold mb-2">Image <%= i %></label>
+                            <input 
+                                class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                                type="file" 
+                                name="productImages" 
+                                id="input<%= i %>" 
+                                accept="image/png,image/jpeg,image/jpg"
+                                onchange="viewImage(event)"
+                            >
+                            <div class="mt-2">
+                                <img 
+                                    id="imgView<%= i %>" 
+                                    src="" 
+                                    style="max-width: 300px; max-height: 200px; display: none;"
+                                >
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div class="mt-6">
+                    <button 
+                        class="btn-add w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center"
+                        type="submit"
+                    >
+                        <i class="fas fa-plus mr-2"></i>
+                        Publish
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="backdrop" class="backdrop"></div>
+    <% for (let i = 1; i <= 4; i++) { %>
+        <div class="cropper-modal" id="cropperContainer<%= i %>">
+            <h3>Crop Image</h3>
+            <p>Adjust the crop area to get the perfect product image</p>
+            <div class="cropper-container">
+                <img id="croppedImg<%= i %>" alt="Image to crop">
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="cancel-btn" onclick="cancelCrop(<%= i %>)">Cancel</button>
+                <button type="button" class="crop-btn" id="saveButton<%= i %>">Crop & Keep</button>
+            </div>
+        </div>
+    <% } %>
+
+    <script>
+        let croppers = {};
+
+        function viewImage(event) {
+            const input = event.target;
+            const index = input.id.replace('input', '');
+
+            const imgView = document.getElementById(`imgView${index}`);
+            const cropperContainer = document.getElementById(`cropperContainer${index}`);
+            const croppedImage = document.getElementById(`croppedImg${index}`);
+            const saveBtn = document.getElementById(`saveButton${index}`);
+            const imageError = document.getElementById('productImages-error');
+            const backdrop = document.getElementById('backdrop');
+
+            const file = input.files[0];
+            if (file) {
+                if (!file.type.startsWith("image/")) {
+                    imageError.innerText = `Please upload a valid image file for Image ${index}`;
+                    imageError.style.display = 'block';
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = () => {
+                    imgView.src = reader.result;
+                    imgView.style.display = "block";
+                    croppedImage.src = reader.result;
+                    cropperContainer.style.display = 'block';
+                    backdrop.style.display = 'block';
+                    imageError.style.display = 'none';
+
+                    if (croppers[index]) {
+                        croppers[index].destroy();
+                    }
+
+                    croppers[index] = new Cropper(croppedImage, {
+                        aspectRatio: NaN,
+                        viewMode: 1,
+                        autoCropArea: 0.8,
+                        responsive: true,
+                        movable: true,
+                        zoomable: true,
+                        scalable: true,
+                        cropBoxResizable: true,
+                    });
+
+                    input.dataset.cropped = 'false';
+                };
+                reader.readAsDataURL(file);
+            }
+
+            saveBtn.onclick = function () {
+                if (croppers[index]) {
+                    const canvas = croppers[index].getCroppedCanvas({ width: 440, height: 440 });
+                    canvas.toBlob((blob) => {
+                        const fileInput = document.getElementById(`input${index}`);
+                        const file = new File([blob], `cropped_image_${index}.jpg`, { type: 'image/jpeg' });
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        fileInput.files = dataTransfer.files;
+                        cropperContainer.style.display = 'none';
+                        backdrop.style.display = 'none';
+                        imgView.src = URL.createObjectURL(blob);
+                        fileInput.dataset.cropped = 'true';
+                        croppers[index].destroy();
+                        delete croppers[index];
+                    }, 'image/jpeg', 0.9);
+                }
+            };
+        }
+
+        function cancelCrop(index) {
+            const cropperContainer = document.getElementById(`cropperContainer${index}`);
+            const imgView = document.getElementById(`imgView${index}`);
+            const fileInput = document.getElementById(`input${index}`);
+            const backdrop = document.getElementById('backdrop');
+
+            cropperContainer.style.display = 'none';
+            backdrop.style.display = 'none';
+            imgView.style.display = 'none';
+            fileInput.value = '';
+            if (croppers[index]) {
+                croppers[index].destroy();
+                delete croppers[index];
+            }
+        }
+
+        document.getElementById('addProductForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            let isValid = true;
+            const requiredFields = [
+                { id: 'product_name', errorId: 'name-error', message: 'Product name is required' },
+                { id: 'descriptionid', errorId: 'description-error', message: 'Description is required' },
+                { id: 'regularPrice', errorId: 'regularPrice-error', message: 'Regular price is required' },
+                { id: 'quantity', errorId: 'quantity-error', message: 'Quantity is required' },
+                { id: 'brand', errorId: 'brand-error', message: 'Brand is required' },
+                { id: 'category', errorId: 'category-error', message: 'Category is required' },
+                { id: 'status', errorId: 'status-error', message: 'Status is required' },
+            ];
+
+            for (let field of requiredFields) {
+                const input = document.getElementById(field.id);
+                const errorDiv = document.getElementById(field.errorId);
+                if (!input.value.trim()) {
+                    errorDiv.innerText = field.message;
+                    errorDiv.style.display = 'block';
+                    isValid = false;
+                } else {
+                    errorDiv.innerText = '';
+                    errorDiv.style.display = 'none';
+                }
+            }
+
+            const numericFields = [
+                { id: 'regularPrice', errorId: 'regularPrice-error', message: 'Regular price must be a positive number' },
+                { id: 'quantity', errorId: 'quantity-error', message: 'Quantity must be a positive number' },
+                { id: 'discount', errorId: 'discount-error', message: 'Discount must be between 0 and 100' },
+                { id: 'offer', errorId: 'offer-error', message: 'Offer must be between 0 and 100' },
+            ];
+
+            for (let field of numericFields) {
+                const input = document.querySelector(`[name="${field.id}"]`);
+                const errorDiv = document.getElementById(field.errorId);
+                const value = input.value.trim();
+                if (field.id === 'discount' || field.id === 'offer') {
+                    if (value && (isNaN(value) || Number(value) < 0 || Number(value) > 100)) {
+                        errorDiv.innerText = field.message;
+                        errorDiv.style.display = 'block';
+                        isValid = false;
+                    }
+                } else if (value && (isNaN(value) || Number(value) <= 0)) {
+                    errorDiv.innerText = field.message;
+                    errorDiv.style.display = 'block';
+                    isValid = false;
+                }
+            }
+
+            const imageInputs = ['input1', 'input2', 'input3', 'input4'];
+            let hasImage = false;
+            for (let id of imageInputs) {
+                const input = document.getElementById(id);
+                if (input.files.length > 0) {
+                    hasImage = true;
+                    if (input.dataset.cropped === 'false') {
+                        Swal.fire('Error', `Please click "Crop & Keep" for Image ${id.replace('input', '')} before submitting.`, 'error');
+                        isValid = false;
+                    }
+                }
+            }
+
+            const imageError = document.getElementById('productImages-error');
+            if (!hasImage) {
+                imageError.innerText = 'Please upload at least one image';
+                imageError.style.display = 'block';
+                isValid = false;
+            } else {
+                imageError.innerText = '';
+                imageError.style.display = 'none';
+            }
+
+            if (!isValid) {
+                return;
+            }
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Product added successfully',
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                    }).then(() => {
+                        form.reset();
+                        imageInputs.forEach(id => {
+                            const img = document.getElementById(`imgView${id.replace('input', '')}`);
+                            img.src = '';
+                            img.style.display = 'none';
+                            const input = document.getElementById(id);
+                            input.value = '';
+                            input.dataset.cropped = '';
+                            if (croppers[id.replace('input', '')]) {
+                                croppers[id.replace('input', '')].destroy();
+                                delete croppers[id.replace('input', '')];
+                            }
+                        });
+                        document.getElementById('addProductModal').style.display = 'none';
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.error || 'Failed to add product',
+                        icon: 'error',
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An unexpected error occurred',
+                    icon: 'error',
+                });
+            }
+        });
+
+        // Add Offer
+        function openOfferPrompt(productId) {
+            Swal.fire({
+                title: 'Enter Offer %',
+                input: 'number',
+                inputAttributes: {
+                    min: 1,
+                    max: 99,
+                    step: 1
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Add Offer',
+                showLoaderOnConfirm: true,
+                preConfirm: async (value) => {
+                    if (!value || value <= 0 || value >= 100) {
+                        Swal.showValidationMessage('Offer must be between 1 and 99');
+                        return false;
+                    }
+                    try {
+                        const response = await fetch(`/admin/products/${productId}/add-offer`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ offer: value })
+                        });
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.error || 'Failed to add offer');
+                        return data;
+                    } catch (error) {
+                        Swal.showValidationMessage(`Request failed: ${error.message}`);
+                        return false;
+                    }
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    Swal.fire('Success!', 'Offer added successfully.', 'success');
+                    const offerValue = document.getElementById(`offerValue-${productId}`);
+                    if (offerValue) {
+                        offerValue.textContent = `${result.value.offer}%`;
+                    }
+                    const offerCell = document.getElementById(`offerCell-${productId}`);
+                    if (offerCell) {
+                        offerCell.innerHTML = `
+                            <button class="btn-delete bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="removeOffer('${productId}')">Remove Offer</button>
+                        `;
+                    }
+                }
+            });
+        }
+
+        // Remove Offer
+        function removeOffer(productId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Remove this offer?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, remove it!',
+                showLoaderOnConfirm: true
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`/admin/products/${productId}/remove-offer`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.error || 'Failed to remove offer');
+                        Swal.fire('Success!', 'Offer removed successfully.', 'success');
+                        const offerValue = document.getElementById(`offerValue-${productId}`);
+                        if (offerValue) {
+                            offerValue.textContent = 'None';
+                        }
+                        const offerCell = document.getElementById(`offerCell-${productId}`);
+                        if (offerCell) {
+                            offerCell.innerHTML = `
+                                <button class="btn-add bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="openOfferPrompt('${productId}')">Add Offer</button>
+                            `;
+                        }
+                    } catch (error) {
+                        Swal.fire('Error!', error.message || 'Failed to remove offer.', 'error');
+                    }
+                }
+            });
+        }
+
+        // Block Product
+        function blockProduct(productId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Block this product?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, block it!',
+                showLoaderOnConfirm: true
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`/admin/products/${productId}/block`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.error || 'Failed to block product');
+                        Swal.fire('Success!', 'Product blocked successfully.', 'success');
+                        const statusCell = document.getElementById(`status-${productId}`);
+                        if (statusCell) {
+                            statusCell.innerHTML = '<span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">Blocked</span>';
+                        }
+                        const actionCell = document.getElementById(`blockStatus-${productId}`);
+                        if (actionCell) {
+                            actionCell.innerHTML = `
+                                <button class="btn-unblock bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="unblockProduct('${productId}')">Unblock</button>
+                            `;
+                        }
+                    } catch (error) {
+                        Swal.fire('Error!', error.message || 'Failed to block product.', 'error');
+                    }
+                }
+            });
+        }
+
+        // Unblock Product
+        function unblockProduct(productId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Unblock this product?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, unblock it!',
+                showLoaderOnConfirm: true
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`/admin/products/${productId}/unblock`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.error || 'Failed to unblock product');
+                        Swal.fire('Success!', 'Product unblocked successfully.', 'success');
+                        const statusCell = document.getElementById(`status-${productId}`);
+                        if (statusCell) {
+                            statusCell.innerHTML = '<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Active</span>';
+                        }
+                        const actionCell = document.getElementById(`blockStatus-${productId}`);
+                        if (actionCell) {
+                            actionCell.innerHTML = `
+                                <button class="btn-block bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="blockProduct('${productId}')">Block</button>
+                            `;
+                        }
+                    } catch (error) {
+                        Swal.fire('Error!', error.message || 'Failed to unblock product.', 'error');
+                    }
+                }
+            });
+        }
+    </script>
+
+    <%- include("../../views/partials/admin/footer") %>

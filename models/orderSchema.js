@@ -49,6 +49,13 @@ const orderSchema = new Schema({
     enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled','ReturnRequest','Returned'],
     default: 'Processing'
   },
+  orderID: {
+  type: String,
+  required: true,
+  unique: true
+},
+
+
   totalAmount: {
     type: Number,
     required: true

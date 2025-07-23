@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - User</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out forwards',
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .order-card {
+            transition: all 0.3s ease;
+        }
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 50;
+        }
+        .modal-content {
+            background: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <%- include("../../views/partials/user/header") %>
+
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-6 animate-slide-up">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-box-open text-amber-500 mr-3"></i>
+                            My Orders
+                        </h2>
+                        <div class="relative">
+                            <input type="text" id="searchOrder" placeholder="Search by Order ID..." class="border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 w-64" onkeyup="searchOrders()">
+                            <i class="fas fa-search absolute right-3 top-2.5 text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- Order Listing -->
+                    <div class="space-y-6">
+                        <% if (orders.length === 0) { %>
+                            <p class="text-center text-gray-600">No orders found.</p>
+                        <% } else { %>
+                            <% orders.forEach(order => { %>
+                                <div class="order-card bg-white p-4 rounded-lg border border-gray-100">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-gray-900">Order ID: <%= order.orderID %></h3>
+                                            <p class="text-gray-600 text-sm">Date: <%= new Date(order.createdAt).toLocaleDateString() %></p>
+                                            <p class="text-gray-600 text-sm">Status: <span class="capitalize <%= order.orderStatus === 'Delivered' ? 'text-green-600' : order.orderStatus === 'Processing' ? 'text-yellow-600' : order.orderStatus === 'Shipped' ? 'text-blue-600' : '' %>"><%= order.orderStatus %></span></p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-gray-800 font-medium">Total: ₹<%= order.totalAmount %></p>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <% order.items.forEach(item => { %>
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                                                    <span class="text-gray-500"><%= item.product.name.charAt(0) %></span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-900"><%= item.product.name %></p>
+                                                    <p class="text-xs text-gray-600">Qty: <%= item.quantity %> | ₹<%= item.price %></p>
+                                                </div>
+                                            </div>
+                                        <% }); %>
+                                    </div>
+                                    <div class="mt-4 flex flex-col sm:flex-row gap-2">
+                                        <% if (order.orderStatus === 'Processing' || order.orderStatus === 'Shipped') { %>
+                                            <form action="/cancel-order/<%= order.orderID %>" method="POST" id="cancelForm<%= order.orderID %>" style="display: none;">
+                                                <input type="hidden" name="reason" id="cancelReason<%= order.orderID %>">
+                                            </form>
+                                            <button onclick="showCancelModal('<%= order.orderID %>')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Cancel Order</button>
+                                        <% } %>
+                                        <% if (order.orderStatus === 'Delivered') { %>
+                                            <form action="/return-order/<%= order.orderID %>" method="POST" id="returnForm<%= order.orderID %>" style="display: none;">
+                                                <input type="hidden" name="reason" id="returnReason<%= order.orderID %>">
+                                            </form>
+                                            <button onclick="showReturnModal('<%= order.orderID %>')" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Return Order</button>
+                                        <% } %>
+                                        <a href="/order-details/<%= order.orderID %>" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">View Details</a>
+                                        <a href="/download-invoice/<%= order.orderID %>" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Download Invoice</a>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Cancel Modal -->
+    <div id="cancelModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Cancel Order</h3>
+            <p class="text-gray-600 mb-4">Are you sure you want to cancel order <span id="cancelOrderID" class="font-semibold"></span>?</p>
+            <textarea id="cancelReason" placeholder="Reason for cancellation (optional)" class="w-full border border-gray-200 rounded-lg p-2 mb-4"></textarea>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('cancel')" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Close</button>
+                <button onclick="confirmCancel()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Confirm Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Modal -->
+    <div id="returnModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Return Order</h3>
+            <p class="text-gray-600 mb-4">Are you sure you want to return order <span id="returnOrderID" class="font-semibold"></span>?</p>
+            <textarea id="returnReason" placeholder="Reason for return (mandatory)" class="w-full border border-gray-200 rounded-lg p-2 mb-4" required></textarea>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('return')" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Close</button>
+                <button onclick="confirmReturn()" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Confirm Return</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showCancelModal(orderID) {
+            const modal = document.getElementById('cancelModal');
+            document.getElementById('cancelOrderID').textContent = orderID;
+            modal.style.display = 'block';
+            document.getElementById('cancelReason').value = '';
+        }
+
+        function showReturnModal(orderID) {
+            const modal = document.getElementById('returnModal');
+            document.getElementById('returnOrderID').textContent = orderID;
+            modal.style.display = 'block';
+            document.getElementById('returnReason').value = '';
+        }
+
+        function closeModal(type) {
+            document.getElementById(type === 'cancel' ? 'cancelModal' : 'returnModal').style.display = 'none';
+        }
+
+        function confirmCancel() {
+            const orderID = document.getElementById('cancelOrderID').textContent;
+            const reason = document.getElementById('cancelReason').value;
+            document.getElementById(`cancelReason${orderID}`).value = reason || '';
+            document.getElementById(`cancelForm${orderID}`).submit();
+            closeModal('cancel');
+        }
+
+        function confirmReturn() {
+            const orderID = document.getElementById('returnOrderID').textContent;
+            const reason = document.getElementById('returnReason').value;
+            if (!reason) {
+                alert('Please provide a reason for return.');
+                return;
+            }
+            document.getElementById(`returnReason${orderID}`).value = reason;
+            document.getElementById(`returnForm${orderID}`).submit();
+            closeModal('return');
+        }
+
+        function searchOrders() {
+            const searchTerm = document.getElementById('searchOrder').value;
+            window.location.href = `/my-orders?search=${encodeURIComponent(searchTerm)}`;
+        }
+    </script>
+
+    <%- include("../../views/partials/user/footer") %>
+</body>
+</html>

@@ -46,27 +46,32 @@
         transform: translateY(-2px);
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     }
+
+    /* Override to align with header */
+    .main-wrap {
+        padding-top: 0; /* Remove extra padding to match header */
+    }
 </style>
 
 <body class="bg-gray-50">
     <!-- Page Header -->
-    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
-        <div class="relative z-10 container mx-auto px-4 text-center text-white">
-            <h1 class="text-4xl lg:text-5xl font-bold mb-4 animate-fade-in">Customers</h1>
+    <!-- <section class="relative bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
+        <div class="relative z-10 container mx-auto px-4 text-center text-white py-4">
+            <h1 class="text-4xl lg:text-5xl font-bold mb-2 animate-fade-in">Customers</h1>
             <nav class="flex items-center justify-center space-x-2 text-lg">
                 <a href="/admin" class="text-gray-300 hover:text-white transition duration-200">Admin Dashboard</a>
                 <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
                 <span class="text-amber-400">Customers</span>
             </nav>
         </div>
-    </section>
+    </section> -->
 
     <!-- Main Content -->
-    <main class="py-16">
+    <main class="main-wrap">
         <div class="container mx-auto px-4">
             <div class="max-w-7xl mx-auto">
-                <div class="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
-                    <div class="flex items-center justify-between mb-8">
+                <div class="bg-white rounded-2xl shadow-xl p-6 animate-slide-up">
+                    <div class="flex items-center justify-between mb-6">
                         <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center">
                             <i class="fas fa-users text-amber-500 mr-3"></i>
                             Customers
@@ -74,7 +79,7 @@
                     </div>
 
                     <!-- Search Bar -->
-                    <header class="text-center mb-8">
+                    <header class="text-center mb-6">
                         <form action="/admin/users" method="get" class="d-inline">
                             <div class="flex justify-center">
                                 <div class="relative w-full max-w-md">
@@ -140,7 +145,7 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div class="pagination-container mt-8">
+                    <div class="pagination-container mt-6">
                         <% if (currentPage > 1) { %>
                             <a href="?page=<%= currentPage - 1 %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">« Previous</a>
                         <% } %>

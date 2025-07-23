@@ -120,8 +120,8 @@ const addAddress = async (req, res) => {
 
     const newAddress = { phone, street, city, state, zip, country };
 
-    const isDigitsOnly = /^(?!([0])\1{9})\d{10}$/;
-    const isValidZip = /^(?!([0-9])\1{5})\d{6}$/;
+    const isDigitsOnly = /^(?!.*(\d)\1{9})(?!.*[^\d])\d{10}$/;
+    const isValidZip = /^(?!.*(\d)\1{5})(?!.*[^\d])\d{6}$/;
 
 if (!isDigitsOnly.test(phone) || phone.length !== 10) {
   req.flash('error', 'Invalid phone number');
@@ -172,8 +172,8 @@ const editAddress = async (req, res) => {
     }
 
 
-    const isDigitsOnly = /^(?!([0])\1{9})\d{10}$/;
-    const isValidZip = /^(?!([0-9])\1{5})\d{6}$/;
+    const isDigitsOnly =  /^(?!.*(\d)\1{9})(?!.*[^\d])\d{10}$/;
+    const isValidZip = /^(?!.*(\d)\1{5})(?!.*[^\d])\d{6}$/;
 
 if (!isDigitsOnly.test(phone) || phone.length !== 10) {
   return res.status(400).send("Invalid phone number");

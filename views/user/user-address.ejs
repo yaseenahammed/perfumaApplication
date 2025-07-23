@@ -6,6 +6,7 @@
     <title>Address Management - Perfuma</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -129,7 +130,7 @@
                                                             <i class="fas fa-edit mr-2"></i>
                                                             Edit
                                                         </button>
-                                                        <form action="/delete-address/<%= index %>" method="POST" style="display: inline;">
+                                                        <form class="delete-address-form" action="/delete-address/<%= index %>" method="POST" style="display: inline;">
                                                             <button type="submit" class="btn-cancel inline-flex items-center px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-300">
                                                                 <i class="fas fa-trash mr-2"></i>
                                                                 Delete
@@ -161,11 +162,12 @@
                     <h5 class="modal-title" id="addAddressModalLabel">Add New Address</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="/add-address" method="POST">
+                <form id="addAddressForm" action="/add-address" method="POST">
                     <div class="modal-body">
                    <div class="mb-3">
                       <label for="phone" class="form-label text-gray-900">Phone</label>
                       <input type="text" name="phone" class="form-control" id="phone" pattern="\d{10}" required title="Phone must be 10 digits">
+                      
                    </div>
 
                         <div class="mb-3">
@@ -207,7 +209,7 @@
                     <h5 class="modal-title" id="editAddressModalLabel">Edit Address</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="/edit-address" method="POST">
+                <form id="editAddressForm" action="/edit-address" method="POST">
                     <div class="modal-body">
                         <input type="hidden" id="addressId" name="addressId">
                         <div class="mb-3">
@@ -251,11 +253,11 @@
     document.addEventListener('DOMContentLoaded', () => {
         const editModal = document.getElementById('editAddressModal');
 
-        // Use Bootstrap's modal event (with bs prefix)
+      
         editModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget; // Button that triggered the modal
+            const button = event.relatedTarget; 
 
-            // Get data attributes from the button
+          
             const addressId = button.getAttribute('data-address-id');
             const phone = button.getAttribute('data-phone');
             const street = button.getAttribute('data-street');
@@ -264,7 +266,7 @@
             const zip = button.getAttribute('data-zip');
             const country = button.getAttribute('data-country');
 
-            // Populate modal fields
+          
             this.querySelector('#addressId').value = addressId;
             this.querySelector('#editPhone').value = phone;
             this.querySelector('#editStreet').value = street;
@@ -277,56 +279,93 @@
 
 
 
+function validateAddressForm(form) {
+  const phone = form.phone.value.trim();
+  const street = form.street.value.trim();
+  const city = form.city.value.trim();
+  const state = form.state.value.trim();
+  const zip = form.zip.value.trim();
+  const country = form.country.value.trim();
 
- 
+
+  const phoneRegex = /^(?!.*(\d)\1{9})(?!.*[^\d])\d{10}$/;
+  const zipRegex = /^(?!.*(\d)\1{5})(?!.*[^\d])\d{6}$/;
+
+  if (!phoneRegex.test(phone)) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Invalid Phone Number',
+      text: 'Phone must be 10 digits, not all same, and contain only numbers.',
+    });
+    return false;
+  }
+
+  if (!zipRegex.test(zip)) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Invalid Pincode',
+      text: 'Pincode must be 6 digits, not all same, and contain only numbers.',
+    });
+    return false;
+  }
+
+  if (!street || !city || !state || !country) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Missing Fields',
+      text: 'Please fill in all address fields.',
+    });
+    return false;
+  }
+
+  return true; 
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const addForm = document.getElementById('addAddressForm');
+  const editForm = document.getElementById('editAddressForm');
 
-  addForm.addEventListener('submit', function (e) {
-    e.preventDefault();
+  if (addForm) {
+    addForm.addEventListener('submit', function (e) {
+      if (!validateAddressForm(this)) {
+        e.preventDefault();
+      }
+    });
+  }
 
-    const phone = this.phone.value.trim();
-    const street = this.street.value.trim();
-    const city = this.city.value.trim();
-    const state = this.state.value.trim();
-    const zip = this.zip.value.trim();
-    const country = this.country.value.trim();
-
-    const phoneRegex = /^(?!([0-9])\1{9})\d{10}$/;
-    const zipRegex = /^(?!([0-9])\1{5})\d{6}$/;
-
-    if (!phoneRegex.test(phone)) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Invalid Phone Number',
-        text: 'Phone must be exactly 10 digits and not all the same.',
-      });
-      return;
-    }
-
-    if (!zipRegex.test(zip)) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Invalid Pincode',
-        text: 'Pincode must be 6 digits and not all the same.',
-      });
-      return;
-    }
-
-    if (!street || !city || !state || !country) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Missing Fields',
-        text: 'Please fill in all address fields.',
-      });
-      return;
-    }
-
-    // All validations passed, submit form
-    this.submit();
-  });
+  if (editForm) {
+    editForm.addEventListener('submit', function (e) {
+      if (!validateAddressForm(this)) {
+        e.preventDefault();
+      }
+    });
+  }
 });
+
+document.querySelectorAll('.delete-address-form').forEach(form=>{
+    form.addEventListener('submit',function(e){
+        e.preventDefault()
+
+        Swal.fire({
+            title:'Are you sure?',
+            text:'This address will be permanantly deleted.',
+            icon:'warning',
+            showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        reverseButtons: true,
+        }).then((result)=>{
+            if(result.isConfirmed){
+                form.submit()
+            }
+        })
+    })
+})
 </script>
+
+
+
 
 
 
