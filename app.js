@@ -12,6 +12,7 @@ const passport=require('./config/passport')
 const nocache=require('nocache')
 
 
+
 db()
 app.use(nocache())
 app.use(express.json());
@@ -41,6 +42,8 @@ app.use(
     },
   })
 );
+
+
 
 app.use(flash());
 

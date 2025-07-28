@@ -100,7 +100,7 @@ const signup = async (req, res) => {
       otp,
       otpExpires,
     };
-console.log('your otp is',otp)
+    console.log('your otp is',otp)
     await transporter.sendMail({
       to: email,
       subject: 'Your OTP for Signup',
@@ -201,48 +201,6 @@ const resendOtp=async(req,res)=>{
     
   }
 }
-
-
-
-
-// const resendOtp = async (req, res) => {
-//   try {
-  
-//     const userId = req.session.userId ;
-    
-
-//     if (!userId) {
-//       return res.json({ success: false, message: "Session expired. Please sign up again." });
-//     }
-
-//     const user = await User.findById(userId);
-//     console.log("User fetched:", user?.email);
-
-//     if (!user) {
-//       return res.json({ success: false, message: "User not found." });
-//     }
-
-//     const otp = generateOtp();
-//     console.log('Generated OTP:', otp);
-
-//     user.otp = otp;
-//     user.otpExpires = Date.now() + 10 * 60 * 1000;
-//     await user.save();
-
-//     await transporter.sendMail({
-//       to: user.email,
-//       subject: 'Your New OTP for Signup',
-//       text: `Your new OTP is ${otp}. It is valid for 10 minutes.`,
-//     });
-
-//     console.log("OTP email sent");
-//     return res.json({ success: true, message: "OTP resent successfully" });
-
-//   } catch (error) {
-//     console.error('Error in resendOtp:', error.stack);
-//     return res.json({ success: false, message: "Server error. Please try again later." });
-//   }
-// };
 
 
 
@@ -418,11 +376,11 @@ const loadShop = async (req, res) => {
 
     const totalProducts = await Product.countDocuments(query);
     const totalPages = Math.ceil(totalProducts / limit);
-    console.log("Total Products:", totalProducts);
+    
 
     const categories = await Category.find({ isListed: true }).lean();
     const brandIds = await Product.distinct('brand').lean();
-    const brands = await Brand.find({ _id: { $in: brandIds } }).lean();
+    const brands = await Brand.find({ _id: { $in: brandIds }, isBlocked: false }).lean();
    const user = req.session.userId ? await User.findById(req.session.userId).lean() : null;
 
     res.render('shop', {

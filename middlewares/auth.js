@@ -1,10 +1,7 @@
 const User=require('../models/userSchema')
 
 const userAuth = async (req, res, next) => {
-  console.log('userAuth middleware triggered', {
-    sessionUserId: req.session.userId,
-    session: req.session,
-  });
+
 
   if (req.session.userId) {
     try {
@@ -14,7 +11,7 @@ const userAuth = async (req, res, next) => {
 
         return next();
       } else {
-        console.log('User is blocked or not found:', user);
+      
         req.session.destroy((err) => {
           if (err) {
             console.error('Error destroying session:', err);
@@ -38,7 +35,7 @@ const userAuth = async (req, res, next) => {
       });
     }
   } else {
-    console.log('No userId in session.');
+   
     req.flash('error', 'Please log in to continue');
 return res.redirect('/login');
 
@@ -68,6 +65,8 @@ const setUser = async (req, res, next) => {
       if (!user || user.isBlocked) {
         req.session.destroy(() => {});
         res.locals.user = null;
+
+         return res.redirect('/');
       } else {
         res.locals.user = user;
       }
@@ -87,7 +86,7 @@ const setUser = async (req, res, next) => {
 
 
 const adminAuth = async (req, res, next) => {
-  console.log("adminAuth middleware triggered");
+
 
   try {
     if (req.session.admin) {

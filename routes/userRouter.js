@@ -75,8 +75,6 @@ router.post('/forget-resend-otp', nocache(), isLogin, profileController.resendOt
 
 // Product Details
 router.get('/productDetails',productController.productDetails);
-
-
 router.post('/add-to-cart/:productId',userAuth,productController.addToCart);
 router.post('/cart/add/:productId', userAuth, productController.incrementQuantity);
 router.post('/cart/decrement/:productId', userAuth, productController.decrementQuantity);
@@ -86,7 +84,6 @@ router.post('/cart/decrement/:productId', userAuth, productController.decrementQ
 router.get('/userProfile',userAuth,userProfileController.userProfile)
 router.get('/edit-profile',userAuth,userProfileController.getEditProfile)
 router.post('/edit-profile',userAuth,uploads.single('profileImage'),userProfileController.updateProfile)
-router.post('/cancel-order/:orderId', userAuth, userProfileController.cancelOrder);
 router.get('/user-address',userAuth,userProfileController.userAddress)
 router.post('/add-address',userAuth,userProfileController.addAddress)
 router.post('/edit-address', userAuth, userProfileController.editAddress);
@@ -109,8 +106,10 @@ router.post('/addressEdit',userAuth,checkoutController.editAddress)
 router.get('/order-details/:orderId', userAuth,orderController.orderConfirm);
 router.post('/place-order',userAuth,orderController.placeOrder)
 router.get('/my-orders',userAuth,orderController.getOrders)
-router.post('/cancel-order/:orderID', userAuth, orderController.cancelOrder);
-// router.post('/return-order/:orderID', userAuth, orderController.returnOrder);
+router.post('/cancel-order/:orderID',userAuth, orderController.cancelOrder);
+router.get('/userOrder-details/:orderID',userAuth,orderController.userOrderDetails)
+router.post('/return-order/:orderID', userAuth, orderController.returnOrder);
+
 // router.get('/download-invoice/:orderID', userAuth, orderController.downloadInvoice);
 
 

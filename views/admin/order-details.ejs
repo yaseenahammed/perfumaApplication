@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <%- include('../../views/partials/admin/header') %>
+
+    <main class="main-wrap">
+        <div class="container mx-auto px-4">
+            <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-8 mt-6">
+
+                <!-- Order Meta Information -->
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Order Details: <%= order.orderID %></h2>
+                    <p><strong>Date:</strong> <%= new Date(order.createdAt).toLocaleDateString() %></p>
+                    <p><strong>User:</strong> <%= order.user.name || 'Unknown' %></p>
+                    <p><strong>Status:</strong> <%= order.orderStatus %></p>
+                    <p><strong>Total:</strong> ₹<%= order.totalAmount %></p>
+                </div>
+
+                <!-- Items Section -->
+                <div class="mt-8">
+                    <h3 class="text-lg font-semibold mb-4">Items:</h3>
+                    <% if (order.items && order.items.length > 0) { %>
+                        <div class="space-y-4">
+                            <% order.items.forEach(item => { %>
+                                <div class="flex items-center justify-between p-4 border rounded-lg shadow-sm bg-gray-50">
+                                    <div class="flex items-center gap-4">
+                                        <% if (item.product && item.product.productImages && item.product.productImages.length) { %>
+                                            <img src="<%= item.product.productImages[0] %>" alt="<%= item.product.name || 'Product' %>" class="w-16 h-16 object-cover rounded">
+                                        <% } else { %>
+                                            <img src="/images/default-product.png" alt="No Image" class="w-16 h-16 object-cover rounded">
+                                        <% } %>
+
+                                        <div>
+                                            <p class="font-semibold"><%= item.product.name %></p>
+                                            <p class="text-sm text-gray-600">Qty: <%= item.quantity %></p>
+                                            <p class="text-sm text-gray-600">Price: ₹<%= item.price %></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <p class="text-center text-gray-600 text-sm">No items found for this order.</p>
+                    <% } %>
+                </div>
+
+                <!-- Back Button -->
+                <div class="mt-6">
+                    <a href="/admin/orderList" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Back to Orders</a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <%- include('../../views/partials/admin/footer') %>
+</body>
+</html>

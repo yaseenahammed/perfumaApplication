@@ -7,50 +7,48 @@ const Order=require('../../models/orderSchema')
 const mongoose = require('mongoose');
 
 const SHIPPING_FEE = 50;
-const TAX_RATE = 0.12;
+
 
 const calculateSummary = (cartItems) => {
   let subtotal = 0;
-  let totalDiscount = 0;
-  let totalTaxes = 0;
+
 
   cartItems.forEach(item => {
     const itemPrice = item.product.salePrice;
     const quantity = item.quantity;
     const itemTotalBeforeTax = itemPrice * quantity;
 
-    const itemDiscount = 0;
-    const itemTax = itemTotalBeforeTax * TAX_RATE;
-
+   
     subtotal += itemTotalBeforeTax;
-    totalDiscount += itemDiscount;
-    totalTaxes += itemTax;
+
+
   });
 
-  const finalTotal = subtotal + SHIPPING_FEE - totalDiscount + totalTaxes;
+  const total = subtotal + SHIPPING_FEE
 
   return {
     subtotal: parseFloat(subtotal.toFixed(2)),
     shipping: SHIPPING_FEE,
-    discount: parseFloat(totalDiscount.toFixed(2)),
-    tax: parseFloat(totalTaxes.toFixed(2)),
-    total: parseFloat(finalTotal.toFixed(2))
+   total
+   
   };
 };
 
 const getCheckout = async (req, res) => {
+  console.log('checkout triggered');
+
   try {
     const userId = req.session.userId;
-    const addressDoc = await Address.findOne({ userId }).lean();
-    const user = await User.findById(userId).lean();
 
+    const user = await User.findById(userId).lean();
     if (!user) {
       req.flash('error', 'User not found');
       return res.redirect('/login');
     }
 
-    const cart = await Cart.findOne({ user: userId }).populate('items.product').lean();
+    const addressDoc = await Address.findOne({ userId }).lean(); // ✅ After user check
 
+    const cart = await Cart.findOne({ user: userId }).populate('items.product').lean();
     if (!cart || cart.items.length === 0) {
       req.flash('info', 'Your cart is empty. Please continue shopping.');
       return res.redirect('/cart');
@@ -79,20 +77,18 @@ const getCheckout = async (req, res) => {
 
     const summary = calculateSummary(validCartItems);
 
-    const defaultAddress = (Array.isArray(addressDoc.addresses) && addressDoc.addresses.length > 0)
-      ? addressDoc.addresses.find(addr => addr.isDefault) || addressDoc.addresses[0]
-      : null;
+ 
+    const addresses = addressDoc?.addresses || [];
+    const defaultAddress = addresses.find(addr => addr.isDefault) || addresses[0] || null;
 
     res.render('checkout', {
       title: 'Checkout',
       user: user,
       cartItems: validCartItems,
-      userAddresses: addressDoc?.addresses || [],
+      userAddresses: addresses,
       selectedAddress: defaultAddress,
       subtotal: summary.subtotal,
       shipping: summary.shipping,
-      discount: summary.discount,
-      tax: summary.tax,
       total: summary.total
     });
 
@@ -102,6 +98,7 @@ const getCheckout = async (req, res) => {
     res.redirect('/pageNotFound');
   }
 };
+
 
 const addAddress = async (req, res) => {
   try {

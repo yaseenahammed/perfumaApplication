@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - User</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .card {
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .card-header i {
+            color: #f59e0b;
+            margin-right: 0.5rem;
+        }
+        .search-bar input {
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            width: 100%;
+            max-width: 20rem;
+        }
+        .search-bar button {
+            background: #f59e0b;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-left: 0.5rem;
+            cursor: pointer;
+        }
+        .search-bar button:hover {
+            background: #d97706;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        .modal-content {
+            background: #fff;
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-content textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .modal-content button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <%- include("../../views/partials/user/header") %>
+
+    <main class="py-8">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <!-- Search Bar -->
+                <div class="mb-6 flex justify-center">
+    <form action="/my-orders" method="get" class="flex items-center gap-2">
+        <input 
+            type="text" 
+            name="search" 
+            placeholder="Search Orders by Order ID..." 
+            class="px-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-amber-500"
+        >
+        <button 
+            type="submit" 
+            class="bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600"
+        >
+            <i class="fas fa-search"></i>
+        </button>
+    </form>
+</div>
+
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Items Section -->
+                    <div class="lg:col-span-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-box-open"></i>
+                                <h2 class="text-lg font-semibold">Items in Your Order</h2>
+                            </div>
+                            <div class="space-y-4">
+                                <% if (order.items && order.items.length > 0) { %>
+                                    <% order.items.forEach(item => { %>
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <% if (item.product && item.product.productImages && item.product.productImages.length) { %>
+                                                    <img src="<%= item.product.productImages[0] %>" alt="<%= item.product.name || 'Product' %>" class="w-16 h-16 object-cover rounded mr-4">
+                                                <% } else { %>
+                                                    <img src="/images/default-product.png" alt="No Image" class="w-16 h-16 object-cover rounded mr-4">
+                                                <% } %>
+                                                <div>
+                                                    <h3 class="text-md font-medium"><%= (item.product && item.product.name ? item.product.name : 'Unknown Product') %></h3>
+                                                    <h5 class="text-md font-medium">ORDERID: <%= order.orderID %></h5>
+                                                    <p class="text-sm text-gray-600">Quantity: <%= item.quantity || 0 %></p>
+                                                    <p class="text-sm text-gray-600">Price: ₹<%= item.price || 0 %></p>
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-col items-end">
+                                                <p class="text-sm font-medium">Item Total: ₹<%= (item.price || 0) * (item.quantity || 0) %></p>
+                                                <% if (order.orderStatus === 'Processing' || order.orderStatus === 'Shipped') { %>
+                                                    <form action="/cancel-order/<%= order.orderID %>" method="POST" id="cancelForm<%= order.orderID %>_<%= item._id %>" style="display: none;">
+                                                        <input type="hidden" name="reason" id="cancelReason<%= order.orderID %>_<%= item._id %>">
+                                                        <input type="hidden" name="itemId" value="<%= item._id %>">
+                                                    </form>
+                                                    <button onclick="showCancelModal('<%= order.orderID %>', '<%= item._id %>')" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mt-2 text-sm">Cancel Item</button>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                <% } else { %>
+                                    <p class="text-center text-gray-600 text-sm">No items found for this order.</p>
+                                <% } %>
+                            </div>
+                            <div class="mt-4 flex justify-end gap-4">
+                                <% if (order.orderStatus === 'Delivered') { %>
+                                    <form action="/return-order/<%= order.orderID %>" method="POST" id="returnForm<%= order.orderID %>" style="display: none;">
+                                        <input type="hidden" name="reason" id="returnReason<%= order.orderID %>">
+                                    </form>
+                                    <button onclick="showReturnModal('<%= order.orderID %>')" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Return Order</button>
+                                <% } %>
+                                <a href="/download-invoice/<%= order.orderID %>" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Download Invoice</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Summary Section -->
+                    <div class="lg:col-span-1">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                                <h2 class="text-lg font-semibold">Order Summary</h2>
+                            </div>
+                            <div class="space-y-2">
+                                <p><span class="text-gray-600">Subtotal:</span> <span class="font-medium">₹<%= summary.subtotal || 0 %></span></p>
+                                <p><span class="text-gray-600">Shipping:</span> <span class="font-medium">₹50</span></p>
+                                <p class="border-t pt-2 mt-2"><span class="text-gray-600 font-semibold">Order Total:</span> <span class="text-lg font-bold text-amber-600">₹<%= summary.total || 0 %></span></p>
+                            </div>
+                            <div class="mt-4">
+                                <p class="text-gray-600 font-semibold">Payment Method:</p>
+                                <p class="text-sm">Cash on Delivery</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Address Section -->
+                <div class="card mt-6">
+                    <div class="card-header">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h2 class="text-lg font-semibold">Shipping Address</h2>
+                    </div>
+                    <div class="border border-amber-500 rounded p-4">
+                        <p class="text-sm">
+                            <% if (order.shippingAddress) { %>
+                                <%= (order.shippingAddress.street ? order.shippingAddress.street + ', ' : '') %>
+                                <%= (order.shippingAddress.city ? order.shippingAddress.city + ', ' : '') %>
+                                <%= (order.shippingAddress.state ? order.shippingAddress.state + ', ' : '') %>
+                                <%= (order.shippingAddress.pincode ? order.shippingAddress.pincode + ', ' : '') %>
+                                <%= (order.shippingAddress.country ? order.shippingAddress.country : 'N/A') %>
+                            <% } else { %>
+                                No shipping address available
+                            <% } %>
+                        </p>
+                        <p class="text-sm mt-2">
+                            <% if (order.shippingAddress && order.shippingAddress.phone) { %>
+                                Phone: <%= order.shippingAddress.phone %>
+                            <% } else { %>
+                                Phone: N/A
+                            <% } %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Cancel Modal -->
+    <div id="cancelModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-xl font-bold mb-4">Cancel Item</h2>
+            <p class="mb-4">Are you sure you want to cancel the item from order <span id="cancelOrderID" class="font-semibold"></span>?</p>
+            <textarea id="cancelReason" placeholder="Reason for cancellation (optional)"></textarea>
+            <div class="mt-4 flex justify-end gap-4">
+                <button onclick="closeModal('cancel')" class="bg-gray-300 text-gray-800 px-4 py-2 rounded">Close</button>
+                <button onclick="confirmCancel()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Confirm Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Modal -->
+    <div id="returnModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-xl font-bold mb-4">Return Order</h2>
+            <p class="mb-4">Are you sure you want to return order <span id="returnOrderID" class="font-semibold"></span>?</p>
+            <textarea id="returnReason" placeholder="Reason for return (mandatory)" required></textarea>
+            <div class="mt-4 flex justify-end gap-4">
+                <button onclick="closeModal('return')" class="bg-gray-300 text-gray-800 px-4 py-2 rounded">Close</button>
+                <button onclick="confirmReturn()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Confirm Return</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showCancelModal(orderID, itemId = null) {
+            const modal = document.getElementById('cancelModal');
+            const cancelOrderID = document.getElementById('cancelOrderID');
+            cancelOrderID.textContent = orderID;
+         
+            cancelOrderID.dataset.itemid = itemId || '';
+            modal.style.display = 'block';
+            document.getElementById('cancelReason').value = '';
+        }
+
+        function closeModal(type) {
+            document.getElementById(type === 'cancel' ? 'cancelModal' : 'returnModal').style.display = 'none';
+        }
+
+        async function confirmCancel() {
+            const orderID = document.getElementById('cancelOrderID').textContent;
+            const itemId = document.getElementById('cancelOrderID').dataset.itemid;
+            const reason = document.getElementById('cancelReason').value.trim();
+
+            try {
+                const response = await fetch(`/cancel-order/${orderID}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reason,
+                        itemId: itemId || null
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    Swal.fire(data.message || 'Item cancelled successfully.');
+                    location.reload();
+                } else {
+                    const error = await response.text();
+                    Swal.fire(error || 'Failed to cancel item.');
+                }
+            } catch (error) {
+                console.error('Cancel error:', error);
+                Swal.fire('An error occurred while cancelling.');
+            }
+        }
+
+        function showReturnModal(orderID) {
+            const modal = document.getElementById('returnModal');
+            document.getElementById('returnOrderID').textContent = orderID;
+            modal.style.display = 'block';
+            document.getElementById('returnReason').value = '';
+        }
+
+        function confirmReturn() {
+            const orderID = document.getElementById('returnOrderID').textContent;
+            const reason = document.getElementById('returnReason').value;
+            if (!reason) {
+                Swal.fire('Please provide a reason for return.');
+                return;
+            }
+            document.getElementById(`returnReason${orderID}`).value = reason;
+            document.getElementById(`returnForm${orderID}`).submit();
+            closeModal('return');
+        }
+    </script>
+
+    <%- include("../../views/partials/user/footer") %>
+</body>
+</html>

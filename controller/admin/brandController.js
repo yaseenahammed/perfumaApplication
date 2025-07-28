@@ -21,7 +21,7 @@ const getBrandPage = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    const totalBrands = await Brand.countDocuments(searchFilter); // Count with filter
+    const totalBrands = await Brand.countDocuments(searchFilter); 
     const totalPages = Math.ceil(totalBrands / limit);
 
     res.render("brands", {

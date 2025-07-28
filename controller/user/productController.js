@@ -16,7 +16,7 @@ if (userId && mongoose.isValidObjectId(userId)) {
 
   if (userId && !mongoose.isValidObjectId(userId)) {
   req.flash('error', 'Invalid session data');
-  console.log('Invalid userId:', userId);
+ 
   return res.redirect('/login');
 }
 
@@ -24,21 +24,21 @@ if (userId && mongoose.isValidObjectId(userId)) {
    
 
   if (!userData) {
-  console.log('User not found, continuing without user data');
+ 
   userData = null;
 }
 
   if (userData && userData.isBlocked) {
-  console.log('User blocked:', userData.email);
+  
   userData = null;
 }
 
     const productId = req.query.id;
-    console.log('Product ID:', productId);
+   
 
     if (!productId || !mongoose.isValidObjectId(productId)) {
       req.flash('error', 'Invalid product ID');
-      console.log('Invalid product ID');
+     
       return res.redirect('/shop');
     }
 
@@ -46,11 +46,11 @@ if (userId && mongoose.isValidObjectId(userId)) {
       .populate('category')
       .populate('brand')
       .lean();
-    console.log('Product:', product?.name || 'None', 'Quantity:', product?.quantity, 'isListed:', product?.isListed, 'isBlocked:', product?.isBlocked);
+  
 
     if (!product) {
       req.flash('error', 'Product not found');
-      console.log('Product not found');
+      
       return res.redirect('/shop');
     }
 
@@ -59,7 +59,7 @@ if (userId && mongoose.isValidObjectId(userId)) {
       _id: { $ne: product._id },
       status: { $in: ['available', 'discounted'] },
     }).limit(4).lean();
-    console.log('Similar products:', similarProducts.length);
+  
 
     const findCategory = product.category;
     const categoryOffer = findCategory?.offer || 0;
@@ -96,18 +96,24 @@ const addToCart = async (req, res) => {
     const userId = req.session.userId;
     const productId = req.params.productId;
     const quantity = parseInt(req.body.quantity) || 1;
+    console.log('availbility', quantity)
 
     if (!userId || !mongoose.isValidObjectId(userId)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const product = await Product.findById(productId).populate('category');
-    if (!product) return res.status(404).json({ error: 'Product not found' });
+    
+
+
+ const product = await Product.findById(productId).populate('category');
+
 
     if (
+      !product ||
       product.isBlocked ||
       !product.isListed ||
       product.quantity <= 0 ||
+      !product.category ||
       product.category.isBlocked ||
       !product.category.isListed
     ) {

@@ -518,7 +518,7 @@
             if (input.files.length > 0) {
                 hasImage = true;
                 if (input.dataset.cropped === 'false') {
-                    alert(`Please click "Save Crop" for Image ${id.replace('input', '')} before submitting.`);
+                    Swal.fire(`Please click "Save Crop" for Image ${id.replace('input', '')} before submitting.`);
                     isValid = false;
                 }
             }

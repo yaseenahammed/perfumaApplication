@@ -77,18 +77,7 @@ const updateProfile = async (req, res) => {
 };
 
 
-const cancelOrder = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.orderId);
-    if (order.userId.toString() === req.user.id) {
-      order.status = 'Cancelled';
-      await order.save();
-    }
-    res.redirect('/userProfile');
-  } catch (error) {
-    res.status(500).send('Server error');
-  }
-};
+
 
 
 const userAddress = async (req, res) => {
@@ -360,7 +349,6 @@ module.exports={
     userProfile,
     getEditProfile,
     updateProfile,
-    cancelOrder,
     userAddress,
     addAddress,
     deleteAddress,

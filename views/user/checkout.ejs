@@ -197,15 +197,7 @@
                                     <span class="font-semibold text-gray-900">₹<%= shipping %></span>
                                 </div>
                                 
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="text-gray-600">Discount:</span>
-                                    <span class="font-semibold text-green-600">-₹<%= discount %></span>
-                                </div>
-
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="text-gray-600">Taxes:</span>
-                                    <span class="font-semibold text-gray-900">₹<%= tax %></span>
-                                </div>
+                 
                                 
                                 <div class="border-t border-gray-200 pt-4">
                                     <div class="flex justify-between items-center">
@@ -565,7 +557,7 @@ editAddressForm.addEventListener('submit', async (event) => {
             placeOrderBtn.addEventListener('click', () => {
                 // Check if an address is selected
                 if (!window.selectedAddressId) {
-                    alert('Please select a shipping address.');
+                    Swal.fire('Please select a shipping address.');
                     return;
                 }
 
@@ -599,11 +591,11 @@ editAddressForm.addEventListener('submit', async (event) => {
       
       openModal(orderSuccessfulModal, orderSuccessfulContent);
     } else {
-      alert('Order failed: ' + (data.message || 'Unknown error'));
+      Swal.fire('Order failed: ' + (data.message || 'Unknown error'));
     }
   } catch (err) {
     console.error('Error placing order:', err);
-    alert('An error occurred. Please try again.');
+    Swal.fire('An error occurred. Please try again.');
   }
 });
 
@@ -617,7 +609,7 @@ viewOrderDetailsBtn.addEventListener('click', () => {
   if (window.latestOrderId) {
     window.location.href = `/order-details/${window.latestOrderId}`;
   } else {
-    alert('Order ID not found.');
+    Swal.fire('Order ID not found.');
   }
 });
 

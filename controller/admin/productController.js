@@ -22,8 +22,7 @@ const getAllproducts = async (req, res) => {
       };
     }
 
-//  const category1=await Product.find({quantity:{$gte:6}})
-//   console.log("this is:",category1)
+
 
     const productData = await Product.find(query)
       .limit(limit)
@@ -98,7 +97,7 @@ const postEditProduct = async (req, res) => {
   try {
     const id = req.params.id;
     const { name, description, regularPrice, discount, quantity, brand, category, offer, status, existingImages, isListed, isBlocked } = req.body;
-
+console.log('product is getting',req.body)
     if (!name || !description || !regularPrice || !quantity || !brand || !category || !status) {
       return res.redirect(`/admin/editProduct/${id}`);
     }
@@ -145,10 +144,15 @@ const postEditProduct = async (req, res) => {
       return res.redirect(`/admin/editProduct/${id}`);
     }
 
+     const salePrice = parsedDiscount > 0
+      ? parsedRegularPrice * (1 - parsedDiscount / 100)
+      : parsedRegularPrice;
+
     const updateData = {
       name,
       description,
       regularPrice: parsedRegularPrice,
+      salePrice,
       discount: parsedDiscount,
       quantity: parsedQuantity,
       brand,
@@ -266,7 +270,7 @@ const addProduct = async (req, res) => {
     });
 
     await newProduct.save();
-    console.log('Product added successfully');
+ 
     return res.json({ success: 'Product added successfully' });
   } catch (error) {
     console.error('Error in addProduct:', error);
@@ -277,7 +281,7 @@ const addProduct = async (req, res) => {
 const removeProductImage = async (req, res) => {
   try {
     const { imagePath } = req.body;
-    console.log('image path',req.body)
+   
     const productId = req.params.id;
     const product = await Product.findById(productId);
 

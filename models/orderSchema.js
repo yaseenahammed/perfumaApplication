@@ -7,30 +7,39 @@ const orderSchema = new Schema({
     ref: 'User',
     required: true
   },
-  items: [
-    {
-      product: {
-        type: Schema.Types.ObjectId,
-        ref: 'Product',
-        required: true
-      },
-      quantity: {
-        type: Number,
-        required: true,
-        min: 1
-      },
-      price: {
-        type: Number,
-        required: true
-      }
+items: [
+  {
+    product: {
+      type: Schema.Types.ObjectId,
+      ref: 'Product',
+      required: true
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1
+    },
+    price: {
+      type: Number,
+      required: true
+    },
+    cancelled: {
+      type: Boolean,
+      default: false
+    },
+    cancelReason: {
+      type: String,
+      default: ''
     }
-  ],
+  }
+],
+
+ 
   shippingAddress: {
-    fullName: String,
-    address: String,
+    street: String,
     city: String,
     state: String,
-    postalCode: String,
+    pincode: String,
     country: String,
     phone: String
   },
@@ -49,10 +58,19 @@ const orderSchema = new Schema({
     enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled','ReturnRequest','Returned'],
     default: 'Processing'
   },
+  cancellationReason: {
+  type: String,
+  default: null
+},
+returnReason:{
+  type:String,
+  default:null
+},
+
   orderID: {
   type: String,
   required: true,
-  unique: true
+  index: true
 },
 
 

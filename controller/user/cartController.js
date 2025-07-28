@@ -8,34 +8,46 @@ const MAX_ALLOWED_QUANTITY = 5;
 
 const getCart = async (req, res) => {
   try {
-    const user = req.user;
-    const cart = await Cart.findOne({ user: user._id }).populate('items.product');
+  const user = req.user;
+  const cart = await Cart.findOne({ user: user._id }).populate('items.product');
 
-    let subtotal = 0, shipping = 'Free', insurance = 5000, tax = 0;
+  let subtotal = 0, shipping = 50;
+  let cartUpdated = false;
 
-    if (cart && cart.items.length > 0) {
-      subtotal = cart.items.reduce((sum, item) => {
-        const price = item.product.salePrice || item.product.regularPrice || 0;
-        return sum + (price * item.quantity);
-      }, 0);
-      tax = subtotal * 0.12;
+  if (cart && cart.items.length > 0) {
+    for (let item of cart.items) {
+      const available = item.product.quantity;
+      
+      // Check and correct if cart quantity > stock
+      if (item.quantity > available) {
+        item.quantity = available;
+        item.totalPrice = available * (item.product.salePrice || item.product.regularPrice);
+        cartUpdated = true;
+      }
+
+      subtotal += item.quantity * (item.product.salePrice || item.product.regularPrice || 0);
     }
 
-    const total = subtotal + (shipping === 'Free' ? 0 : parseInt(shipping)) + insurance + tax;
-
-    res.render('cart', {
-      user,
-      cartItems: cart?.items || [],
-      subtotal,
-      shipping,
-      insurance,
-      tax,
-      total
-    });
-  } catch (error) {
-    console.error('Error in getCart:', error.stack);
-    res.redirect('/pageNotFound');
+    if (cartUpdated) {
+      await cart.save(); 
+    }
   }
+
+  const total = subtotal + shipping;
+
+  res.render('cart', {
+    user,
+    cartItems: cart?.items || [],
+    subtotal,
+    shipping,
+    total
+  });
+
+} catch (error) {
+  console.error('Error loading cart:', error);
+  res.status(500).send('Internal Server Error');
+}
+
 };
 
 

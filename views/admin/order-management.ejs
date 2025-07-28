@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- Added for Swal.fire -->
+
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+        }
+        .main-wrap {
+            margin-left: 250px;
+            padding: 15px;
+            min-height: 25vh;
+            transition: margin-left 0.3s ease;
+            box-sizing: border-box;
+            width: calc(100% - 250px);
+        }
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed; /* Ensures consistent column widths */
+        }
+        .order-table th, .order-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+        .order-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #1f2937;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .order-table td {
+            word-wrap: break-word; /* Prevents overflow for long text */
+        }
+        .status-btn {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            display: inline-block;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 50;
+        }
+        .modal-content {
+            background: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+        @media (max-width: 768px) {
+            .main-wrap {
+                margin-left: 0;
+                padding: 10px;
+                width: 100%;
+            }
+            .order-table {
+                display: block;
+                overflow-x: auto;
+            }
+            .order-table th, .order-table td {
+                min-width: 100px; /* Adjusted for better readability */
+                font-size: 0.9rem;
+            }
+            .order-table th {
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <%- include("../../views/partials/admin/header") %>
+
+    <main class="main-wrap">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-6">
+
+                    <!-- Title Section -->
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center justify-center">
+                            <i class="fas fa-box-open text-amber-500 mr-3"></i>
+                            Order Management
+                        </h2>
+                    </div>
+
+                    <!-- Search, Sort, Filter Section -->
+                    <header class="text-center mb-8">
+                        <form action="/admin/orderList" method="get" class="d-inline">
+                            <div class="flex justify-center">
+                                <div class="relative w-full max-w-md">
+                                    <input 
+                                        id="searchOrder"
+                                        type="text" 
+                                        class="w-full border border-gray-200 rounded-full py-3 px-6 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+                                        placeholder="Search By Order ID.." 
+                                        name="search"
+                                    >
+                                    <button 
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full hover:from-amber-600 hover:to-orange-600 transition duration-300"
+                                        type="submit"
+                                    >
+                                        Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </header>
+                    <div class="text-center mb-6">
+                        <div class="flex justify-center flex-wrap gap-4">
+                            <select id="sortOrder" class="border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-40" onchange="searchOrders()">
+                                <option value="desc">Newest First</option>
+                                <option value="asc">Oldest First</option>
+                            </select>
+                            <select id="filterStatus" class="border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-48" onchange="searchOrders()">
+                                <option value="">All Statuses</option>
+                                <option value="Processing">Processing</option>
+                                <option value="Shipped">Shipped</option>
+                                <option value="Out for Delivery">Out for Delivery</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="ReturnRequest">Return Request</option>
+                                <option value="Returned">Returned</option>
+                            </select>
+                            <button id="clearSearch" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 w-full sm:w-auto" onclick="clearSearch()">Clear</button>
+                        </div>
+                    </div>
+
+                    <!-- Order Listing as Table -->
+                    <div id="orderList" class="space-y-6">
+                        <% if (!orders || orders.length === 0) { %>
+                            <p class="text-center text-gray-600">No orders found.</p>
+                        <% } else { %>
+                            <table class="order-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Date</th>
+                                        <th>User</th>
+                                        <th>Status</th>
+                                        <th>Total</th>
+                                        <th>Details</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% orders.forEach(order => { %>
+                                        <tr>
+                                            <td><%= order.orderID %></td>
+                                            <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                                            <td><%= order.user.name || 'Unknown' %></td>
+                                            <td>
+                                                <span class="status-btn <%= order.orderStatus === 'Delivered' ? 'bg-green-200 text-green-800' : order.orderStatus === 'Processing' ? 'bg-yellow-200 text-yellow-800' : order.orderStatus === 'Shipped' ? 'bg-blue-200 text-blue-800' : order.orderStatus === 'Out for Delivery' ? 'bg-indigo-200 text-indigo-800' : order.orderStatus === 'Cancelled' ? 'bg-red-200 text-red-800' : order.orderStatus === 'ReturnRequest' ? 'bg-orange-200 text-orange-800' : 'bg-gray-200 text-gray-800' %>">
+                                                    <%= order.orderStatus %>
+                                                </span>
+                                            </td>
+                                            <td>₹<%= order.totalAmount %></td>
+                                            <td>
+                                                <a href="/admin/order-details/<%= order.orderID %>" 
+                                                   class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 block text-center w-full sm:w-auto">
+                                                    View Details
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <% if (order.orderStatus !== 'Cancelled' && order.orderStatus !== 'Delivered' && order.orderStatus !== 'ReturnRequest' && order.orderStatus !== 'Returned') { %>
+                                                    <select name="status" 
+                                                            onchange="updateStatus('<%= order.orderID %>', this.value)" 
+                                                            class="border border-gray-200 rounded-lg py-2 px-1 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-auto mb-2">
+                                                        <option value="" disabled <%= !order.orderStatus ? 'selected' : '' %>>Select Status</option>
+                                                        <option value="Processing" <%= order.orderStatus === 'Processing' ? 'selected' : '' %>>Processing</option>
+                                                        <option value="Shipped" <%= order.orderStatus === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                                        <option value="Out for Delivery" <%= order.orderStatus === 'Out for Delivery' ? 'selected' : '' %>>Out for Delivery</option>
+                                                        <option value="Delivered" <%= order.orderStatus === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                                    </select>
+                                                <% } %>
+                                                <% if (order.orderStatus === 'ReturnRequest') { %>
+                                                    <button onclick="showReturnModal('<%= order.orderID %>', <%= order.totalAmount %>)" 
+                                                            class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 w-full sm:w-auto block text-center">
+                                                        Verify Return
+                                                    </button>
+                                                <% } %>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        <% } %>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container mt-8 flex justify-center items-center gap-2">
+                        <% if (currentPage > 1) { %>
+                            <a href="/admin/orderList?page=<%= currentPage - 1 %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort %>&filter=<%= encodeURIComponent(filter || '') %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">« Previous</a>
+                        <% } %>
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <% if (i === currentPage) { %>
+                                <span class="current-page bg-amber-500 text-white border-amber-500 px-4 py-2 rounded-lg font-bold"><%= i %></span>
+                            <% } else { %>
+                                <a href="/admin/orderList?page=<%= i %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort %>&filter=<%= encodeURIComponent(filter || '') %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200"><%= i %></a>
+                            <% } %>
+                        <% } %>
+                        <% if (currentPage < totalPages) { %>
+                            <a href="/admin/orderList?page=<%= currentPage + 1 %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort %>&filter=<%= encodeURIComponent(filter || '') %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">Next »</a>
+                        <% } %>
+                    </div>
+
+                    <!-- Return Verification Modal -->
+                    <div id="returnModal" class="modal">
+                        <div class="modal-content">
+                            <h3 class="text-lg font-bold mb-4">Verify Return for Order <span id="modalOrderID"></span></h3>
+                            <p class="mb-4">Total Amount: ₹<span id="modalTotalAmount"></span></p>
+                            <p class="mb-4">Please select an action for this return request:</p>
+                            <div class="flex justify-end gap-2">
+                                <button onclick="verifyReturn('allow')" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Allow</button>
+                                <button onclick="verifyReturn('reject')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Reject</button>
+                                <button onclick="closeReturnModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+
+    <script>
+        let currentOrderID = null;
+
+        function validateSearch(input) {
+            const searchError = document.getElementById('searchError');
+            if (input.value.length > 50) {
+                searchError.textContent = 'Search term cannot exceed 50 characters.';
+                input.value = input.value.slice(0, 50);
+            } else if (!/^[a-zA-Z0-9-]*$/.test(input.value)) {
+                searchError.textContent = 'Only letters, numbers, and hyphens are allowed.';
+            } else {
+                searchError.textContent = '';
+            }
+        }
+
+        function updateStatus(orderID, status) {
+            if (!status || status === 'Returned') {
+                Swal.fire('Please select a valid status.');
+                return;
+            }
+            fetch(`/admin/update-status/${orderID}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Order status updated successfully.');
+                    location.reload();
+                } else {
+                    Swal.fire(data.message || 'Error updating status.');
+                }
+            })
+            .catch(error => Swal.fire('Network error. Please try again.'));
+        }
+
+        function showReturnModal(orderID, totalAmount) {
+            currentOrderID = orderID;
+            document.getElementById('modalOrderID').textContent = orderID;
+            document.getElementById('modalTotalAmount').textContent = totalAmount;
+            document.getElementById('returnModal').style.display = 'block';
+        }
+
+        function closeReturnModal() {
+            document.getElementById('returnModal').style.display = 'none';
+            currentOrderID = null;
+        }
+
+        function verifyReturn(action) {
+            if (!currentOrderID) {
+                Swal.fire('No order selected.');
+                return;
+            }
+            let endpoint = '';
+            let message = '';
+            if (action === 'allow') {
+                endpoint = `/admin/verify-return/${currentOrderID}`;
+                message = 'Return verified and amount refunded to wallet.';
+            } else if (action === 'reject') {
+                endpoint = `/admin/reject-return/${currentOrderID}`;
+                message = 'Return request rejected.';
+            }
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire(message);
+                    closeReturnModal();
+                    location.reload();
+                } else {
+                    Swal.fire(data.message || `Error ${action}ing return.`);
+                }
+            })
+            .catch(error => Swal.fire('Network error. Please try again.'));
+        }
+
+        function searchOrders() {
+            const searchTerm = document.getElementById('searchOrder').value.trim();
+            const sortOrder = document.getElementById('sortOrder').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+            if (searchTerm && !/^[a-zA-Z0-9-]*$/.test(searchTerm)) {
+                Swal.fire('Search term must contain only letters, numbers, and hyphens.');
+                return;
+            }
+            window.location.href = `/admin/orderList?search=${encodeURIComponent(searchTerm)}&sort=${sortOrder}&filter=${encodeURIComponent(filterStatus)}&page=1&t=${Date.now()}`;
+        }
+
+        document.getElementById('clearSearch').addEventListener('click', () => {
+            document.getElementById('searchOrder').value = '';
+            document.getElementById('sortOrder').value = 'desc';
+            document.getElementById('filterStatus').value = '';
+            window.location.href = `/admin/orderList?page=1&t=${Date.now()}`;
+        });
+    </script>
+
+    <%- include("../../views/partials/admin/footer") %>
+</body>
+</html>

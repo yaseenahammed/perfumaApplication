@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <%- include('../../views/partials/admin/header') %>
+    <main class="main-wrap">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-6 mt-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Order Details - <%= order.orderID %></h2>
+                    <p><strong>Date:</strong> <%= new Date(order.createdAt).toLocaleDateString() %></p>
+                    <p><strong>User:</strong> <%= order.user.name || 'Unknown' %></p>
+                    <p><strong>Status:</strong> <%= order.orderStatus %></p>
+                    <p><strong>Total:</strong> ₹<%= order.totalAmount %></p>
+                    <h3 class="text-lg font-semibold mt-4">Items:</h3>
+                    <ul class="list-disc pl-5">
+                        <% order.items.forEach(item => { %>
+                            <li><%= item.product.name %> - Qty: <%= item.quantity %>, Price: ₹<%= item.price %></li>
+                        <% }); %>
+                    </ul>
+                    <a href="/admin/orders" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Back to Orders</a>
+                </div>
+            </div>
+        </div>
+    </main>
+    <%- include('../../views/partials/admin/footer') %>
+</body>
+</html>
