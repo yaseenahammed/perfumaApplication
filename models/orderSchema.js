@@ -45,7 +45,7 @@ items: [
   },
  paymentMethod: {
   type: String,
-  enum: ['Card', 'UPI', 'Net Banking', 'Cash on Delivery'],
+  enum: ['card', 'upi', 'netbanking', 'cod'],
   required: true,
 },
   paymentStatus: {

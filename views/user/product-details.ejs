@@ -676,7 +676,7 @@ if (data.success) {
     showConfirmButton: false,
     timer: 1500
   }).then(() => {
-    window.location.href = '/cart';
+    window.location.href = '/productDetails';
   });
 } else {
   Swal.fire({
@@ -700,10 +700,10 @@ if (data.success) {
 
 
 
-            // Wishlist functionality
+           
             window.addToWishlist = (productId) => {
                 console.log('Add to wishlist:', productId);
-                // Add your wishlist functionality here
+               
             };
         });
     </script>

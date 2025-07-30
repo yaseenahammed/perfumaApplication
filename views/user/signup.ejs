@@ -41,6 +41,16 @@
                     <p class="mt-2 text-gray-600">Create your account</p>
                 </div>
 
+
+                <% if (locals.message && locals.message.length > 0) { %>
+  <div class="p-4 bg-red-50 border border-red-200 rounded-lg mb-4">
+      <div class="flex">
+          <i class="fas fa-exclamation-circle text-red-400 mr-2 mt-0.5"></i>
+          <p class="text-sm text-red-700"><%= locals.message %></p>
+      </div>
+  </div>
+<% } %>
+
                 <!-- Signup Form -->
                 <form id="signform" action="/signup" method="post" class="mt-8 space-y-6">
                     <!-- Name Field -->
@@ -133,15 +143,7 @@
                         <p id="error4" class="mt-1 text-sm text-red-600 hidden"></p>
                     </div>
 
-                    <!-- Server Error Message -->
-                    <% if (locals.message && locals.message.length > 0) { %>
-                    <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
-                        <div class="flex">
-                            <i class="fas fa-exclamation-circle text-red-400 mr-2 mt-0.5"></i>
-                            <p class="text-sm text-red-700"><%= locals.message %></p>
-                        </div>
-                    </div>
-                    <% } %>
+                    
 
                     <!-- Submit Button -->
                     <div>

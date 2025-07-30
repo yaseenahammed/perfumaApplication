@@ -155,14 +155,14 @@ const getResetPassPage = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    console.log('Session in resetPassword:', req.session);
+  
     if (!req.session.otpVerified || !req.session.userEmail) {
-      console.log('Session check failed. otpVerified:', req.session.otpVerified, 'userEmail:', req.session.userEmail);
+    
       return res.json({ success: false, message: 'Session expired or invalid. Please restart the process.' });
     }
 
     const { newPassword, confirmPassword } = req.body;
-    console.log('Request body in resetPassword:', req.body);
+   
 
     if (!newPassword || !confirmPassword) {
       return res.json({ success: false, message: 'Both password fields are required' });

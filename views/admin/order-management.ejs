@@ -195,10 +195,12 @@
                                                     </select>
                                                 <% } %>
                                                 <% if (order.orderStatus === 'ReturnRequest') { %>
-                                                    <button onclick="showReturnModal('<%= order.orderID %>', <%= order.totalAmount %>)" 
-                                                            class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 w-full sm:w-auto block text-center">
-                                                        Verify Return
-                                                    </button>
+<button 
+  onclick="showReturnModal('<%= order.orderID %>', <%= order.totalAmount %>, <%= JSON.stringify(order.returnReason || "No reason provided") %>)" 
+  class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 w-full sm:w-auto block text-center">
+  Verify Return
+</button>
+
                                                 <% } %>
                                             </td>
                                         </tr>
@@ -230,6 +232,7 @@
                         <div class="modal-content">
                             <h3 class="text-lg font-bold mb-4">Verify Return for Order <span id="modalOrderID"></span></h3>
                             <p class="mb-4">Total Amount: ₹<span id="modalTotalAmount"></span></p>
+                            <p class="mb-4">Return Reason: <span id="modalReturnReason"></span></p>
                             <p class="mb-4">Please select an action for this return request:</p>
                             <div class="flex justify-end gap-2">
                                 <button onclick="verifyReturn('allow')" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Allow</button>
@@ -276,10 +279,11 @@
             .catch(error => Swal.fire('Network error. Please try again.'));
         }
 
-        function showReturnModal(orderID, totalAmount) {
+        function showReturnModal(orderID, totalAmount,returnReason) {
             currentOrderID = orderID;
             document.getElementById('modalOrderID').textContent = orderID;
             document.getElementById('modalTotalAmount').textContent = totalAmount;
+            document.getElementById('modalReturnReason').textContent = returnReason;
             document.getElementById('returnModal').style.display = 'block';
         }
 

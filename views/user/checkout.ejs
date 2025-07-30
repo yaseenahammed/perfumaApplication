@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    
     <script>
         tailwind.config = {
             theme: {
@@ -197,8 +196,6 @@
                                     <span class="font-semibold text-gray-900">₹<%= shipping %></span>
                                 </div>
                                 
-                 
-                                
                                 <div class="border-t border-gray-200 pt-4">
                                     <div class="flex justify-between items-center">
                                         <span class="text-xl font-bold text-gray-900">Order Total:</span>
@@ -212,6 +209,21 @@
                                 Payment Method
                             </h3>
                             <div class="space-y-3 mb-6">
+                                <label class="flex items-center p-4 border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input type="radio" name="payment_method" value="card" class="form-radio text-amber-500 h-5 w-5">
+                                    <span class="ml-3 text-lg font-medium text-gray-800">Card Payment</span>
+                                    <i class="fas fa-credit-card ml-auto text-blue-600 text-2xl"></i>
+                                </label>
+                                <label class="flex items-center p-4 border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input type="radio" name="payment_method" value="upi" class="form-radio text-amber-500 h-5 w-5">
+                                    <span class="ml-3 text-lg font-medium text-gray-800">UPI Payment</span>
+                                    <i class="fab fa-google-pay ml-auto text-orange-600 text-2xl"></i>
+                                </label>
+                                <label class="flex items-center p-4 border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input type="radio" name="payment_method" value="netbanking" class="form-radio text-amber-500 h-5 w-5">
+                                    <span class="ml-3 text-lg font-medium text-gray-800">Net Banking</span>
+                                    <i class="fas fa-university ml-auto text-green-600 text-2xl"></i>
+                                </label>
                                 <label class="flex items-center p-4 border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
                                     <input type="radio" name="payment_method" value="cod" class="form-radio text-amber-500 h-5 w-5" checked>
                                     <span class="ml-3 text-lg font-medium text-gray-800">Cash on Delivery</span>
@@ -324,7 +336,7 @@
             <div class="text-5xl text-gray-400 mb-4">❔</div>
             <h2 class="text-2xl font-bold mb-4">Confirm Your Order</h2>
             <div class="text-left mb-6 space-y-2">
-                <p><strong>Payment Method:</strong> <span id="confirm-payment-method">Cash on Delivery</span></p>
+                <p><strong>Payment Method:</strong> <span id="confirm-payment-method"></span></p>
                 <p><strong>Order Total:</strong> ₹<span id="confirm-order-total"><%= total %></span></p>
             </div>
             <div class="flex justify-center gap-4">
@@ -352,7 +364,30 @@
         </div>
     </div>
 
+
+    <div id="order-failed-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden animate-fade-in">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center animate-slide-up transform scale-95 opacity-0" id="order-failed-content">
+        <div class="w-32 h-32 mx-auto mb-6">
+            <img src="https://cdn-icons-png.flaticon.com/512/463/463612.png" alt="Failure Cross" class="w-20 h-20 mx-auto mb-6">
+        </div>
+        <h2 class="text-3xl font-bold text-red-600 mb-4">Payment Failed</h2>
+        <p class="text-gray-700 text-lg mb-8">Oops! Something went wrong while processing your payment. Please try again or use a different method.</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <button onclick="retryOrder()" class="retry-payment-btn px-8 py-4 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-300">
+                <i class="fas fa-redo mr-2"></i> Retry 
+            </button>
+            <button onclick="closeModal(document.getElementById('order-failed-modal'))" class="cancel-btn px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300">
+                <i class="fas fa-times-circle mr-2"></i> Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+
     <%- include("../../views/partials/user/footer")%>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -553,71 +588,155 @@ editAddressForm.addEventListener('submit', async (event) => {
 });
 
 
-            // --- Place Order Logic ---
-            placeOrderBtn.addEventListener('click', () => {
-                // Check if an address is selected
-                if (!window.selectedAddressId) {
-                    Swal.fire('Please select a shipping address.');
-                    return;
-                }
 
-                // Get selected payment method
-                const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
-                document.getElementById('confirm-payment-method').textContent = paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod;
 
-                // Open confirmation modal
-                openModal(orderConfirmModal, null); // No content animation needed for this modal
-            });
 
-   confirmPlaceBtn.addEventListener('click', async () => {
-  closeModal(orderConfirmModal, null);
+let selectedPaymentMethod = null;
 
-  try {
-    const res = await fetch('/place-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        addressId: window.selectedAddressId,
-        paymentMethod: document.querySelector('input[name="payment_method"]:checked').value,
-      })
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-     
-      window.latestOrderId = data.orderId;
-
-      
-      openModal(orderSuccessfulModal, orderSuccessfulContent);
-    } else {
-      Swal.fire('Order failed: ' + (data.message || 'Unknown error'));
+placeOrderBtn.addEventListener('click', () => {
+    if (!window.selectedAddressId) {
+        Swal.fire('Please select a shipping address.');
+        return;
     }
-  } catch (err) {
-    console.error('Error placing order:', err);
-    Swal.fire('An error occurred. Please try again.');
-  }
+
+    const selectedPaymentRadio = document.querySelector('input[name="payment_method"]:checked');
+    if (!selectedPaymentRadio) {
+        Swal.fire('Please select a payment method.');
+        return;
+    }
+
+    selectedPaymentMethod = selectedPaymentRadio.value;
+
+    const paymentMethodText = {
+        'card': 'Card Payment',
+        'upi': 'UPI Payment',
+        'netbanking': 'Net Banking',
+        'cod': 'Cash on Delivery'
+    }[selectedPaymentMethod] || 'Unknown Method';
+
+    document.getElementById('confirm-payment-method').textContent = paymentMethodText;
+
+    openModal(orderConfirmModal, null);
 });
 
+confirmPlaceBtn.addEventListener('click', async () => {
+    closeModal(orderConfirmModal, null);
 
-
-            cancelConfirmBtn.addEventListener('click', () => {
-                closeModal(orderConfirmModal, null);
+    if (selectedPaymentMethod === 'cod') {
+       
+        try {
+            const res = await fetch('/place-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    addressId: window.selectedAddressId,
+                    paymentMethod: 'cod'
+                })
             });
 
-viewOrderDetailsBtn.addEventListener('click', () => {
-  if (window.latestOrderId) {
-    window.location.href = `/order-details/${window.latestOrderId}`;
-  } else {
-    Swal.fire('Order ID not found.');
-  }
+            const data = await res.json();
+            if (data.success) {
+                window.latestOrderId = data.orderId;
+                openModal(orderSuccessfulModal, orderSuccessfulContent);
+            } else {
+                showOrderFailedModal();
+
+            }
+        } catch (err) {
+            console.error('Error placing order:', err);
+            Swal.fire('An error occurred. Please try again.', '', 'error');
+        }
+    } else {
+       
+        try {
+            const res = await fetch('/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentMethod: selectedPaymentMethod })
+            });
+
+            const { razorpayOrderId, amount, key, currency } = await res.json();
+
+            const options = {
+                key: key, 
+                amount: amount.toString(), 
+                currency: currency,
+                order_id: razorpayOrderId,
+                name: 'Perfuma',
+                description: 'Order Payment',
+                handler: async function (response) {
+                    // Razorpay returns payment details here
+                    const paymentDetails = {
+                        razorpayPaymentId: response.razorpay_payment_id,
+                        razorpayOrderId: response.razorpay_order_id,
+                        razorpaySignature: response.razorpay_signature,
+                        addressId: window.selectedAddressId,
+                        paymentMethod: selectedPaymentMethod
+                    };
+
+                    // Place final order after payment
+                    const placeOrderRes = await fetch('/place-order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(paymentDetails)
+                    });
+
+                    const data = await placeOrderRes.json();
+                    if (data.success) {
+                        window.latestOrderId = data.orderId;
+                        openModal(orderSuccessfulModal, orderSuccessfulContent);
+                    } else {
+                        showOrderFailedModal();
+                    }
+                },
+                theme: {
+                    color: '#6366f1',modal: {
+
+    ondismiss: function () {
+        showOrderFailedModal();
+    }
+}
+
+
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.open();
+        } catch (err) {
+            console.error('Error initiating Razorpay:', err);
+            Swal.fire('Payment initiation failed.', '', 'error');
+        }
+    }
 });
 
+// Cancel Confirmation Button Click
+cancelConfirmBtn.addEventListener('click', () => {
+    closeModal(orderConfirmModal, null);
+});
+
+            viewOrderDetailsBtn.addEventListener('click', () => {
+                if (window.latestOrderId) {
+                    window.location.href = `/order-details/${window.latestOrderId}`;
+                } else {
+                    Swal.fire('Order ID not found.');
+                }
+            });
 
             continueShoppingBtn.addEventListener('click', () => {
                 window.location.href = '/shop';
             });
         });
+
+        function showOrderFailedModal() {
+    openModal(document.getElementById('order-failed-modal'), document.getElementById('order-failed-content'));
+}
+
+function retryOrder() {
+    closeModal(document.getElementById('order-failed-modal'), document.getElementById('order-failed-content'));
+    openModal(orderConfirmModal, null); // reopen order confirmation modal
+}
+
     </script>
 </body>
 </html>

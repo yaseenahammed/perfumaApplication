@@ -7,7 +7,7 @@ const orderListing = async (req, res) => {
         const perPage = 10;
         const query = {};
 
-        // Apply search only if searchTerm is provided and valid
+       
         if (search) {
             if (!/^[a-zA-Z0-9-]*$/.test(search)) {
                 return res.status(400).render('order-management', {
@@ -23,7 +23,7 @@ const orderListing = async (req, res) => {
             query.orderID = { $regex: search, $options: 'i' };
         }
 
-        // Apply filter if provided
+        
         if (filter) query.orderStatus = filter;
 
         const orders = await Order.find(query)
@@ -65,7 +65,7 @@ const updateStatus = async (req, res) => {
         const { orderId } = req.params;
         const { status } = req.body;
 
-        // Restrict status to 'Returned' to match frontend logic
+        
         if (!status || status === 'Returned') {
             return res.json({ success: false, message: 'Invalid status. Only "Returned" is allowed.' });
         }
@@ -100,6 +100,7 @@ const verifyReturn = async (req, res) => {
             return res.json({ success: false, message: 'Invalid return request' });
         }
 
+        
    
         order.orderStatus = 'Returned';
         await order.save();
@@ -111,7 +112,7 @@ const verifyReturn = async (req, res) => {
             await user.save();
         }
 
-        res.json({ success: true, message: 'Return verified and amount refunded to wallet.' });
+        res.json({ success: true, message: 'Return verified ' });
     } catch (error) {
         console.error('Error in verifyReturn:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
@@ -120,8 +121,9 @@ const verifyReturn = async (req, res) => {
 
 const rejectReturn = async (req, res) => {
     try {
-    console.log('reject return trigered')
+   
         const { orderID } = req.params;
+        const {reason}=req.body;
         const order = await Order.findOne({ orderID });
 
         if (!order) {
@@ -134,6 +136,7 @@ const rejectReturn = async (req, res) => {
 
         
         order.orderStatus = 'Delivered'; 
+        order.cancellationReason=reason || 'No reason Provided'
         await order.save();
 
         res.json({ success: true, message: 'Return request rejected.' });
@@ -147,6 +150,8 @@ const orderDetails = async (req, res) => {
     try {
         const { orderID } = req.params;
         const order = await Order.findOne({ orderID }).populate('user items.product');
+
+      
 
         if (order) {
             res.render('order-details', { order });

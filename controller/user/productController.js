@@ -20,23 +20,17 @@ if (userId && mongoose.isValidObjectId(userId)) {
   return res.redirect('/login');
 }
 
-
-   
-
-  if (!userData) {
+ if (!userData) {
  
   userData = null;
 }
 
   if (userData && userData.isBlocked) {
-  
-  userData = null;
+   userData = null;
 }
-
-    const productId = req.query.id;
+ const productId = req.query.id;
    
-
-    if (!productId || !mongoose.isValidObjectId(productId)) {
+if (!productId || !mongoose.isValidObjectId(productId)) {
       req.flash('error', 'Invalid product ID');
      
       return res.redirect('/shop');
@@ -90,13 +84,13 @@ if (userId && mongoose.isValidObjectId(userId)) {
 
 const MAX_ALLOWED_QUANTITY = 5;
 
-// Add to Cart
+
 const addToCart = async (req, res) => {
   try {
     const userId = req.session.userId;
     const productId = req.params.productId;
     const quantity = parseInt(req.body.quantity) || 1;
-    console.log('availbility', quantity)
+  
 
     if (!userId || !mongoose.isValidObjectId(userId)) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -191,7 +185,7 @@ const incrementQuantity = async (req, res) => {
     await cart.save();
 
     const subtotal = cart.items.reduce((sum, item) => sum + item.totalPrice, 0);
-    const total = subtotal; // Adjust for tax/shipping if needed
+    const total = subtotal; 
     const cartItemsLength = cart.items.length;
 
     res.json({
@@ -227,7 +221,7 @@ const decrementQuantity = async (req, res) => {
     await cart.save();
 
     const subtotal = cart.items.reduce((sum, item) => sum + item.totalPrice, 0);
-    const total = subtotal; // Adjust for tax/shipping if needed
+    const total = subtotal; 
     const cartItemsLength = cart.items.length;
 
     res.json({

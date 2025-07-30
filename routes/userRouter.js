@@ -100,11 +100,14 @@ router.delete('/cart/remove/:productId', userAuth,CartController.removeFromCart)
 router.get('/checkout',userAuth,checkoutController.getCheckout)
 router.post('/addressAdd',userAuth,checkoutController.addAddress)
 router.post('/addressEdit',userAuth,checkoutController.editAddress)
+router.get('/order-details/:orderId', userAuth,checkoutController.orderConfirm);
+router.post('/place-order',userAuth,checkoutController.placeOrder)
+ router.post('/create-order',userAuth,checkoutController.createRazorpayOrder)
+
 
 
 //order
-router.get('/order-details/:orderId', userAuth,orderController.orderConfirm);
-router.post('/place-order',userAuth,orderController.placeOrder)
+
 router.get('/my-orders',userAuth,orderController.getOrders)
 router.post('/cancel-order/:orderID',userAuth, orderController.cancelOrder);
 router.get('/userOrder-details/:orderID',userAuth,orderController.userOrderDetails)

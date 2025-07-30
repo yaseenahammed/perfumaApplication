@@ -126,10 +126,10 @@ if (!isValidZip.test(zip) || zip.length !== 6) {
 
 
     if (!userAddress) {
-      // Create new document if not exist
+   
       userAddress = new Address({ userId, addresses: [newAddress] });
     } else {
-      // Push to existing array
+     
       userAddress.addresses.push(newAddress);
     }
 
@@ -218,23 +218,23 @@ const sendEmailOtp = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Validate type
+
     if (!['current', 'new'].includes(type)) {
       return res.status(400).json({ message: "Invalid type parameter" });
     }
 
-    // Validate email format
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "Invalid email format" });
     }
 
-    // For current email, verify it matches the user's email
+  
     if (type === 'current' && email !== user.email) {
       return res.status(400).json({ message: "Email does not match current user email" });
     }
 
-    // For new email, check if it's the same as the current email or already in use
+    
     if (type === 'new') {
       if (email === user.email) {
         return res.status(400).json({ message: "New email cannot be the same as current email" });
@@ -245,18 +245,17 @@ const sendEmailOtp = async (req, res) => {
       }
     }
 
-    // Generate and store OTP
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const sessionKey = type === 'current' ? 'currentOtp' : 'newOtp';
     req.session[sessionKey] = {
       otp,
       email,
-      expires: Date.now() + 10 * 60 * 1000, // 10 minutes expiry
+      expires: Date.now() + 10 * 60 * 1000, 
     };
 
     console.log(`OTP for ${type} email:`, otp);
 
-    // Send OTP email
     const mailOptions = {
       from: process.env.NODEMAILER_EMAIL,
       to: email,
@@ -281,7 +280,7 @@ const verifyEmailOtp = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Validate type
+  
     if (!['current', 'new'].includes(type)) {
       return res.status(400).json({ message: "Invalid type parameter" });
     }
@@ -296,16 +295,16 @@ const verifyEmailOtp = async (req, res) => {
     console.log(`Verifying OTP for ${type} email:`, otp);
 
     if (type === 'current') {
-      // Current email verified, no email update needed
+     
       delete req.session[sessionKey];
       return res.status(200).json({ message: "Current email verified successfully" });
     }
 
-    // For new email, update the user's email
+  
     user.email = storedOtp.email;
     await user.save();
 
-    // Clean up session
+  
     delete req.session[sessionKey];
 
     res.status(200).json({ message: "Email updated successfully" });

@@ -12,13 +12,14 @@ const getCart = async (req, res) => {
   const cart = await Cart.findOne({ user: user._id }).populate('items.product');
 
   let subtotal = 0, shipping = 50;
+  let price=0
   let cartUpdated = false;
 
   if (cart && cart.items.length > 0) {
     for (let item of cart.items) {
       const available = item.product.quantity;
       
-      // Check and correct if cart quantity > stock
+      
       if (item.quantity > available) {
         item.quantity = available;
         item.totalPrice = available * (item.product.salePrice || item.product.regularPrice);
@@ -26,6 +27,7 @@ const getCart = async (req, res) => {
       }
 
       subtotal += item.quantity * (item.product.salePrice || item.product.regularPrice || 0);
+       price=item.product.salePrice
     }
 
     if (cartUpdated) {
@@ -34,13 +36,15 @@ const getCart = async (req, res) => {
   }
 
   const total = subtotal + shipping;
+ 
 
   res.render('cart', {
     user,
     cartItems: cart?.items || [],
     subtotal,
     shipping,
-    total
+    total,
+    price
   });
 
 } catch (error) {

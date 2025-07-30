@@ -89,11 +89,11 @@
                     </header>
 
                     <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center">
+                         <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center">
                             <i class="fas fa-box-open text-amber-500 mr-3"></i>
                             My Orders
-                        </h2>
-                    </div>
+                        </h2> 
+                    </div> 
 
                     <!-- Order Listing -->
                     <div class="space-y-6">
@@ -107,7 +107,7 @@
                                             <h3 class="text-lg font-semibold text-gray-900">Order ID: <%= order.orderID %></h3>
                                             <p class="text-gray-600 text-sm">Date: <%= new Date(order.createdAt).toLocaleDateString() %></p>
                                             <p class="text-gray-800 font-medium">Total: ₹<%= order.totalAmount %></p>
-                                            <p class="text-gray-800 font-medium">Status: <%= order.orderStatus %></p>
+                                            <p class="text-red-500 font-large">Status: <%= order.orderStatus %></p>
                                             <% if (order.orderStatus === 'ReturnRequest') { %>
                                                 <p class="text-yellow-600 text-sm mt-1">Return request pending admin verification...</p>
                                             <% } else if (order.orderStatus === 'Returned') { %>
@@ -137,23 +137,26 @@
 
         
     </main>
-   <div class="pagination-container mt-8 flex justify-center items-center gap-2">
+   
+
+    </div>
+
+    
+<div class="pagination-container mt-8 flex justify-center items-center gap-2">
                         <% if (currentPage > 1) { %>
-                            <a href="/admin/orderList?page=<%= currentPage - 1 %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort %>&filter=<%= encodeURIComponent(filter || '') %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">« Previous</a>
+                            <a href="?page=<%= currentPage - 1 %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">« Previous</a>
                         <% } %>
                         <% for (let i = 1; i <= totalPages; i++) { %>
                             <% if (i === currentPage) { %>
                                 <span class="current-page bg-amber-500 text-white border-amber-500 px-4 py-2 rounded-lg font-bold"><%= i %></span>
                             <% } else { %>
-                                <a href="/admin/orderList?page=<%= i %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort %>&filter=<%= encodeURIComponent(filter || '') %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200"><%= i %></a>
+                                <a href="?page=<%= i %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200"><%= i %></a>
                             <% } %>
                         <% } %>
                         <% if (currentPage < totalPages) { %>
-                            <a href="/admin/orderList?page=<%= currentPage + 1 %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort %>&filter=<%= encodeURIComponent(filter || '') %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">Next »</a>
+                            <a href="?page=<%= currentPage + 1 %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">Next »</a>
                         <% } %>
                     </div>
-    </div>
-
     
    
 

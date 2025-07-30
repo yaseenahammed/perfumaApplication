@@ -80,7 +80,7 @@
             <div class="max-w-7xl mx-auto">
                 <!-- Search Bar -->
                 <div class="mb-6 flex justify-center">
-    <form action="/my-orders" method="get" class="flex items-center gap-2">
+    <form action="/userOrder-details" method="get" class="flex items-center gap-2">
         <input 
             type="text" 
             name="search" 
@@ -122,7 +122,7 @@
                                                     <p class="text-sm text-gray-600">Price: ₹<%= item.price || 0 %></p>
                                                 </div>
                                             </div>
-                                            <div class="flex flex-col items-end">
+                                            <!-- <div class="flex flex-col items-end">
                                                 <p class="text-sm font-medium">Item Total: ₹<%= (item.price || 0) * (item.quantity || 0) %></p>
                                                 <% if (order.orderStatus === 'Processing' || order.orderStatus === 'Shipped') { %>
                                                     <form action="/cancel-order/<%= order.orderID %>" method="POST" id="cancelForm<%= order.orderID %>_<%= item._id %>" style="display: none;">
@@ -131,7 +131,7 @@
                                                     </form>
                                                     <button onclick="showCancelModal('<%= order.orderID %>', '<%= item._id %>')" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mt-2 text-sm">Cancel Item</button>
                                                 <% } %>
-                                            </div>
+                                            </div> -->
                                         </div>
                                     <% }); %>
                                 <% } else { %>
@@ -164,7 +164,7 @@
                             </div>
                             <div class="mt-4">
                                 <p class="text-gray-600 font-semibold">Payment Method:</p>
-                                <p class="text-sm">Cash on Delivery</p>
+                                <p class="text-sm"><%= order.paymentMethod %></p>
                             </div>
                         </div>
                     </div>
@@ -202,7 +202,7 @@
     </main>
 
     <!-- Cancel Modal -->
-    <div id="cancelModal" class="modal">
+    <!-- <div id="cancelModal" class="modal">
         <div class="modal-content">
             <h2 class="text-xl font-bold mb-4">Cancel Item</h2>
             <p class="mb-4">Are you sure you want to cancel the item from order <span id="cancelOrderID" class="font-semibold"></span>?</p>
@@ -212,10 +212,10 @@
                 <button onclick="confirmCancel()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Confirm Cancel</button>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Return Modal -->
-    <div id="returnModal" class="modal">
+    <!-- <div id="returnModal" class="modal">
         <div class="modal-content">
             <h2 class="text-xl font-bold mb-4">Return Order</h2>
             <p class="mb-4">Are you sure you want to return order <span id="returnOrderID" class="font-semibold"></span>?</p>
@@ -225,9 +225,9 @@
                 <button onclick="confirmReturn()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Confirm Return</button>
             </div>
         </div>
-    </div>
+    </div> -->
 
-    <script>
+    <!-- <script>
         function showCancelModal(orderID, itemId = null) {
             const modal = document.getElementById('cancelModal');
             const cancelOrderID = document.getElementById('cancelOrderID');
@@ -291,7 +291,7 @@
             document.getElementById(`returnForm${orderID}`).submit();
             closeModal('return');
         }
-    </script>
+    </script> -->
 
     <%- include("../../views/partials/user/footer") %>
 </body>
