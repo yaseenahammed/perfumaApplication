@@ -78,6 +78,15 @@ returnReason:{
     type: Number,
     required: true
   },
+   couponCode: {
+        type: String,
+        default: null
+    },
+     discountPrice: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
   invoiceDate: {
     type: Date,
     default: Date.now

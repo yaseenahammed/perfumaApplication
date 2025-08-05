@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wallet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+    </style>
+    
+</head>
+
+<body class="bg-gray-50">
+    <%- include("../../views/partials/user/header") %>
+    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
+        <div class="relative z-10 container mx-auto px-4 text-center text-white">
+            <h1 class="text-4xl lg:text-5xl font-bold mb-4">Wallet</h1>
+            <nav class="flex items-center justify-center space-x-2 text-lg">
+                <a href="/" class="text-gray-300 hover:text-white transition duration-200">Home</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <span class="text-amber-400">Wallet</span>
+            </nav>
+        </div>
+    </section>
+
+  
+
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-2xl shadow-xl p-8 fade-in mb-8">
+                            <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-6 flex items-center">
+                                <i class="fas fa-wallet text-amber-500 mr-3"></i>
+                                Wallet Balance
+                            </h2>
+                            <div class="text-center">
+                                <div class="text-4xl font-semibold text-gray-900 mb-2"><span class="currency">₹</span><%= wallet.balance%></div>
+                                <p class="text-gray-600">Available for Use</p>
+                                <button onclick="openWalletRazorpay(500)" class="mt-6 w-full flex items-center justify-center px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition duration-200">
+                                    <i class="fas fa-plus mr-2"></i> Add Money
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-1">
+                        <div class="bg-white rounded-2xl shadow-xl p-8 sticky top-32 fade-in">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                                <i class="fas fa-file-invoice-dollar text-amber-500 mr-3"></i>
+                                Wallet Summary
+                            </h2>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center py-2">
+                                    <span class="text-gray-600">Total Deposits</span>
+                                    <span class="font-semibold text-gray-900"><span class="currency">₹</span><%= wallet.balance%></span>
+                                </div>
+                                <div class="flex justify-between items-center py-2">
+                                    <span class="text-gray-600">Available for Withdrawal</span>
+                                    <span class="font-semibold text-gray-900"><span class="currency">₹</span><%= wallet.balance%></span>
+                                </div>
+                                <div class="flex justify-between items-center py-2">
+                                    <span class="text-gray-600">Total Withdrawals</span>
+                                    <span class="font-semibold text-gray-900"><span class="currency">₹</span>0</span>
+                                </div>
+                                
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 fade-in">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-exchange-alt text-amber-500 mr-3"></i>
+                            Recent Transactions
+                        </h2>
+                        <div class="flex justify-between mb-4">
+                            <div class="flex space-x-4">
+                                <select class="border border-gray-300 rounded-lg px-3 py-2">
+                                    <option>All Types</option>
+                                </select>
+                                <select class="border border-gray-300 rounded-lg px-3 py-2">
+                                    <option>All Status</option>
+                                </select>
+                                <input type="date" class="border border-gray-300 rounded-lg px-3 py-2" value="dd-mm-yyyy">
+                            </div>
+                            <button onclick="openModal()" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition duration-200">
+                                View All
+                          </button>
+
+                        </div>
+
+                        <div class="space-y-4">
+                            <% if(transactions && transactions.length>0){ %>
+                              <% transactions.forEach(txn => { %>
+  <div class="flex justify-between items-center py-2">
+    <div>
+      <p class="<%= txn.type === 'Top-up' ? 'text-green-600' : 'text-blue-600' %>">
+        TXN<%= txn._id.toString().slice(-10) %>
+      </p>
+      <p class="text-gray-600"><%= txn.createdAt.toLocaleString() %></p>
+      <p class="text-gray-600"><%= txn.description %></p>
+    </div>
+    <div class="text-right">
+      <p class="<%= txn.type === 'Top-up' ? 'text-green-600' : 'text-red-600' %>">
+        ₹<%= txn.amount %>
+      </p>
+      <p class="text-gray-600"><%= txn.status %></p>
+    </div>
+  </div>
+<% }) %>
+
+                             <% } else {%>
+                                <p class="text-gray-500 text-center">No transactions yet.</p>
+                            <% } %>
+                            
+                        </div>
+                       
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- View All Modal -->
+<div id="viewAllModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">
+  <div class="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold">All Transactions</h3>
+      <button onclick="closeModal()" class="text-gray-500 hover:text-gray-800">&times;</button>
+    </div>
+
+    <% if (allTransactions && allTransactions.length > 0) { %>
+      <% allTransactions.forEach(txn => { %>
+        <div class="flex justify-between items-center py-2 border-b">
+          <div>
+            <p class="<%= txn.type === 'Top-up' ? 'text-green-600' : 'text-blue-600' %>">
+              TXN<%= txn._id.toString().slice(-10) %>
+            </p>
+            <p class="text-gray-600"><%= txn.createdAt.toLocaleString() %></p>
+            <p class="text-gray-600"><%= txn.description %></p>
+          </div>
+          <div class="text-right">
+            <p class="<%= txn.type === 'Top-up' ? 'text-green-600' : 'text-red-600' %>">
+              ₹<%= txn.amount %>
+            </p>
+            <p class="text-gray-600"><%= txn.status %></p>
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <p class="text-gray-500">No transactions yet.</p>
+    <% } %>
+  </div>
+</div>
+
+</body>
+</html>
+ <%- include("../../views/partials/user/footer") %>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+
+ <script>
+    async function openWalletRazorpay(amount) {
+        try {
+            const res=await fetch('/wallet/create-walletOrder',{
+                method:'POST',
+                headers:{
+                    'Content-Type':'application/json'
+                },
+                body:JSON.stringify({amount:parseInt(amount) })
+            })
+
+            const data =await res.json()
+            if(!data.success){
+                Swal.fire(data.message)
+                return
+            }
+
+             const options = {
+        key: data.key,
+        amount: data.amount,
+        currency: data.currency,
+        name: "My App",
+        description: "Wallet Top-up",
+        order_id: data.orderId,
+        handler: async function (response) {
+         
+          await fetch('/wallet/verify-walletOrder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(response)
+          });
+
+          window.location.reload(); 
+        },
+        theme: { color: "#F37254" }
+      };
+      
+      const rzp=new Razorpay(options)
+      rzp.open()
+        } catch (error) {
+             console.error(error);
+        }
+    }
+
+
+     function openModal() {
+    document.getElementById('viewAllModal').classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('viewAllModal').classList.add('hidden');
+  }
+
+  document.addEventListener('click', function (e) {
+  const modal = document.getElementById('viewAllModal');
+  if (e.target === modal) {
+    closeModal();
+  }
+});
+
+ </script>

@@ -4,15 +4,8 @@ const {Schema}=mongoose;
 
     const couponSchema = new Schema({
 
-        name: {
-            type: String,
-            required: true
-        },
-       description: {
-            type: String,
-            required: true
-        },
-        coupenCode: {
+       
+        couponCode: {
             type: String,
             required: true,
             unique: true
@@ -21,7 +14,7 @@ const {Schema}=mongoose;
             type: Boolean,
             default: true
         },
-        discountPercentage: {
+        discountPrice: {
             type: Number,
             required: true
         },
@@ -45,5 +38,5 @@ const {Schema}=mongoose;
         }]
     }, { timestamps: true} );
 
-    const Coupen=mongoose.model('coupen',coupenSchema)
-    module.exports=Coupen;
+    const Coupon=mongoose.model('coupen',couponSchema)
+    module.exports=Coupon;

@@ -1,5 +1,9 @@
+```html
 <%- include("../../views/partials/user/header") %>
 
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
   .main-container {
@@ -131,6 +135,7 @@
     background-color: #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s;
+    position: relative;
   }
   .product-card:hover {
     transform: translateY(-5px);
@@ -181,14 +186,29 @@
     position: absolute;
     top: 8px;
     right: 8px;
-    background-color: rgba(255, 255, 255, 0.8);
-    color: #ff0000;
-    padding: 8px;
-    border-radius: 50%;
     cursor: pointer;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .wishlist-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: #fff;
+    fill: none;
+    transition: fill 0.3s, stroke 0.3s;
+  }
+  .wishlist-btn.active svg {
+    fill: #dc2626;
+    stroke: #dc2626;
+  }
+  .wishlist-btn:hover svg {
+    stroke: #ff4444;
   }
   .add-to-cart-btn {
-    background-color: #000;
+    background: linear-gradient(to right, #f97316, #ef4444);
     color: #fff;
     padding: 10px;
     border: none;
@@ -197,10 +217,11 @@
     width: 100%;
     margin-top: 10px;
     font-size: 14px;
-    transition: background-color 0.3s;
+    transition: background 0.3s, transform 0.2s;
   }
   .add-to-cart-btn:hover {
-    background-color: #333;
+    background: linear-gradient(to right, #ea580c, #dc2626);
+    transform: scale(1.05);
   }
   .pagination {
     display: flex;
@@ -249,7 +270,6 @@
   }
   .price-button:active {
     transform: scale(0.95);
-    
   }
 </style>
 
@@ -265,7 +285,6 @@
             class="search-input"
             value="<%= searchQuery || '' %>"
           />
-          <!-- Hidden inputs to preserve category and brand selections -->
           <% categoryId.forEach(id => { %>
             <input type="hidden" name="category" value="<%= id %>">
           <% }) %>
@@ -275,7 +294,7 @@
           <input type="hidden" name="sort" value="<%= sort || 'default' %>">
           <input type="hidden" name="price" value="<%= priceRange || '' %>">
           <button type="submit" class="search-button">Search</button>
-          <a href="/shop"><button type="button" class="clear-button">ClearFilters</button></a>
+          <a href="/shop"><button type="button" class="clear-button">Clear Filters</button></a>
         </form>
       </div>
       <div class="sort-container">
@@ -290,7 +309,6 @@
     </div>
 
     <div class="product-list-container">
-      
       <aside class="sidebar">
         <div class="filter-section">
           <div class="filter-title">Categories</div>
@@ -361,7 +379,14 @@
         <% } else { %>
           <% products.forEach(product => { %>
             <div class="product-card">
-              <span class="wishlist-btn" onclick="addToWishlist('<%= product._id %>')">❤️</span>
+              <span
+                class="wishlist-btn <%= wishlistItems && wishlistItems.some(item => item.product._id.toString() === product._id.toString()) ? 'active' : '' %>"
+                onclick="toggleWishlist('<%= product._id %>', this)"
+              >
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              </span>
               <a href="/productDetails?id=<%= product._id %>">
                 <img src="<%= product.productImages[0] %>" alt="<%= product.name %>" />
                 <h4><%= product.name %></h4>
@@ -382,7 +407,7 @@
                   <% } %>
                 </p>
               </a>
-              <button  class="add-to-cart-btn  bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
+              <button class="add-to-cart-btn bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
             </div>
           <% }) %>
         <% } %>
@@ -404,14 +429,52 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  function addToWishlist(productId) {
-    console.log('Add to wishlist:', productId);
-  }
-
   function addToCart(productId) {
     console.log('Add to cart:', productId);
+    // Implement cart addition logic
   }
+
+  function toggleWishlist(productId, element) {
+    const isInWishlist = element.classList.contains('active');
+    const method = isInWishlist ? 'POST' : 'POST';
+    const url = `/wishlist/${isInWishlist ? 'remove' : 'add'}/${productId}`;
+
+    fetch(url, {
+      method,
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        element.classList.toggle('active');
+        Swal.fire({
+          icon: 'success',
+          title: isInWishlist ? 'Removed from Wishlist' : 'Added to Wishlist',
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: data.error || 'Could not update wishlist',
+        });
+      }
+    })
+    .catch(err => {
+      console.error('Error:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Something went wrong',
+      });
+    });
+  }
+
+  
 
   function updateFilters() {
     const categories = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(input => input.value);
@@ -429,7 +492,6 @@
     if (query) params.push(`query=${query}`);
     url += params.join('&');
 
-    console.log('Navigating to:', url); 
     window.location.href = url;
   }
 
@@ -448,9 +510,9 @@
     if (query) params.push(`query=${query}`);
     url += params.join('&');
 
-    console.log('Navigating to (sort):', url); 
     window.location.href = url;
   }
 </script>
 
 <%- include("../../views/partials/user/footer") %>
+```

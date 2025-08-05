@@ -60,6 +60,19 @@ if (!productId || !mongoose.isValidObjectId(productId)) {
     const productOffer = product.offer || 0;
     const totalOffer = categoryOffer + productOffer;
 
+    let wishlistItems = [];
+if (req.session.userId) {
+  const wishlist = await Wishlist.find({ user: req.session.userId }).populate('product');
+  wishlistItems = wishlist.map(item => ({
+    product: {
+      _id: item.product._id,
+      name: item.product.name,
+      salePrice: item.product.salePrice,
+      productImages: item.product.productImages,
+    },
+  }));
+}
+
     res.render('product-details', { 
       product,
       similarProducts,
@@ -68,6 +81,7 @@ if (!productId || !mongoose.isValidObjectId(productId)) {
       totalOffer,
       category: findCategory,
       error: req.flash('error')[0] || null,
+      wishlistItems
     });
   } catch (error) {
     console.error('Error in productDetails:', error.stack);

@@ -270,6 +270,19 @@
 
         .animate-fade-in {
             animation: fadeIn 0.6s ease-out;
+            .wishlist-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: #000;
+  fill: none;
+  transition: fill 0.3s, stroke 0.3s;
+}
+
+.wishlist-btn.active svg {
+  fill: #dc2626;
+  stroke: #dc2626;
+}
+
         }
     </style>
 
@@ -447,9 +460,13 @@
                                         <i class="fas fa-shopping-cart mr-2"></i>
                                         Add to Cart
                                     </button>
-                                    <a class="action-btn" onclick="addToWishlist('<%= product._id %>')">
-                                        <i class="fas fa-heart"></i>
-                                    </a>
+    <a class="action-btn wishlist-btn <%= wishlistItems && wishlistItems.some(item => item.product._id.toString() === product._id.toString()) ? 'active' : '' %>" 
+  onclick="toggleWishlist('<%= product._id %>', this)">
+  <svg viewBox="0 0 24 24">
+    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+  </svg>
+</a>
+
                                 </div>
 
                                 <!-- Product Meta -->
@@ -493,9 +510,15 @@
                                             class="w-full h-48 object-cover rounded-xl transition duration-300 group-hover:scale-105"
                                         >
                                     </a>
-                                    <button onclick="addToWishlist('<%= similarProduct._id %>')" class="absolute top-3 right-3 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-red-500 hover:bg-white hover:text-red-600 transition duration-300 shadow-lg">
-                                        <i class="fas fa-heart"></i>
-                                    </button>
+                                    <a class="absolute top-2 right-2 z-10 bg-white rounded-full p-2 shadow-md wishlist-btn 
+  <%= wishlistItems && wishlistItems.some(item => item.product._id.toString() === similarProduct._id.toString()) ? 'active' : '' %>" 
+  onclick="toggleWishlist('<%= similarProduct._id %>', this)">
+  <svg class="w-5 h-5 text-red-500 fill-current" viewBox="0 0 24 24">
+    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+  </svg>
+</a>
+
+
                                 </div>
 
                                 <div class="space-y-4">
@@ -698,16 +721,49 @@ if (data.success) {
   });
 }
 
+});
 
+  function toggleWishlist(productId, element) {
+  const isInWishlist = element.classList.contains('active');
+   const method = isInWishlist ? 'POST' : 'POST';
+  const url = `/wishlist/${isInWishlist ? 'remove' : 'add'}/${productId}`;
 
-           
-            window.addToWishlist = (productId) => {
-                console.log('Add to wishlist:', productId);
-               
-            };
-        });
+  fetch(url, {
+    method,
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      element.classList.toggle('active');
+      Swal.fire({
+        icon: 'success',
+        title: isInWishlist ? 'Removed from Wishlist' : 'Added to Wishlist',
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: data.error || 'Could not update wishlist',
+      });
+    }
+  })
+  .catch(err => {
+    console.error('Error:', err);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Something went wrong',
+    });
+  });
+}
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+     <script src="/js/user/wishlist.js"></script>
+
 </body>
 </html>

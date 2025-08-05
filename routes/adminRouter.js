@@ -13,6 +13,7 @@ const categoryController = require('../controller/admin/categoryController');
 const brandController = require('../controller/admin/brandController'); 
 const productController = require('../controller/admin/productController');
 const orderManageController=require('../controller/admin/orderManageController')
+const couponManageController=require('../controller/admin/couponManageController')
 const nocache=require('nocache')
 const { adminAuth,isAdmin} = require("../middlewares/auth");
 
@@ -68,6 +69,13 @@ router.post('/update-status/:orderId',adminAuth,orderManageController.updateStat
 router.post('/verify-return/:orderID',adminAuth,orderManageController.verifyReturn)
 router.post('/reject-return/:orderID',adminAuth,orderManageController.rejectReturn)
 router.get('/order-details/:orderID',adminAuth,orderManageController.orderDetails)
+
+
+//coupon
+router.get('/coupon',adminAuth,couponManageController.getCoupon)
+router.post('/create-coupon',adminAuth,couponManageController.addCoupon)
+router.post('/update-coupon/:couponCode',adminAuth,couponManageController.updateCoupon)
+router.post('/delete-coupon/:couponCode',adminAuth,couponManageController.deleteCoupon)
 
 
 

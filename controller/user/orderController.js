@@ -3,9 +3,8 @@ const Order = require('../../models/orderSchema');
 const Product = require('../../models/productSchema');
 const User = require('../../models/userSchema');
 const mongoose = require('mongoose');
-const Cart = require('../../models/cartSchema');
-const Wishlist = require('../../models/wishlistSchema');
-const Address = require('../../models/addresSchema');
+const Wallet=require('../../models/walletSchema')
+const Transactions=require('../../models/transactionSchema')
 
 
 
@@ -95,7 +94,7 @@ const userOrderDetails = async (req, res) => {
       return res.status(404).send('Order not found');
     }
 
-    console.log('orders:',order)
+  
     
 
     const validOrderItems = [];
@@ -155,6 +154,33 @@ const cancelOrder = async (req, res) => {
             return res.status(400).json({ message: 'Cannot cancel this order' });
         }
 
+        const refundAmount=order.totalAmount
+
+        await Wallet.findOneAndUpdate(
+          {user:userId},
+          {
+            $inc:{balance:refundAmount},
+            $push:{
+              transactions:{
+                type:'credit',
+                amount:refundAmount,
+                description:`Refund for cancelled order ${order._id}`
+              }
+            }
+          },
+          {upsert:true}
+        )
+
+        await Transactions.create({
+  user: userId,
+  type: 'Cancellation',
+  orderId: order._id,
+  amount: refundAmount,
+  status: 'Success',
+  description: `Refund for cancelled order ${order.orderID}`
+});
+
+
         order.orderStatus = 'Cancelled';
         order.cancellationReason = reason || 'No reason provided';
         await order.save();
@@ -186,6 +212,33 @@ const returnOrder = async (req, res) => {
         if (!order || order.orderStatus !== 'Delivered') {
             return res.status(400).json({ message: 'Cannot return this order' });
         }
+
+ const refundAmount=order.totalAmount
+
+  await Wallet.findOneAndUpdate(
+          {user:userId},
+          {
+            $inc:{balance:refundAmount},
+            $push:{
+              transactions:{
+                type:'credit',
+                amount:refundAmount,
+                description:`Refund for cancelled order ${order._id}`
+              }
+            }
+          },
+          {upsert:true}
+        )
+
+        await Transactions.create({
+  user: userId,
+  type: 'Return',
+  orderId: order._id,
+  amount: refundAmount,
+  status: 'Success',
+  description: `Refund for returned order ${order.orderID}`
+});
+
 
         order.orderStatus = 'ReturnRequest';
         order.returnReason = reason;

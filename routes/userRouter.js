@@ -7,6 +7,9 @@ const userProfileController=require('../controller/user/userProfileController')
 const CartController=require('../controller/user/cartController')
 const checkoutController=require('../controller/user/checkoutController')
 const orderController=require('../controller/user/orderController')
+const wishlistController=require('../controller/user/wishllistController')
+const shopController=require('../controller/user/shopController')
+const walletController=require('../controller/user/walletController')
 const passport = require('../config/passport');
 const uploads = require('../helpers/multer');
 const nocache=require('nocache')
@@ -60,8 +63,8 @@ router.post('/login', userController.login);
 router.get('/logout', userAuth, userController.logout);
 
 // Shop
-router.get('/shop', setUser,userController.loadShop);
-router.post('/shop',setUser,userController.searchProducts);
+router.get('/shop', setUser,shopController.loadShop);
+router.post('/shop',setUser,shopController.searchProducts);
 
 // Profile Management
 router.get('/forgot-password', nocache(), isLogin, profileController.getForgotPassword);
@@ -102,18 +105,32 @@ router.post('/addressAdd',userAuth,checkoutController.addAddress)
 router.post('/addressEdit',userAuth,checkoutController.editAddress)
 router.get('/order-details/:orderId', userAuth,checkoutController.orderConfirm);
 router.post('/place-order',userAuth,checkoutController.placeOrder)
- router.post('/create-order',userAuth,checkoutController.createRazorpayOrder)
+router.post('/create-order',userAuth,checkoutController.createRazorpayOrder)
+router.post('/apply-coupon',userAuth,checkoutController.applyCoupon)
+router.post('/select-address', userAuth, checkoutController.selectAddress);
 
 
 
 //order
-
 router.get('/my-orders',userAuth,orderController.getOrders)
 router.post('/cancel-order/:orderID',userAuth, orderController.cancelOrder);
 router.get('/userOrder-details/:orderID',userAuth,orderController.userOrderDetails)
 router.post('/return-order/:orderID', userAuth, orderController.returnOrder);
-
 // router.get('/download-invoice/:orderID', userAuth, orderController.downloadInvoice);
+
+
+//whishlist
+router.get('/wishlist',userAuth,wishlistController.getWishlist)
+router.post('/wishlist/add/:productId', userAuth, wishlistController.addToWishlist);
+router.post('/wishlist/remove/:productId', userAuth, wishlistController.removeFromWishlist);
+router.post('/wishlist/clear',userAuth,wishlistController.clearWishlist)
+
+
+//wallet
+router.get('/wallet',userAuth,walletController.getWallet)
+router.post('/wallet/create-walletOrder',userAuth,walletController.createWalletOrder)
+router.post('/wallet/verify-walletOrder',userAuth,walletController.verifyWalletOrder)
+
 
 
 
