@@ -4,7 +4,8 @@ const Product = require('../../models/productSchema');
 const User = require('../../models/userSchema');
 const mongoose = require('mongoose');
 const Wallet=require('../../models/walletSchema')
-const Transactions=require('../../models/transactionSchema')
+const Transactions=require('../../models/transactionSchema');
+const { getBestPrice } = require('../../helpers/offerHelper');
 
 
 
@@ -60,7 +61,7 @@ const SHIPPING_FEE = 50;
 const calculateSummary = (cartItems) => {
   let subtotal = 0;
   cartItems.forEach(item => {
-    const itemPrice = item.product.salePrice;
+    const itemPrice = item.product.finalPrice ||item.product.salePrice ||item.product.regularPrice;
     const quantity = item.quantity;
     const itemTotalBeforeTax = itemPrice * quantity;
     subtotal += itemTotalBeforeTax;
@@ -76,7 +77,7 @@ const calculateSummary = (cartItems) => {
 
 const userOrderDetails = async (req, res) => {
   try {
-    console.log('triggered userOrder')
+   
     const userId = req.session.userId;
     const orderID = req.params.orderID;
     const user = await User.findById(userId).lean();
@@ -104,11 +105,13 @@ const userOrderDetails = async (req, res) => {
       if (
         !item.product || 
         !item.product.isListed || 
-        item.product.isBlocked || 
-        item.quantity > item.product.quantity
+        item.product.isBlocked 
+       
       ) {
         hasInvalidItems = true;
       } else {
+        const {finalPrice}=await getBestPrice(item.product)
+        item.product.finalPrice=finalPrice
         validOrderItems.push(item);
       }
     }
@@ -119,6 +122,7 @@ const userOrderDetails = async (req, res) => {
       return res.redirect('/my-orders');
     }
 
+    
   
     order.items = validOrderItems;
     const summary = calculateSummary(validOrderItems);
@@ -126,7 +130,8 @@ const userOrderDetails = async (req, res) => {
    res.render('orderDetails-user', {
       order,
       user,
-      summary
+      summary,
+     
     });
 
   } catch (error) {
@@ -213,7 +218,18 @@ const returnOrder = async (req, res) => {
             return res.status(400).json({ message: 'Cannot return this order' });
         }
 
- const refundAmount=order.totalAmount
+
+
+        order.orderStatus = 'ReturnRequest';
+        order.returnReason = reason;
+        await order.save();
+
+
+
+
+
+         if (!order || order.orderStatus !== 'ReturnRequest') {
+            const refundAmount=order.totalAmount
 
   await Wallet.findOneAndUpdate(
           {user:userId},
@@ -239,10 +255,11 @@ const returnOrder = async (req, res) => {
   description: `Refund for returned order ${order.orderID}`
 });
 
+        }
 
-        order.orderStatus = 'ReturnRequest';
-        order.returnReason = reason;
-        await order.save();
+
+
+   
 
         res.json({ success: true, message: 'Return request submitted to admin' });
     } catch (error) {

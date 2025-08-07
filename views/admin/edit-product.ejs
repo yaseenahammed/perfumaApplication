@@ -221,16 +221,7 @@
                                 >
                                 <div id="regularPrice-error" class="error-message mt-1"></div>
                             </div>
-                            <div>
-                                <label class="block text-gray-700 font-semibold mb-2">Discount (%)</label>
-                                <input 
-                                    name="discount" 
-                                    type="text" 
-                                    value="<%= product.discount || 0 %>" 
-                                    class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
-                                >
-                                <div id="discount-error" class="error-message mt-1"></div>
-                            </div>
+                            
                             <div>
                                 <label class="block text-gray-700 font-semibold mb-2">Quantity</label>
                                 <input 
@@ -488,7 +479,6 @@
         const numericFields = [
             { id: 'regularPrice', errorId: 'regularPrice-error', message: 'Regular price must be a positive number' },
             { id: 'quantity', errorId: 'quantity-error', message: 'Quantity must be a positive number' },
-            { id: 'discount', errorId: 'discount-error', message: 'Discount must be between 0 and 100' },
             { id: 'offer', errorId: 'offer-error', message: 'Offer must be between 0 and 100' }
         ];
 
@@ -497,7 +487,7 @@
             const input = document.querySelector(`[name="${field.id}"]`);
             const errorDiv = document.getElementById(field.errorId);
             const value = input.value.trim();
-            if (field.id === 'discount' || field.id === 'offer') {
+            if ( field.id === 'offer') {
                 if (value && (isNaN(value) || Number(value) < 0 || Number(value) > 100)) {
                     errorDiv.innerText = field.message;
                     errorDiv.style.display = 'block';

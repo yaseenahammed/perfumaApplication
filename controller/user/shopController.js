@@ -3,6 +3,7 @@ const Category = require('../../models/categorySchema');
 const Brand = require('../../models/brandSchema');
 const User = require('../../models/userSchema');
 const Wishlist=require('../../models/wishlistSchema')
+const { getBestPrice } = require('../../helpers/offerHelper');
 
 const loadShop = async (req, res) => {
   try {
@@ -22,54 +23,71 @@ const loadShop = async (req, res) => {
     let query = { status: 'available', quantity: { $gte: 0 } };
     if (categoryId.length > 0) query.category = { $in: categoryId };
     if (brandId.length > 0) query.brand = { $in: brandId };
-    if (priceRange) {
-      if (priceRange === 'under500') query.salePrice = { $lte: 500 };
-      else if (priceRange === '500-1000') query.salePrice = { $gte: 500, $lte: 1000 };
-      else if (priceRange === '1000-1500') query.salePrice = { $gte: 1000, $lte: 1500 };
-      else if (priceRange === 'above1500') query.salePrice = { $gte: 1500 };
-    }
     if (searchQuery) query.name = { $regex: searchQuery, $options: 'i' };
 
-    let sortOption = {};
-    if (sort === 'priceLowToHigh') sortOption = { salePrice: 1 };
-    else if (sort === 'priceHighToLow') sortOption = { salePrice: -1 };
-    else if (sort === 'nameAsc') sortOption = { name: 1 };
-    else if (sort === 'nameDesc') sortOption = { name: -1 };
-    else sortOption = { createdAt: -1 };
-
     const products = await Product.find(query)
-      .populate('category')
+    .populate('category', 'name offer isOfferActive isListed')
       .populate('brand')
-      .sort(sortOption)
-      .skip((page - 1) * limit)
-      .limit(limit)
       .lean()
       .exec();
 
-    const filteredProducts = products.filter(product => {
-      const isValid = product.brand && !product.brand.isBlocked &&
-        product.category && product.category.isListed &&
-        !product.isBlocked;
-      return isValid;
-    });
+    // Filter invalid products and calculate finalPrice and bestOffer
+    const enrichedProducts = await Promise.all(
+      products
+        .filter(product =>
+          product.brand && !product.brand.isBlocked &&
+          product.category && product.category.isListed &&
+          !product.isBlocked
+        )
+        .map(async (product) => {
+          const { finalPrice, bestOffer } = await getBestPrice(product);
+          return { ...product, finalPrice, bestOffer };
+        })
+    );
 
-    const totalProducts = await Product.countDocuments(query);
-    const totalPages = Math.ceil(totalProducts / limit);
+    // Price filtering
+    let filteredProducts = enrichedProducts;
+    if (priceRange) {
+      if (priceRange === 'under500') {
+        filteredProducts = filteredProducts.filter(p => p.finalPrice <= 500);
+      } else if (priceRange === '500-1000') {
+        filteredProducts = filteredProducts.filter(p => p.finalPrice >= 500 && p.finalPrice <= 1000);
+      } else if (priceRange === '1000-1500') {
+        filteredProducts = filteredProducts.filter(p => p.finalPrice >= 1000 && p.finalPrice <= 1500);
+      } else if (priceRange === 'above1500') {
+        filteredProducts = filteredProducts.filter(p => p.finalPrice >= 1500);
+      }
+    }
+
+    // Sorting
+    if (sort === 'priceLowToHigh') {
+      filteredProducts.sort((a, b) => a.finalPrice - b.finalPrice);
+    } else if (sort === 'priceHighToLow') {
+      filteredProducts.sort((a, b) => b.finalPrice - a.finalPrice);
+    } else if (sort === 'nameAsc') {
+      filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sort === 'nameDesc') {
+      filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
+    } else {
+      filteredProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    // Pagination
+    const startIndex = (page - 1) * limit;
+    const paginatedProducts = filteredProducts.slice(startIndex, startIndex + limit);
+    const totalPages = Math.ceil(filteredProducts.length / limit);
 
     const categories = await Category.find({ isListed: true }).lean();
     const brandIds = await Product.distinct('brand').lean();
     const brands = await Brand.find({ _id: { $in: brandIds }, isBlocked: false }).lean();
 
-   
     const user = userId ? await User.findById(userId).lean() : null;
-
-  
     if (user) {
       req.session.user = user;
       req.session.userId = user._id;
     }
 
-   
+    // Wishlist
     let wishlistItems = [];
     if (userId) {
       const wishlist = await Wishlist.find({ user: userId }).populate('product');
@@ -78,16 +96,18 @@ const loadShop = async (req, res) => {
         product: {
           _id: item.product._id,
           name: item.product.name,
-          salePrice: item.product.salePrice,
           productImages: item.product.productImages,
+          finalPrice: item.product.finalPrice || item.product.salePrice || item.product.regularPrice,
         },
       }));
     }
 
   
+
+
     res.render('shop', {
       user,
-      products: filteredProducts,
+      products: paginatedProducts,
       categories,
       brands,
       currentPage: page,
@@ -99,9 +119,6 @@ const loadShop = async (req, res) => {
       searchQuery,
       wishlistItems
     });
-
-   
- 
 
   } catch (error) {
     console.error('Error in loadShop:', error.stack);

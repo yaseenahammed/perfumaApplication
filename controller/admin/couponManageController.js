@@ -43,9 +43,11 @@ const addCoupon=async(req,res)=>{
     try {
         const {couponCode,status,discountPrice,minPrice,expireOn,isList}=req.body
 
-        if(!couponCode || !status || !discountPrice || !minPrice || !expireOn || !isList ){
-            return res.json({success:false,message:'All fields are required'})
-        }
+        if (typeof couponCode !== 'string' || couponCode.trim() === '' || typeof status === 'undefined' ||
+             isNaN(discountPrice) ||  isNaN(minPrice) || !expireOn || typeof isList === 'undefined') {
+             return res.json({ success: false, message: 'All fields are required and must be valid' });
+          }
+
 
         const existingCoupon=await Coupon.findOne({couponCode})
         if(existingCoupon){

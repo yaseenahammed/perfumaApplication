@@ -206,7 +206,6 @@
                                     <th class="px-6 py-4 font-bold">Category</th>
                                     <th class="px-6 py-4 font-bold">Sale Price</th>
                                     <th class="px-6 py-4 font-bold">Regular Price</th>
-                                    <th class="px-6 py-4 font-bold">Discount</th>
                                     <th class="px-6 py-4 font-bold">Offer</th>
                                     <th class="px-6 py-4 font-bold">Add Offer</th>
                                     <th class="px-6 py-4 font-bold">Quantity</th>
@@ -221,19 +220,20 @@
                                         <td class="px-6 py-4 text-gray-900"><%= productData[i].name %></td>
                                         <td class="px-6 py-4"><%= productData[i].brand && productData[i].brand.name ? productData[i].brand.name : 'Unknown Brand' %></td>
                                         <td class="px-6 py-4"><%= productData[i].category && productData[i].category.name ? productData[i].category.name : 'Unknown Category' %></td>
-                                        <td class="px-6 py-4"><%= productData[i].salePrice %></td>
-                                        <td class="px-6 py-4"><%= productData[i].regularPrice %></td>
-                                        <td class="px-6 py-4"><%= productData[i].discount > 0 ? productData[i].discount + '%' : 'None' %></td>
-                                        <td id="offerValue-<%= productData[i]._id %>" class="px-6 py-4">
-                                            <%= typeof productData[i].offer === 'number' && productData[i].offer > 0 ? productData[i].offer + '%' : 'None' %>
-                                        </td>
-                                        <td id="offerCell-<%= productData[i]._id %>" class="px-6 py-4">
-                                            <% if (productData[i].offer > 0) { %>
-                                                <button class="btn-delete bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="removeOffer('<%= productData[i]._id %>')">Remove Offer</button>
-                                            <% } else { %>
-                                                <button class="btn-add bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="openOfferPrompt('<%= productData[i]._id %>')">Add Offer</button>
-                                            <% } %>
-                                        </td>
+
+<td id="salePrice-<%= productData[i]._id %>" class="px-6 py-4"><%= productData[i].salePrice %></td>
+<td id="regularPrice-<%= productData[i]._id %>" class="px-6 py-4"><%= productData[i].regularPrice %></td>
+<td id="offerValue-<%= productData[i]._id %>" class="px-6 py-4">
+  <%= typeof productData[i].offer === 'number' && productData[i].offer > 0 ? productData[i].offer + '%' : 'None' %>
+</td>
+<td id="offerCell-<%= productData[i]._id %>" class="px-6 py-4">
+  <% if (productData[i].offer > 0) { %>
+    <button class="btn-delete bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="removeOffer('<%= productData[i]._id %>')">Remove Offer</button>
+  <% } else { %>
+    <button class="btn-add bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300" onclick="openOfferPrompt('<%= productData[i]._id %>')">Add Offer</button>
+  <% } %>
+</td>
+
                                         <td class="px-6 py-4"><%= productData[i].quantity %></td>
                                         <td id="status-<%= productData[i]._id %>" class="px-6 py-4">
                                             <% if (productData[i].status === 'available' || productData[i].status === 'discounted') { %>
@@ -369,16 +369,7 @@
                         >
                         <div id="regularPrice-error" class="error-message text-red-500 text-sm mt-1"></div>
                     </div>
-                    <div>
-                        <label class="block text-gray-700 font-semibold mb-2">Discount (%)</label>
-                        <input 
-                            name="discount" 
-                            id="discount" 
-                            type="text" 
-                            class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
-                        >
-                        <div id="discount-error" class="error-message text-red-500 text-sm mt-1"></div>
-                    </div>
+                    
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2">Quantity</label>
                         <input 
@@ -574,7 +565,6 @@
             const numericFields = [
                 { id: 'regularPrice', errorId: 'regularPrice-error', message: 'Regular price must be a positive number' },
                 { id: 'quantity', errorId: 'quantity-error', message: 'Quantity must be a positive number' },
-                { id: 'discount', errorId: 'discount-error', message: 'Discount must be between 0 and 100' },
                 { id: 'offer', errorId: 'offer-error', message: 'Offer must be between 0 and 100' },
             ];
 
@@ -582,7 +572,7 @@
                 const input = document.querySelector(`[name="${field.id}"]`);
                 const errorDiv = document.getElementById(field.errorId);
                 const value = input.value.trim();
-                if (field.id === 'discount' || field.id === 'offer') {
+                if ( field.id === 'offer') {
                     if (value && (isNaN(value) || Number(value) < 0 || Number(value) > 100)) {
                         errorDiv.innerText = field.message;
                         errorDiv.style.display = 'block';
@@ -706,12 +696,20 @@
                 },
                 allowOutsideClick: () => !Swal.isLoading()
             }).then((result) => {
+
                 if (result.isConfirmed && result.value) {
                     Swal.fire('Success!', 'Offer added successfully.', 'success');
+
                     const offerValue = document.getElementById(`offerValue-${productId}`);
                     if (offerValue) {
                         offerValue.textContent = `${result.value.offer}%`;
                     }
+
+                     const salePriceEl = document.getElementById(`salePrice-${productId}`);
+                    if (salePriceEl) {
+                   salePriceEl.textContent = `₹${result.value.salePrice}`;
+                    }
+
                     const offerCell = document.getElementById(`offerCell-${productId}`);
                     if (offerCell) {
                         offerCell.innerHTML = `
@@ -745,6 +743,11 @@
                         if (offerValue) {
                             offerValue.textContent = 'None';
                         }
+
+                         const salePriceEl = document.getElementById(`salePrice-${productId}`);
+                         if (salePriceEl) {
+                            salePriceEl.textContent = `₹${data.salePrice}`;
+                           }
                         const offerCell = document.getElementById(`offerCell-${productId}`);
                         if (offerCell) {
                             offerCell.innerHTML = `

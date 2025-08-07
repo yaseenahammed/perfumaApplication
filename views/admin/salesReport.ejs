@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+        }
+        .main-wrap {
+            margin-left: 250px;
+            padding: 15px;
+            min-height: 25vh;
+            transition: margin-left 0.3s ease;
+            box-sizing: border-box;
+            width: calc(100% - 250px);
+        }
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .order-table th, .order-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+        .order-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #1f2937;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .order-table td {
+            word-wrap: break-word;
+        }
+        .order-table tr {
+            transition: all 0.3s ease;
+        }
+        .order-table tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: linear-gradient(90deg, #c79f15, #a67b0a);
+        }
+        .summary-card {
+            transition: all 0.3s ease;
+        }
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        @media (max-width: 768px) {
+            .main-wrap {
+                margin-left: 0;
+                padding: 10px;
+                width: 100%;
+            }
+            .order-table {
+                display: block;
+                overflow-x: auto;
+            }
+            .order-table th, .order-table td {
+                min-width: 100px;
+                font-size: 0.9rem;
+            }
+            .order-table th {
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <%- include("../../views/partials/admin/header") %>
+
+  
+
+    <!-- Main Content -->
+    <main class="py-16 main-wrap">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-8 animate-fade-in">
+                    <!-- Filter Section -->
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-chart-line text-amber-500 mr-3"></i>
+                            Sales of Perfuma
+                        </h2>
+                    </div>
+                    <form id="filterForm" action="/admin/sales-report" method="get" class="mb-8">
+                        <div class="flex justify-center flex-wrap gap-4">
+                            <div class="relative w-full max-w-md">
+                                <select 
+                                    name="period" 
+                                    id="periodSelect"
+                                    class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+                                    onchange="toggleCustomDate(this.value)"
+                                >
+                                    <option value="daily" <%= period === 'daily' ? 'selected' : '' %>>Daily</option>
+                                    <option value="weekly" <%= period === 'weekly' ? 'selected' : '' %>>Weekly</option>
+                                    <option value="yearly" <%= period === 'yearly' ? 'selected' : '' %>>Yearly</option>
+                                    <option value="custom" <%= period === 'custom' ? 'selected' : '' %>>Custom Range</option>
+                                </select>
+                            </div>
+                            <div id="customDateRange" class="w-full max-w-md <%= period !== 'custom' ? 'hidden' : '' %>">
+                                <div class="flex gap-2">
+                                    <input 
+                                        type="date" 
+                                        name="startDate" 
+                                        value="<%= startDate || '' %>"
+                                        class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+                                        required
+                                    >
+                                    <input 
+                                        type="date" 
+                                        name="endDate" 
+                                        value="<%= endDate || '' %>"
+                                        class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+                                        required
+                                    >
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button 
+                                    type="submit" 
+                                    class="btn-primary inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600"
+                                >
+                                    Apply Filters
+                                </button>
+                                <button 
+                                    type="button" 
+                                    class="btn-primary inline-flex items-center px-4 py-2 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400"
+                                    onclick="clearFilters()"
+                                >
+                                    Clear
+                                </button>
+                                <button 
+                                    type="button" 
+                                    class="btn-primary inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600"
+                                    onclick="downloadReport('pdf')"
+                                >
+                                    <i class="fas fa-file-pdf mr-2"></i> Download PDF
+                                </button>
+                                <button 
+                                    type="button" 
+                                    class="btn-primary inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600"
+                                    onclick="downloadReport('excel')"
+                                >
+                                    <i class="fas fa-file-excel mr-2"></i> Download Excel
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Summary Section -->
+                    <div class="mb-12">
+                        <% if (summary && Object.keys(summary).length > 0) { %>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up">
+                                <div class="summary-card bg-gray-50 rounded-xl p-6 border border-gray-200 text-center">
+                                    <i class="fas fa-shopping-cart text-amber-500 text-3xl mb-4"></i>
+                                    <h3 class="text-lg font-semibold text-gray-900">Total Sales Count</h3>
+                                    <p class="text-xl font-bold text-amber-600"><%= summary.totalSales || 0 %></p>
+                                </div>
+                                <div class="summary-card bg-gray-50 rounded-xl p-6 border border-gray-200 text-center">
+                                    <i class="fas fa-dollar-sign text-amber-500 text-3xl mb-4"></i>
+                                    <h3 class="text-lg font-semibold text-gray-900">Total Order Amount</h3>
+                                    <p class="text-xl font-bold text-amber-600">$<%= summary.totalAmount ? summary.totalAmount.toFixed(2) : '0.00' %></p>
+                                </div>
+                                <div class="summary-card bg-gray-50 rounded-xl p-6 border border-gray-200 text-center">
+                                    <i class="fas fa-tags text-amber-500 text-3xl mb-4"></i>
+                                    <h3 class="text-lg font-semibold text-gray-900">Total Discounts</h3>
+                                    <p class="text-xl font-bold text-amber-600">$<%= summary.discountPrice ? summary.discountPrice.toFixed(2) : '0.00' %></p>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <p class="text-center text-gray-600 font-semibold">
+                                <i class="fas fa-exclamation-circle text-amber-500 mr-2"></i>
+                                No sales data available for the selected period
+                            </p>
+                        <% } %>
+                    </div>
+
+                    <!-- Table Section -->
+                    <div class="space-y-6">
+                        <% if (salesData && salesData.length > 0) { %>
+                            <table class="order-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Date</th>
+                                        <th>Customer</th>
+                                        <th>Total Amount</th>
+                                        <th>Discount</th>
+                                        <th>Coupon Applied</th>
+                                        <th>Final Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% salesData.forEach(order => { %>
+                                        <tr>
+                                            <td><%= order.orderID %></td>
+                                            <td><%= new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                                            <td><%= order.user.name || 'Unknown' %></td>
+                                            <td class="text-amber-600 font-semibold">$<%= order.totalAmount ? order.totalAmount.toFixed(2) : '0.00' %></td>
+                                            <td>$<%= order.discountPrice ? order.discountPrice.toFixed(2) : '0.00' %></td>
+                                            <td><%= order.couponCode || 'None' %></td>
+                                            <td class="text-amber-600 font-semibold">$<%= order.finalAmount ? order.finalAmount.toFixed(2) : '0.00' %></td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        <% } else { %>
+                            <p class="text-center text-gray-600 font-semibold">
+                                <i class="fas fa-exclamation-circle text-amber-500 mr-2"></i>
+                                No sales data available
+                            </p>
+                        <% } %>
+                    </div>
+
+                    <!-- Pagination -->
+                    <% if (totalPages > 1) { %>
+                        <div class="pagination-container mt-8 flex justify-center items-center gap-2">
+                            <% if (currentPage > 1) { %>
+                                <a href="?page=<%= currentPage - 1 %>&period=<%= encodeURIComponent(period || '') %>&startDate=<%= encodeURIComponent(startDate || '') %>&endDate=<%= encodeURIComponent(endDate || '') %>" class="btn-primary inline-flex items-center px-4 py-2 bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 rounded-lg">« Previous</a>
+                            <% } %>
+                            <% for (let i = 1; i <= totalPages; i++) { %>
+                                <% if (i === currentPage) { %>
+                                    <span class="current-page bg-amber-500 text-white border-amber-500 px-4 py-2 rounded-lg font-bold"><%= i %></span>
+                                <% } else { %>
+                                    <a href="?page=<%= i %>&period=<%= encodeURIComponent(period || '') %>&startDate=<%= encodeURIComponent(startDate || '') %>&endDate=<%= encodeURIComponent(endDate || '') %>" class="btn-primary inline-flex items-center px-4 py-2 bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 rounded-lg"><%= i %></a>
+                                <% } %>
+                            <% } %>
+                            <% if (currentPage < totalPages) { %>
+                                <a href="?page=<%= currentPage + 1 %>&period=<%= encodeURIComponent(period || '') %>&startDate=<%= encodeURIComponent(startDate || '') %>&endDate=<%= encodeURIComponent(endDate || '') %>" class="btn-primary inline-flex items-center px-4 py-2 bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 rounded-lg">Next »</a>
+                            <% } %>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleCustomDate(period) {
+            const customDateRange = document.getElementById('customDateRange');
+            customDateRange.classList.toggle('hidden', period !== 'custom');
+        }
+
+        function clearFilters() {
+            document.getElementById('periodSelect').value = 'daily';
+            document.getElementById('customDateRange').classList.add('hidden');
+            document.getElementById('filterForm').reset();
+            window.location.href = `/admin/sales-report?page=1&t=${Date.now()}`;
+        }
+
+        function downloadReport(format) {
+            const form = document.getElementById('filterForm');
+            const period = form.querySelector('[name="period"]').value;
+            let url = `/admin/sales-report/download?format=${format}&period=${encodeURIComponent(period)}`;
+            
+            if (period === 'custom') {
+                const startDate = form.querySelector('[name="startDate"]').value;
+                const endDate = form.querySelector('[name="endDate"]').value;
+                if (!startDate || !endDate) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Date Range',
+                        text: 'Please select both start and end dates.',
+                        confirmButtonColor: '#f59e0b'
+                    });
+                    return;
+                }
+                if (new Date(endDate) < new Date(startDate)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Date Range',
+                        text: 'End date cannot be before start date.',
+                        confirmButtonColor: '#f59e0b'
+                    });
+                    return;
+                }
+                url += `&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`;
+            }
+            
+            window.location.href = url;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const periodSelect = document.getElementById('periodSelect');
+            toggleCustomDate(periodSelect.value);
+        });
+    </script>
+</body>
+<%- include("../../views/partials/admin/footer") %>
+</html>

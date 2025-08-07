@@ -4,35 +4,29 @@ const mongoose = require('mongoose');
 const User = require('../../models/userSchema');
 const Cart = require('../../models/cartSchema');
 const Wishlist = require('../../models/wishlistSchema');
+const { getBestPrice } = require('../../helpers/offerHelper');
 
 const productDetails = async (req, res) => {
   try {
     const userId = req.session.userId;
-   
-  let userData = null;
-if (userId && mongoose.isValidObjectId(userId)) {
-  userData = await User.findById(userId).lean();
-}
+    let userData = null;
 
-  if (userId && !mongoose.isValidObjectId(userId)) {
-  req.flash('error', 'Invalid session data');
- 
-  return res.redirect('/login');
-}
+    if (userId && mongoose.isValidObjectId(userId)) {
+      userData = await User.findById(userId).lean();
+    }
 
- if (!userData) {
- 
-  userData = null;
-}
+    if (userId && !mongoose.isValidObjectId(userId)) {
+      req.flash('error', 'Invalid session data');
+      return res.redirect('/login');
+    }
 
-  if (userData && userData.isBlocked) {
-   userData = null;
-}
- const productId = req.query.id;
-   
-if (!productId || !mongoose.isValidObjectId(productId)) {
+    if (userData && userData.isBlocked) {
+      userData = null;
+    }
+
+    const productId = req.query.id;
+    if (!productId || !mongoose.isValidObjectId(productId)) {
       req.flash('error', 'Invalid product ID');
-     
       return res.redirect('/shop');
     }
 
@@ -40,55 +34,61 @@ if (!productId || !mongoose.isValidObjectId(productId)) {
       .populate('category')
       .populate('brand')
       .lean();
-  
 
     if (!product) {
       req.flash('error', 'Product not found');
-      
       return res.redirect('/shop');
     }
+
+ 
+    const { finalPrice, bestOffer } = await getBestPrice(product);
+    product.finalPrice = finalPrice;
+    product.bestOffer = bestOffer;
 
     const similarProducts = await Product.find({
       category: product.category._id,
       _id: { $ne: product._id },
       status: { $in: ['available', 'discounted'] },
     }).limit(4).lean();
-  
 
-    const findCategory = product.category;
-    const categoryOffer = findCategory?.offer || 0;
+  
+    const categoryOffer = product.category?.offer || 0;
     const productOffer = product.offer || 0;
     const totalOffer = categoryOffer + productOffer;
 
+  
     let wishlistItems = [];
-if (req.session.userId) {
-  const wishlist = await Wishlist.find({ user: req.session.userId }).populate('product');
-  wishlistItems = wishlist.map(item => ({
-    product: {
-      _id: item.product._id,
-      name: item.product.name,
-      salePrice: item.product.salePrice,
-      productImages: item.product.productImages,
-    },
-  }));
-}
+    if (userId) {
+      const wishlist = await Wishlist.find({ user: userId }).populate('product');
+      wishlistItems = wishlist.map(item => ({
+        product: {
+          _id: item.product._id,
+          name: item.product.name,
+          salePrice: item.product.salePrice,
+          productImages: item.product.productImages,
+        },
+      }));
+    }
 
-    res.render('product-details', { 
+    
+    res.render('product-details', {
       product,
       similarProducts,
       user: userData,
       quantity: product.quantity,
       totalOffer,
-      category: findCategory,
+      category: product.category,
       error: req.flash('error')[0] || null,
       wishlistItems
     });
+
   } catch (error) {
     console.error('Error in productDetails:', error.stack);
     req.flash('error', 'Unable to load product details');
     res.redirect('/shop');
   }
 };
+
 
 
 

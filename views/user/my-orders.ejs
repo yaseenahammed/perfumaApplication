@@ -106,7 +106,7 @@
                                         <div>
                                             <h3 class="text-lg font-semibold text-gray-900">Order ID: <%= order.orderID %></h3>
                                             <p class="text-gray-600 text-sm">Date: <%= new Date(order.createdAt).toLocaleDateString() %></p>
-                                            <p class="text-gray-800 font-medium">Total: ₹<%= order.totalAmount %></p>
+                                            <p class="text-gray-800 font-medium">Total: ₹<%= order.finalAmount %></p>
                                             <p class="text-red-500 font-large">Status: <%= order.orderStatus %></p>
                                             <% if (order.orderStatus === 'ReturnRequest') { %>
                                                 <p class="text-yellow-600 text-sm mt-1">Return request pending admin verification...</p>
@@ -255,7 +255,7 @@ async function confirmReturn() {
         const response = await fetch(`/return-order/${currentReturnOrderID}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reason })
+            body: JSON.stringify({ reason,action: 'request' })
         });
 
         const data = await response.json();

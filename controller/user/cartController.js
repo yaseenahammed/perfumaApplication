@@ -3,13 +3,37 @@ const Wishlist = require('../../models/wishlistSchema');
 const Product = require('../../models/productSchema');
 const User = require('../../models/userSchema');
 const mongoose = require('mongoose');
+const {getBestPrice}=require('../../helpers/offerHelper')
 
 const MAX_ALLOWED_QUANTITY = 5;
 
 const getCart = async (req, res) => {
   try {
-  const user = req.user;
-  const cart = await Cart.findOne({ user: user._id }).populate('items.product');
+         const userId = req.session.userId;
+         const user = await User.findById(userId).lean();
+
+  if (!user) {
+      return res.status(401).send('error', { message: 'User not logged in' });
+    }
+
+  const cart = await Cart.findOne({ user: userId }).populate('items.product');
+    
+    if (!cart || !cart.items || cart.items.length === 0) {
+      return res.render('cart', {
+        user,
+        cartItems: [],
+        subtotal: 0,
+        shipping: 50,
+        total: 50,
+      });
+    }
+
+  
+ for(let item of cart.items){
+  const {finalPrice}=await getBestPrice(item.product)
+  item.product.finalPrice=finalPrice
+ }
+
 
   let subtotal = 0, shipping = 50;
   let price=0
@@ -22,12 +46,12 @@ const getCart = async (req, res) => {
       
       if (item.quantity > available) {
         item.quantity = available;
-        item.totalPrice = available * (item.product.salePrice || item.product.regularPrice);
+        item.totalPrice = available * (item.product.finalPrice || item.product.regularPrice);
         cartUpdated = true;
       }
 
-      subtotal += item.quantity * (item.product.salePrice || item.product.regularPrice || 0);
-       price=item.product.salePrice
+      subtotal += item.quantity * (item.product.finalPrice || item.product.regularPrice || 0);
+      
     }
 
     if (cartUpdated) {
@@ -40,11 +64,11 @@ const getCart = async (req, res) => {
 
   res.render('cart', {
     user,
-    cartItems: cart?.items || [],
+    cartItems:cart?.items,
     subtotal,
     shipping,
     total,
-    price
+   
   });
 
 } catch (error) {

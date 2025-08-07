@@ -44,7 +44,15 @@ const userSchema=new Schema({
   type: String,
   default: 'default.png'
 },
- 
+ referralToken: { 
+  type: String,
+   unique: true 
+  },
+  referredBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'User',
+  default: null
+},
 
    cart:[{
     type:Schema.Types.ObjectId,

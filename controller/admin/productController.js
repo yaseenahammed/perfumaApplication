@@ -96,8 +96,8 @@ const getEditProduct = async (req, res) => {
 const postEditProduct = async (req, res) => {
   try {
     const id = req.params.id;
-    const { name, description, regularPrice, discount, quantity, brand, category, offer, status, existingImages, isListed, isBlocked } = req.body;
-console.log('product is getting',req.body)
+    const { name, description, regularPrice, quantity, brand, category, offer, status, existingImages, isListed, isBlocked } = req.body;
+
     if (!name || !description || !regularPrice || !quantity || !brand || !category || !status) {
       return res.redirect(`/admin/editProduct/${id}`);
     }
@@ -105,14 +105,12 @@ console.log('product is getting',req.body)
    
     const parsedRegularPrice = parseFloat(regularPrice);
     const parsedQuantity = parseInt(quantity);
-    const parsedDiscount = discount ? parseFloat(discount) : 0;
     const parsedOffer = offer ? parseFloat(offer) : 0;
 
    
     if (
       isNaN(parsedRegularPrice) || parsedRegularPrice <= 0 ||
       isNaN(parsedQuantity) || parsedQuantity < 0 ||
-      parsedDiscount < 0 || parsedDiscount > 100 ||
       parsedOffer < 0 || parsedOffer > 100
     ) {
       return res.redirect(`/admin/editProduct/${id}`);
@@ -144,8 +142,8 @@ console.log('product is getting',req.body)
       return res.redirect(`/admin/editProduct/${id}`);
     }
 
-     const salePrice = parsedDiscount > 0
-      ? parsedRegularPrice * (1 - parsedDiscount / 100)
+       const salePrice = parsedOffer > 0
+      ? Math.round(parsedRegularPrice * (1 - parsedOffer / 100))
       : parsedRegularPrice;
 
     const updateData = {
@@ -153,7 +151,6 @@ console.log('product is getting',req.body)
       description,
       regularPrice: parsedRegularPrice,
       salePrice,
-      discount: parsedDiscount,
       quantity: parsedQuantity,
       brand,
       category,
@@ -212,7 +209,7 @@ const getAddProduct = async (req, res) => {
 
 const addProduct = async (req, res) => {
   try {
-    const { name, description, regularPrice, discount, quantity, brand, category, offer, status } = req.body;
+    const { name, description, regularPrice, quantity, brand, category, offer, status } = req.body;
 
     if (!name?.trim() || !description?.trim() || !regularPrice || !quantity || !brand || !category || !status) {
       return res.redirect('/admin/products');
@@ -220,13 +217,11 @@ const addProduct = async (req, res) => {
 
     const parsedRegularPrice = parseFloat(regularPrice);
     const parsedQuantity = parseInt(quantity);
-    const parsedDiscount = parseFloat(discount) || 0;
     const parsedOffer = parseFloat(offer) || 0;
 
     if (
       isNaN(parsedRegularPrice) || parsedRegularPrice <= 0 ||
       isNaN(parsedQuantity) || parsedQuantity < 0 ||
-      parsedDiscount < 0 || parsedDiscount > 100 ||
       parsedOffer < 0 || parsedOffer > 100
     ) {
       return res.redirect('/admin/products');
@@ -249,17 +244,16 @@ const addProduct = async (req, res) => {
       return res.redirect('/admin/products');
     }
 
-    const salePrice = parsedDiscount > 0
-      ? parsedRegularPrice * (1 - parsedDiscount / 100)
+       const salePrice = parsedOffer > 0
+      ? Math.round(parsedRegularPrice * (1 - parsedOffer / 100))
       : parsedRegularPrice;
 
     const newProduct = new Product({
       name: name.trim(),
       description: description.trim(),
       regularPrice: parsedRegularPrice,
-      salePrice,
-      discount: parsedDiscount,
       quantity: parsedQuantity,
+      salePrice,
       brand,
       category,
       offer: parsedOffer,
@@ -314,17 +308,23 @@ const addOffer = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
+    const salePrice = Math.round(product.regularPrice * (1 - parsedOffer / 100));
 
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
       {
         offer: parsedOffer,
-       
+       salePrice
       },
       { new: true, runValidators: true }
     );
 
-    return res.status(200).json({ success: true, offer: updatedProduct.offer });
+    return res.status(200).json({
+       success: true, 
+       offer: updatedProduct.offer,
+       salePrice: updatedProduct.salePrice 
+       });
+
   } catch (error) {
     console.error('Add offer error:', error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -340,21 +340,18 @@ const removeOffer = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(
-      productId,
-      {
-        $unset: { offer: "" } 
-      },
-      { new: true, runValidators: true }
-    );
+    product.offer = 0;
+    product.salePrice = product.regularPrice;
 
-   
-    return res.status(200).json({ success: true, offer: null });
+    await product.save();
+
+    return res.status(200).json({ success: true, offer: 0 ,salePrice:product.salePrice });
   } catch (error) {
     console.error('Remove offer error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 const blockProduct = async (req, res) => {
   try {

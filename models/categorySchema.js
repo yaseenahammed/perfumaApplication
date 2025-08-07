@@ -19,9 +19,12 @@ const categorySchema = new Schema({
     type: Number,
     default: 0                        
   },
-  image: {
-    type: String
-  }
+  isOfferActive: {
+  type: Boolean,
+  default: false,
+  select: true
+}
+ 
 },
  {
   timestamps: true 

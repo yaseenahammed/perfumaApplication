@@ -2,8 +2,17 @@ const Product = require('../../models/productSchema');
 const Category = require('../../models/categorySchema');
 const Brand = require('../../models/brandSchema');
 const User = require('../../models/userSchema');
+const Coupon=require('../../models/couponSchema')
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+
+
+
+function generateReferralToken() {
+  return crypto.randomBytes(8).toString('hex'); 
+}
+
 
 
 const transporter = nodemailer.createTransport({
@@ -54,8 +63,7 @@ const loadHome = async (req, res) => {
         .exec()
       : [];
 
-    console.log('Women Perfumes:', womenPerfumes);
-    console.log('men Perfumes:', menPerfumes);
+   
     res.render('home', { user, title: 'Home Page', menPerfumes, womenPerfumes });
   } catch (error) {
     console.error('Error in loadHome:', error.stack);
@@ -66,8 +74,15 @@ const loadHome = async (req, res) => {
 
 const loadSignup = async (req, res) => {
   try {
-    console.log('load signup')
-    res.render('signup', { title: 'Sign Up', error: null });
+ 
+
+    res.render('signup', { 
+      title: 'Sign Up', error: null,
+      referralToken: req.query.ref || ''
+   
+    });
+      
+
   } catch (error) {
     console.error('Error in loadSignup:', error.stack);
     res.redirect('/pageNotFound');
@@ -77,7 +92,7 @@ const loadSignup = async (req, res) => {
 
 const signup = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, referredBy } = req.body;
 
   
     const existingUser = await User.findOne({ email });
@@ -99,6 +114,7 @@ const signup = async (req, res) => {
       password: hashedPassword,
       otp,
       otpExpires,
+      referredBy:referredBy || null
     };
     console.log('your otp is',otp)
     await transporter.sendMail({
@@ -133,7 +149,7 @@ const verifyOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Session expired or OTP missing' });
     }
 
-    const { name, email, password, otp, otpExpires } = tempUser;
+    const { name, email, password, otp, otpExpires ,referredBy} = tempUser;
 
     if (Date.now() > otpExpires) {
       return res.status(401).json({ success: false, message: 'OTP expired' });
@@ -143,15 +159,48 @@ const verifyOtp = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Incorrect OTP' });
     }
 
-   
-    const newUser = new User({
-      name,
-      email,
-      password,
-      isVerified: true,
+    const existingUser=await User.findOne({email})
+    if(existingUser){
+      return res.status(400).json({ success: false, message: 'Email already registered' });
+    }
+
+let referrerId = null;
+if (referredBy) {
+  const referrer = await User.findOne({ referralToken: referredBy });
+  if (referrer) {
+    referrerId = referrer._id;
+
+    const couponCode = `REF-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+    const coupon = new Coupon({
+      couponCode,
+      discountPrice: 10,
+      minPrice: 100,
+      expireOn: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      isList: true,
+      status: true,
+      userId: [referrer._id],
     });
 
-    await newUser.save();
+    await coupon.save();
+
+    await transporter.sendMail({
+      to: referrer.email,
+      subject: 'You earned a referral coupon!',
+      text: `Congratulations! You received a referral coupon:\n\nCoupon Code: ${couponCode}\nDiscount: $10 off on orders over $100\nExpires: ${coupon.expireOn}`,
+    });
+  }
+}
+
+// Now create user
+const newUser = new User({
+  name,
+  email,
+  password,
+  isVerified: true,
+  referredBy: referrerId,
+  referralToken: generateReferralToken(),
+});
+await newUser.save();
 
 
     req.session.userId = newUser._id;

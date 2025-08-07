@@ -30,11 +30,11 @@ const {Schema}=mongoose;
         },
         isList:{
             type:Boolean,
-            dafault:true
+            default:true
         },
         userId: [{
             type:Schema.Types.ObjectId,
-            ref:"user"
+            ref:"User"
         }]
     }, { timestamps: true} );
 

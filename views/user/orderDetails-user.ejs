@@ -160,11 +160,12 @@
                             <div class="space-y-2">
                                 <p><span class="text-gray-600">Subtotal:</span> <span class="font-medium">₹<%= summary.subtotal || 0 %></span></p>
                                 <p><span class="text-gray-600">Shipping:</span> <span class="font-medium">₹50</span></p>
-                                <p class="border-t pt-2 mt-2"><span class="text-gray-600 font-semibold">Order Total:</span> <span class="text-lg font-bold text-amber-600">₹<%= summary.total || 0 %></span></p>
+                                <p><span class="text-gray-600">CouponDiscount:</span> <span class="font-medium">₹<%= order.discountPrice || 0 %></span></p>
+                                <p class="border-t pt-2 mt-2"><span class="text-gray-600 font-semibold">Order Total:</span> <span class="text-lg font-bold text-amber-600">₹<%= order.finalAmount || 0 %></span></p>
                             </div>
                             <div class="mt-4">
-                                <p class="text-gray-600 font-semibold">Payment Method:</p>
-                                <p class="text-sm"><%= order.paymentMethod %></p>
+                                <p class="text-gray-600 font-semibold">Payment Method:<span class="text-lg text-gray-600 font-semibold"><%= order.paymentMethod %></span></p>
+                                
                             </div>
                         </div>
                     </div>

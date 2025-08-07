@@ -76,22 +76,6 @@ const addCategory = async (req, res) => {
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const addOffer = async (req, res) => {
   try {
     const { categoryId, offer } = req.body;
@@ -100,9 +84,10 @@ const addOffer = async (req, res) => {
       return res.status(400).json({ error: "Invalid offer percentage" });
     }
 
-    const category = await Category.findByIdAndUpdate(
-      categoryId,
-      { offer: offer },
+    const category = await Category.findByIdAndUpdate(categoryId,{ 
+        offer: offer,
+        isOfferActive: true
+      },
       { new: true }
     );
 
@@ -125,7 +110,8 @@ const removeOffer = async (req, res) => {
         const { categoryId } = req.body;
 
         const category = await Category.findByIdAndUpdate(categoryId, {
-            offer: null
+            offer: 0,
+            isOfferActive: false
         });
 
         if (!category) {

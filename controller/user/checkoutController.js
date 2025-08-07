@@ -8,13 +8,14 @@ const Coupon = require('../../models/couponSchema');
 const Transactions=require('../../models/transactionSchema')
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
+const {getBestPrice}=require('../../helpers/offerHelper')
 
 const SHIPPING_FEE = 50;
 
 const calculateSummary = (cartItems) => {
     let subtotal = 0;
     cartItems.forEach(item => {
-        const itemPrice = item.product.salePrice;
+        const itemPrice = item.product.finalPrice || item.product.salePrice || item.product.regularPrice
         const quantity = item.quantity;
         const itemTotalBeforeTax = itemPrice * quantity;
         subtotal += itemTotalBeforeTax;
@@ -38,19 +39,22 @@ const getCheckout = async (req, res) => {
             return res.redirect('/login');
         }
 
+
         const addressDoc = await Address.findOne({ userId }).lean();
         const cart = await Cart.findOne({ user: userId }).populate('items.product').lean();
         if (!cart || cart.items.length === 0) {
             req.flash('info', 'Your cart is empty. Please continue shopping.');
             return res.redirect('/cart');
         }
-
+        
         const validCartItems = [];
         let hasInvalidItems = false;
         for (const item of cart.items) {
             if (!item.product || !item.product.isListed || item.product.isBlocked || item.quantity > item.product.quantity) {
                 hasInvalidItems = true;
             } else {
+                const {finalPrice}=await getBestPrice(item.product)
+                item.product.finalPrice=finalPrice
                 validCartItems.push(item);
             }
         }
@@ -65,7 +69,14 @@ const getCheckout = async (req, res) => {
             return res.redirect('/cart');
         }
 
+        
+        
+
         const summary = calculateSummary(validCartItems);
+        
+        
+       
+
 
         let eligibleCoupons = [];
         try {
@@ -96,6 +107,8 @@ const getCheckout = async (req, res) => {
             req.session.selectedAddressId = selectedAddress._id.toString(); // Persist default selection
         }
 
+
+     
         
 
         res.render('checkout', {
@@ -274,11 +287,18 @@ const placeOrder = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Cart is empty' });
         }
 
-        const items = cart.items.map(item => ({
-            product: item.product._id,
+        
+
+        const items=[]
+
+        for(let item of cart.items){
+            const {finalPrice}=await getBestPrice(item.product)
+            items.push({
+                 product: item.product._id,
             quantity: item.quantity,
-            price: item.product.salePrice,
-        }));
+            price: finalPrice,
+            })
+        }
 
         const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const shipping = SHIPPING_FEE;
@@ -333,30 +353,39 @@ const placeOrder = async (req, res) => {
             return 'ORD-' + Math.floor(100000 + Math.random() * 900000);
         };
 
-        const orders = new Order({
-            user: user._id,
-            shippingAddress,
-            paymentMethod: method,
-            items,
-            subtotal,
-            shipping,
-            couponCode: appliedCouponCode,
-            discountPrice: finalDiscountPrice,
-            orderID: generateOrderID(),
-            totalAmount: total,
-            orderStatus: 'Processing',
-        });
+const finalAmount = subtotal + shipping - finalDiscountPrice;
+
+if (isNaN(finalAmount)) {
+  console.error(' finalAmount is NaN', { subtotal, shipping, finalDiscountPrice });
+  return res.status(400).json({ success: false, message: 'Invalid final amount calculation' });
+}
+
+const orders = new Order({
+  user: user._id,
+  shippingAddress,
+  paymentMethod: method,
+  items,
+  subtotal,
+  shipping,
+  couponCode: appliedCouponCode,
+  discountPrice: finalDiscountPrice,
+  orderID: generateOrderID(),
+  totalAmount: subtotal + shipping,
+  finalAmount,
+  orderStatus: 'Processing',
+  date: new Date()
+});
 
         await orders.save();
 
-//         await Transactions.create({
-//   user: user._id,
-//   type: 'Order',
-//   orderId: orders._id,
-//   amount: total,
-//   status: 'Success',
-//   description: `Placed order ${orders.orderID}`
-// });
+        await Transactions.create({
+  user: user._id,
+  type: 'Order',
+  orderId: orders._id,
+  amount: total,
+  status: 'Success',
+  description: `Placed order ${orders.orderID}`
+});
 
 
         for (const item of items) {

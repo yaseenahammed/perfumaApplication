@@ -87,7 +87,12 @@ returnReason:{
         default: 0,
         min: 0
     },
-  invoiceDate: {
+finalAmount: {
+  type: Number,
+  required: true
+}
+,
+  Date: {
     type: Date,
     default: Date.now
   }

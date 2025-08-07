@@ -4,7 +4,6 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <style>
   .main-container {
     max-width: 1200px;
@@ -179,7 +178,9 @@
   .product-card .original-price {
     color: #999;
     font-size: 12px;
-    text-decoration: line-through;
+    text-decoration: line
+
+-through;
     margin-left: 5px;
   }
   .wishlist-btn {
@@ -196,7 +197,7 @@
   .wishlist-btn svg {
     width: 20px;
     height: 20px;
-    stroke: #fff;
+    stroke: black;
     fill: none;
     transition: fill 0.3s, stroke 0.3s;
   }
@@ -207,7 +208,7 @@
   .wishlist-btn:hover svg {
     stroke: #ff4444;
   }
-  .add-to-cart-btn {
+  .wishlist-button {
     background: linear-gradient(to right, #f97316, #ef4444);
     color: #fff;
     padding: 10px;
@@ -219,9 +220,12 @@
     font-size: 14px;
     transition: background 0.3s, transform 0.2s;
   }
-  .add-to-cart-btn:hover {
-    background: linear-gradient(to right, #ea580c, #dc2626);
+  .wishlist-button:hover {
+    background: linear-gradient(to right,  #f97316, #ef4444);
     transform: scale(1.05);
+  }
+  .wishlist-button.active {
+    background: linear-gradient(to right, #f97316, #ef4444);
   }
   .pagination {
     display: flex;
@@ -401,18 +405,28 @@
                   </span>
                 </div>
                 <p>
-                  ₹<%= product.salePrice || product.regularPrice %>
-                  <% if (product.regularPrice > product.salePrice) { %>
+                  ₹<%= product.finalPrice %>
+                  <% if (product.finalPrice < product.regularPrice) { %>
                     <span class="original-price">₹<%= product.regularPrice %></span>
+                    <% if (product.bestOffer > 0) { %>
+                      <span class="text-green-600 text-sm font-medium">(<%= product.bestOffer %>% OFF)</span>
+                    <% } %>
                   <% } %>
                 </p>
               </a>
-              <button class="add-to-cart-btn bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
+              <button 
+                class="wishlist-button <%= wishlistItems && wishlistItems.some(item => item.product._id.toString() === product._id.toString()) ? 'active' : '' %>"
+                onclick="toggleWishlist('<%= product._id %>', this)"
+              >
+                <%= wishlistItems && wishlistItems.some(item => item.product._id.toString() === product._id.toString()) ? 'Remove from Wishlist' : 'Add to Wishlist' %>
+              </button>
             </div>
           <% }) %>
         <% } %>
       </main>
     </div>
+  </section>
+</div>
 
     <div class="pagination">
       <% if (currentPage > 1) { %>
@@ -436,45 +450,51 @@
     // Implement cart addition logic
   }
 
-  function toggleWishlist(productId, element) {
-    const isInWishlist = element.classList.contains('active');
-    const method = isInWishlist ? 'POST' : 'POST';
-    const url = `/wishlist/${isInWishlist ? 'remove' : 'add'}/${productId}`;
+ function toggleWishlist(productId, buttonElement) {
+  const productCard = buttonElement.closest('.product-card');
+  const heartIcon = productCard.querySelector('.wishlist-btn');
+  const isInWishlist = buttonElement.classList.contains('active');
+  const url = `/wishlist/${isInWishlist ? 'remove' : 'add'}/${productId}`;
 
-    fetch(url, {
-      method,
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        element.classList.toggle('active');
-        Swal.fire({
-          icon: 'success',
-          title: isInWishlist ? 'Removed from Wishlist' : 'Added to Wishlist',
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: data.error || 'Could not update wishlist',
-        });
-      }
-    })
-    .catch(err => {
-      console.error('Error:', err);
+  fetch(url, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      // Toggle both the heart icon and the button styles
+      heartIcon.classList.toggle('active');
+      buttonElement.classList.toggle('active');
+
+      // Update the button text
+      buttonElement.textContent = isInWishlist ? 'Add to Wishlist' : 'Remove from Wishlist';
+
+      Swal.fire({
+        icon: 'success',
+        title: isInWishlist ? 'Removed from Wishlist' : 'Added to Wishlist',
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    } else {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'Something went wrong',
+        text: data.error || 'Could not update wishlist',
       });
+    }
+  })
+  .catch(err => {
+    console.error('Error:', err);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Something went wrong',
     });
-  }
+  });
+}
 
-  
 
   function updateFilters() {
     const categories = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(input => input.value);

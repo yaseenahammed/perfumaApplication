@@ -79,7 +79,7 @@ const removeFromWishlist = async (req, res) => {
   try {
     const { productId } = req.params;
   
-    const userId = req.session.user._id;
+    const userId = req.session.userId;
    
 
     if (!userId) {
@@ -107,7 +107,7 @@ const removeFromWishlist = async (req, res) => {
 
 const clearWishlist = async (req, res) => {
   try {
-    const userId = req.session.user?._id;
+    const userId = req.session.user._id;
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Please log in to clear wishlist' });
     }

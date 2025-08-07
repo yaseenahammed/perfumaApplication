@@ -25,12 +25,7 @@ const productSchema = new Schema(
       type: Number,
       required: true,
     },
-    discount: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 100,
-    },
+
     offer: {
       type: Number,
       default: 0,
@@ -68,12 +63,7 @@ const productSchema = new Schema(
   { timestamps: true }
 );
 
-// Pre-save hook to calculate salePrice based on discount or offer
-productSchema.pre('save', function (next) {
-  const effectiveDiscount = Math.max(this.discount, this.offer);
-  this.salePrice = this.regularPrice * (1 - effectiveDiscount / 100);
-  next();
-});
+
 
 const Product = mongoose.model("Product", productSchema);
 module.exports = Product;
