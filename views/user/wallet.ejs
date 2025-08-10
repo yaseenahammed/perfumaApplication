@@ -69,18 +69,20 @@
                                 Wallet Summary
                             </h2>
                             <div class="space-y-4">
-                                <div class="flex justify-between items-center py-2">
+                                <!-- <div class="flex justify-between items-center py-2">
                                     <span class="text-gray-600">Total Deposits</span>
                                     <span class="font-semibold text-gray-900"><span class="currency">₹</span><%= wallet.balance%></span>
-                                </div>
+                                </div> -->
                                 <div class="flex justify-between items-center py-2">
                                     <span class="text-gray-600">Available for Withdrawal</span>
                                     <span class="font-semibold text-gray-900"><span class="currency">₹</span><%= wallet.balance%></span>
                                 </div>
                                 <div class="flex justify-between items-center py-2">
                                     <span class="text-gray-600">Total Withdrawals</span>
-                                    <span class="font-semibold text-gray-900"><span class="currency">₹</span>0</span>
+                                    <span class="font-semibold text-gray-900"><span class="currency">₹</span><%= totalWithdrawn%></span>
                                 </div>
+                                
+
                                 
                             </div>
                             
@@ -95,15 +97,14 @@
                             Recent Transactions
                         </h2>
                         <div class="flex justify-between mb-4">
-                            <div class="flex space-x-4">
-                                <select class="border border-gray-300 rounded-lg px-3 py-2">
-                                    <option>All Types</option>
-                                </select>
-                                <select class="border border-gray-300 rounded-lg px-3 py-2">
-                                    <option>All Status</option>
-                                </select>
-                                <input type="date" class="border border-gray-300 rounded-lg px-3 py-2" value="dd-mm-yyyy">
-                            </div>
+           <div class="flex space-x-4 mb-4">
+    <input type="date" id="startDate" class="border border-gray-300 rounded-lg px-3 py-2">
+    <input type="date" id="endDate" class="border border-gray-300 rounded-lg px-3 py-2">
+    <button id="filterBtn" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition duration-200">
+        Filter
+    </button>
+</div>
+
                             <button onclick="openModal()" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition duration-200">
                                 View All
                           </button>
@@ -240,6 +241,18 @@
   if (e.target === modal) {
     closeModal();
   }
+});
+
+document.getElementById('filterBtn').addEventListener('click', () => {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    if (!startDate || !endDate) {
+        alert('Please select both start and end dates.');
+        return;
+    }
+
+    window.location.href = `/wallet/transaction-filter?startDate=${startDate}&endDate=${endDate}`;
 });
 
  </script>

@@ -19,12 +19,28 @@ const getWallet = async (req, res) => {
     const wallet = await Wallet.findOne({ user: user._id });
     const transactions = await Transactions.find({ user: user._id }).sort({ createdAt: -1 });
 
+
 const previewTransactions = transactions.slice(0, 3); 
 const allTransactions = transactions; 
+
+
+
+
+
+const totalWithdrawnResult = await Transactions.aggregate([
+  { $match: { user: user._id, type: 'debit', status: 'Success' } },
+  { $group: { _id: null, total: { $sum: '$amount' } } }
+]);
+
+
+const totalWithdrawn = totalWithdrawnResult.length > 0 ? totalWithdrawnResult[0].total : 0;
+
+
 
 res.render('wallet', {
   wallet: wallet || { balance: 0 },
   user,
+  totalWithdrawn,
   transactions: previewTransactions,
   allTransactions
 });
@@ -109,10 +125,10 @@ const verifyWalletOrder = async (req, res) => {
       });
     }
 
-    // ✅ Always log the transaction here
+    
     await Transactions.create({
       user: userId,
-      type: 'Top-up',
+      type: 'credit',
       amount: amount,
       status: 'Success',
       description: `Added ₹${amount} via Razorpay`
@@ -125,9 +141,81 @@ const verifyWalletOrder = async (req, res) => {
   }
 };
 
+const filterTransaction = async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        const user = req.user; // Or req.session.user depending on your setup
+
+        // 1️⃣ Ensure user is logged in
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'Please log in to view transactions.' });
+        }
+
+        // 2️⃣ Check both dates provided
+        if (!startDate || !endDate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please select both start and end dates.'
+            });
+        }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+
+        // 3️⃣ Validate no future dates
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
+        if (start > today || end > today) {
+            return res.status(400).json({
+                success: false,
+                message: 'Dates cannot be in the future.'
+            });
+        }
+
+        // 4️⃣ Validate date order
+        if (start > end) {
+            return res.status(400).json({
+                success: false,
+                message: 'Start date cannot be after end date.'
+            });
+        }
+
+        // 5️⃣ Get wallet and filtered transactions
+        const wallet = await Wallet.findOne({ user: user._id });
+        const transactions = await Transactions.find({
+            user: user._id,
+            createdAt: { $gte: start, $lte: end }
+        }).sort({ createdAt: -1 }).lean();
+
+        // 6️⃣ Total withdrawn (keep same logic as getWallet)
+        const totalWithdrawnResult = await Transactions.aggregate([
+            { $match: { user: user._id, type: 'debit', status: 'Success' } },
+            { $group: { _id: null, total: { $sum: '$amount' } } }
+        ]);
+        const totalWithdrawn = totalWithdrawnResult.length > 0 ? totalWithdrawnResult[0].total : 0;
+
+        // 7️⃣ Render view with same structure as getWallet
+        res.render('wallet', {
+            wallet: wallet || { balance: 0 },
+            user,
+            totalWithdrawn,
+            transactions,        // Only filtered list
+            allTransactions: transactions, // So modal still works
+            startDate,
+            endDate
+        });
+
+    } catch (error) {
+        console.error('Error fetching transactions:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
 module.exports={
     getWallet,
     createWalletOrder,
-    verifyWalletOrder
+    verifyWalletOrder,
+    filterTransaction
 }
 

@@ -104,6 +104,14 @@
                                 <div class="order-card bg-white p-4 rounded-lg border border-gray-100">
                                     <div class="flex items-center justify-between mb-4">
                                         <div>
+                                           <% const firstItem = order.items[0]; %>
+<% if (firstItem && firstItem.product && firstItem.product.productImages && firstItem.product.productImages.length > 0) { %>
+  <img src="<%= firstItem.product.productImages[0] %>" alt="<%= firstItem.product.name %>" class="w-20 h-20 object-cover rounded-lg shadow-sm" />
+<% } else { %>
+  <img src="/images/default-product.png" alt="No Image" class="w-20 h-20 object-cover rounded-lg shadow-sm" />
+<% } %>
+
+
                                             <h3 class="text-lg font-semibold text-gray-900">Order ID: <%= order.orderID %></h3>
                                             <p class="text-gray-600 text-sm">Date: <%= new Date(order.createdAt).toLocaleDateString() %></p>
                                             <p class="text-gray-800 font-medium">Total: ₹<%= order.finalAmount %></p>
@@ -141,8 +149,8 @@
 
     </div>
 
-    
-<div class="pagination-container mt-8 flex justify-center items-center gap-2">
+<!-- Pagination -->
+                    <div class="pagination-container mt-8 flex justify-center items-center gap-2">
                         <% if (currentPage > 1) { %>
                             <a href="?page=<%= currentPage - 1 %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">« Previous</a>
                         <% } %>

@@ -6,6 +6,7 @@ const Address = require('../../models/addresSchema');
 const Order = require('../../models/orderSchema');
 const Coupon = require('../../models/couponSchema');
 const Transactions=require('../../models/transactionSchema')
+const Wallet=require('../../models/walletSchema')
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
 const {getBestPrice}=require('../../helpers/offerHelper')
@@ -342,7 +343,7 @@ const placeOrder = async (req, res) => {
 
         const total = subtotal + shipping - finalDiscountPrice;
 
-        const allowedMethods = ['cod', 'card', 'upi', 'netbanking'];
+        const allowedMethods = ['cod', 'card', 'upi', 'netbanking','wallet'];
         if (!allowedMethods.includes(paymentMethod)) {
             return res.status(400).json({ success: false, message: 'Invalid payment method' });
         }
@@ -360,6 +361,41 @@ if (isNaN(finalAmount)) {
   return res.status(400).json({ success: false, message: 'Invalid final amount calculation' });
 }
 
+                
+
+                   if(paymentMethod==='wallet'){
+                    const wallet =await Wallet.findOne({user:userId})
+                    if(!wallet || wallet.balance<finalAmount){
+                        return res.status(400).json({success:false,messafe:'insuficiant wallet balance'})
+                    }
+                    wallet.balance-=finalAmount
+                   wallet.transactions.push({
+                    type:'debit',
+                    amount:finalAmount,
+                    description:'order payment via wallet'
+                   })
+                   
+                   await wallet.save()
+
+
+                     await Transactions.create({
+    user: userId,
+    type: 'debit',
+    amount: finalAmount,
+    status: 'Success',
+    description: 'Order payment via wallet'
+  });
+}
+
+                
+
+
+                
+
+               
+
+
+
 const orders = new Order({
   user: user._id,
   shippingAddress,
@@ -373,6 +409,7 @@ const orders = new Order({
   totalAmount: subtotal + shipping,
   finalAmount,
   orderStatus: 'Processing',
+  paymentStatus: paymentMethod === 'wallet' ? 'Paid' : 'Pending',
   date: new Date()
 });
 
@@ -408,6 +445,11 @@ const orders = new Order({
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
+
+
+
+
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,

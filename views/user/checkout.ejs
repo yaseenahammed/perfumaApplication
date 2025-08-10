@@ -229,6 +229,12 @@
                                     <span class="ml-3 text-lg font-medium text-gray-800">Net Banking</span>
                                     <i class="fas fa-university ml-auto text-green-600 text-2xl"></i>
                                 </label>
+     <label class="flex items-center p-4 border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+  <input type="radio" name="payment_method" value="wallet" class="form-radio text-amber-500 h-5 w-5">
+  <span class="ml-3 text-lg font-medium text-gray-800">Wallet</span>
+  <i class="fas fa-wallet ml-auto text-purple-600 text-2xl"></i>
+</label>
+
                                 <label class="flex items-center p-4 border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
                                     <input type="radio" name="payment_method" value="cod" class="form-radio text-amber-500 h-5 w-5" checked>
                                     <span class="ml-3 text-lg font-medium text-gray-800">Cash on Delivery</span>
@@ -255,9 +261,9 @@
 
 
                              <button id="wallet-btn" class="wallet-balance-btn w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center justify-center">
-                                <i class="fas fa-truck-loading mr-2"></i>
-                               Use Wallet Balance
-                            </button>
+    <i class="fas fa-wallet mr-2"></i>
+    Check Wallet
+</button>
 
                             <div class="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
                                 <div class="flex items-center text-green-700">
@@ -762,7 +768,8 @@
                     'card': 'Card Payment',
                     'upi': 'UPI Payment',
                     'netbanking': 'Net Banking',
-                    'cod': 'Cash on Delivery'
+                    'cod': 'Cash on Delivery',
+                    'wallet':'Wallet'
                 }[selectedPaymentMethod] || 'Unknown Method';
 
                 document.getElementById('confirm-payment-method').textContent = paymentMethodText;
@@ -781,7 +788,7 @@
                     discountPrice: appliedCoupon ? appliedCoupon.discountPrice : 0
                 };
 
-                if (selectedPaymentMethod === 'cod') {
+                if (selectedPaymentMethod === 'cod' || selectedPaymentMethod === 'wallet') {
                     try {
                         const res = await fetch('/place-order', {
                             method: 'POST',
@@ -887,7 +894,7 @@
             }
 
             retryPaymentBtn.addEventListener('click', () => {
-                window.location.href = '/chekout';
+                window.location.href = '/checkout';
             });
 
             function retryOrder() {

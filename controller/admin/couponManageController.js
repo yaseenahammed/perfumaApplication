@@ -24,16 +24,14 @@ const getCoupon=async(req,res)=>{
         }
 
     
-
+const count=await Coupon.countDocuments(query)
         const coupons=await Coupon.find(query)  
         .limit(limit)
         .skip((pageNumber - 1) * limit)
         .exec();
 
 
-            const count = await Coupon.find({
-            name: { $regex: ".*" + search + ".*", $options: 'i' }
-         }).countDocuments();
+          
 
      
 
@@ -63,6 +61,14 @@ const addCoupon=async(req,res)=>{
              isNaN(discountPrice) ||  isNaN(minPrice) || !expireOn || typeof isList === 'undefined') {
              return res.json({ success: false, message: 'All fields are required and must be valid' });
           }
+
+          if (discountPrice >= minPrice) {
+    return res.status(400).json({
+        success: false,
+        message: 'Discount price must be less than the minimum order price.'
+    });
+}
+
 
 
         const existingCoupon=await Coupon.findOne({couponCode})

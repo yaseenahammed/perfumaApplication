@@ -99,7 +99,7 @@ router.post('/change-password', userAuth, userProfileController.changePassword);
 router.get('/cart',userAuth,CartController.getCart);
 router.delete('/cart/remove/:productId', userAuth,CartController.removeFromCart);
 
-//checkout
+//checkout 
 router.get('/checkout',userAuth,checkoutController.getCheckout)
 router.post('/addressAdd',userAuth,checkoutController.addAddress)
 router.post('/addressEdit',userAuth,checkoutController.editAddress)
@@ -130,6 +130,7 @@ router.post('/wishlist/clear',userAuth,wishlistController.clearWishlist)
 router.get('/wallet',userAuth,walletController.getWallet)
 router.post('/wallet/create-walletOrder',userAuth,walletController.createWalletOrder)
 router.post('/wallet/verify-walletOrder',userAuth,walletController.verifyWalletOrder)
+router.get('/wallet/transaction-filter',userAuth,walletController.filterTransaction)
 
 
 
