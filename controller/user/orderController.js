@@ -186,6 +186,13 @@ const cancelOrder = async (req, res) => {
 });
 
 
+    for (const item of order.items) {
+            await Product.updateOne(
+                { _id: item.product },
+                { $inc: { quantity: item.quantity } }  
+            );
+        }
+
         order.orderStatus = 'Cancelled';
         order.cancellationReason = reason || 'No reason provided';
         await order.save();
@@ -223,43 +230,6 @@ const returnOrder = async (req, res) => {
         order.orderStatus = 'ReturnRequest';
         order.returnReason = reason;
         await order.save();
-
-
-
-
-
-         if (!order || order.orderStatus !== 'ReturnRequest') {
-            const refundAmount=order.totalAmount
-
-  await Wallet.findOneAndUpdate(
-          {user:userId},
-          {
-            $inc:{balance:refundAmount},
-            $push:{
-              transactions:{
-                type:'credit',
-                amount:refundAmount,
-                description:`Refund for cancelled order ${order._id}`
-              }
-            }
-          },
-          {upsert:true}
-        )
-
-        await Transactions.create({
-  user: userId,
-  type: 'Return',
-  orderId: order._id,
-  amount: refundAmount,
-  status: 'Success',
-  description: `Refund for returned order ${order.orderID}`
-});
-
-        }
-
-
-
-   
 
         res.json({ success: true, message: 'Return request submitted to admin' });
     } catch (error) {

@@ -76,10 +76,12 @@ const productDetails = async (req, res) => {
       similarProducts,
       user: userData,
       quantity: product.quantity,
+      MAX_ALLOWED_QUANTITY,
       totalOffer,
       category: product.category,
       error: req.flash('error')[0] || null,
-      wishlistItems
+      wishlistItems,
+
     });
 
   } catch (error) {
@@ -129,7 +131,7 @@ const addToCart = async (req, res) => {
     }
 
     if (quantity < 1 || quantity > product.quantity || quantity > MAX_ALLOWED_QUANTITY) {
-      return res.status(400).json({ error: 'Invalid quantity selected' });
+      return res.status(400).json({ error: 'Invalid quantity selected ' });
     }
 
     const price = product.salePrice || product.regularPrice;
@@ -142,12 +144,14 @@ const addToCart = async (req, res) => {
 
     const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
     if (itemIndex > -1) {
-      const newQuantity = cart.items[itemIndex].quantity + quantity;
-      if (newQuantity > product.quantity || newQuantity > MAX_ALLOWED_QUANTITY) {
-        return res.status(400).json({ error: 'Maximum quantity reached' });
-      }
-      cart.items[itemIndex].quantity = newQuantity;
-      cart.items[itemIndex].totalPrice = newQuantity * cart.items[itemIndex].price;
+      return res.status(400).json({ error: 'Product already in cart' });
+
+      // //  const newQuantity = cart.items[itemIndex].quantity + quantity;
+      // // if (newQuantity > product.quantity || newQuantity > MAX_ALLOWED_QUANTITY) {
+      // //   return res.status(400).json({ error: 'Maximum quantity reached' });
+      // }
+      // cart.items[itemIndex].quantity = newQuantity;
+      // cart.items[itemIndex].totalPrice = newQuantity * cart.items[itemIndex].price;
     } else {
       cart.items.push({
         product: productId,
@@ -157,8 +161,14 @@ const addToCart = async (req, res) => {
       });
     }
 
-    await Wishlist.updateOne({ user: userId }, { $pull: { items: productId } });
+
     await cart.save();
+
+    await Wishlist.findOneAndDelete({
+  user: userId,
+  product: productId
+});
+
 
     res.json({ success: true, message: 'Product added to cart' });
   } catch (error) {
@@ -166,6 +176,8 @@ const addToCart = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+
 
 const incrementQuantity = async (req, res) => {
   try {

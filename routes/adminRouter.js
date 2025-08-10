@@ -80,6 +80,7 @@ router.post('/delete-coupon/:couponCode',adminAuth,couponManageController.delete
 
 //salesReport
 router.get('/sales-report',adminAuth,salesController.getSalesReport)
+router.get('/sales-report/download', adminAuth,salesController.downloadSalesReport);
 
 
 

@@ -1,5 +1,7 @@
 const Order = require('../../models/orderSchema');
 const User = require('../../models/userSchema');
+const Wallet=require('../../models/walletSchema')
+const Transactions=require('../../models/transactionSchema')
 
 const orderListing = async (req, res) => {
     try {
@@ -100,24 +102,48 @@ const verifyReturn = async (req, res) => {
             return res.json({ success: false, message: 'Invalid return request' });
         }
 
-        
-   
+        // Update status
         order.orderStatus = 'Returned';
         await order.save();
 
-      
-        const user = await User.findById(order.user._id);
-        if (user) {
-            user.wallet = (user.wallet || 0) + order.totalAmount;
-            await user.save();
-        }
+        const refundAmount = order.totalAmount;
+        const userId = order.user._id;
 
-        res.json({ success: true, message: 'Return verified ' });
+        // Update wallet balance
+        await Wallet.findOneAndUpdate(
+            { user: userId },
+            {
+                $inc: { balance: refundAmount },
+                $push: {
+                    transactions: {
+                        type: 'credit',
+                        amount: refundAmount,
+                        description: `Refund for returned order ${order.orderID}`,
+                        date: new Date()
+                    }
+                }
+            },
+            { upsert: true }
+        );
+
+       
+        await Transactions.create({
+            user: userId,
+            type: 'Return',
+            orderId: order._id,
+            amount: refundAmount,
+            status: 'Success',
+            description: `Refund for returned order ${order.orderID}`
+        });
+
+        res.json({ success: true, message: 'Return verified and refund processed' });
+
     } catch (error) {
         console.error('Error in verifyReturn:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 };
+
 
 const rejectReturn = async (req, res) => {
     try {

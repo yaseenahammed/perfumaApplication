@@ -5,7 +5,9 @@ const Coupon=require('../../models/couponSchema')
 const getCoupon=async(req,res)=>{
     try {
     
-        const {search,status,isList}=req.query;
+        const {search='',status='',isList='',page=1}=req.query;
+        const limit =3
+        const pageNumber=parseInt(page) || 1
 
         let query={}
 
@@ -21,7 +23,19 @@ const getCoupon=async(req,res)=>{
             query.isList=isList==='true'
         }
 
-        const coupons=await Coupon.find(query).lean()
+    
+
+        const coupons=await Coupon.find(query)  
+        .limit(limit)
+        .skip((pageNumber - 1) * limit)
+        .exec();
+
+
+            const count = await Coupon.find({
+            name: { $regex: ".*" + search + ".*", $options: 'i' }
+         }).countDocuments();
+
+     
 
 
 
@@ -29,7 +43,9 @@ const getCoupon=async(req,res)=>{
             coupons:coupons || [],
             search:search || '',
             status:status || '',
-            isList:isList || ''
+            isList:isList || '',
+            totalPages: Math.ceil(count / limit),
+            currentPage: pageNumber,
 
         })
     } catch (error) {

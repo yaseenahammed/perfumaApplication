@@ -424,17 +424,29 @@ const createRazorpayOrder = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Cart is empty' });
         }
 
-        const items = cart.items.map(item => ({
-            product: item.product._id,
-            quantity: item.quantity,
-            price: item.product.salePrice,
-        }));
+       
 
-        const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        let subtotal=0;
+        const items=[]
+
+        for(cartItem of cart.items){
+            const {finalPrice}=await getBestPrice(cartItem.product)
+            subtotal+=finalPrice*cartItem.quantity
+
+            items.push({
+                product:cartItem.product._id,
+                quantity:cartItem.quantity,
+                price:finalPrice
+            })
+
+        }
+
+      
+       
         const shipping = SHIPPING_FEE;
 
         let finalDiscountPrice = 0;
-        let appliedCouponCode = null;
+        
 
         if (couponCode) {
             if (couponCode !== req.session.appliedCouponCode) {
@@ -478,6 +490,8 @@ const createRazorpayOrder = async (req, res) => {
             currency: "INR",
             receipt: "receipt_order_" + Date.now()
         };
+
+        console.log("paisa in raz",amount)
 
         const order = await razorpay.orders.create(options);
         res.json({

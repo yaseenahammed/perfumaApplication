@@ -396,7 +396,7 @@
             <h2 class="text-3xl font-bold text-red-600 mb-4">Payment Failed</h2>
             <p class="text-gray-700 text-lg mb-8">Oops! Something went wrong while processing your payment. Please try again or use a different method.</p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <button onclick="retryOrder()"  class="retry-payment-btn px-8 py-4 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-300">
+                <button  onclick="retryOrder()"  class="retry-payment-btn px-8 py-4 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-300">
                     <i class="fas fa-redo mr-2"></i> Retry
                 </button>
                 <button onclick="closeModal(document.getElementById('order-failed-modal'), document.getElementById('order-failed-content'))" class="cancel-btn px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300">
@@ -420,6 +420,7 @@
             const cancelConfirmBtn = document.querySelector('#cancel-confirmation-btn');
             const viewOrderDetailsBtn = document.querySelector('.view-order-details-btn');
             const continueShoppingBtn = document.querySelector('.continue-shopping-btn');
+            const retryPaymentBtn =document.querySelector('.retry-payment-btn')
             const addAddressModal = document.getElementById('add-address-modal');
             const addAddressContent = document.getElementById('add-address-content');
             const addNewAddressBtn = document.querySelector('.add-new-address-btn');
@@ -884,6 +885,10 @@
             function showOrderFailedModal() {
                 openModal(document.getElementById('order-failed-modal'), document.getElementById('order-failed-content'));
             }
+
+            retryPaymentBtn.addEventListener('click', () => {
+                window.location.href = '/chekout';
+            });
 
             function retryOrder() {
                 closeModal(document.getElementById('order-failed-modal'), document.getElementById('order-failed-content'));

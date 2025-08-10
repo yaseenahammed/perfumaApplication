@@ -482,6 +482,12 @@
                                                 <%= product.quantity > 0 ? '(' + product.quantity + ' left)' : '' %>
                                             </span>
                                         </li>
+                                        <li><strong>Max allowed quantity:</strong> 
+                                            <span class="<%= product.status === 'available' ? 'text-green-600' : 'text-red-600' %> font-semibold">
+                                                
+                                                <%= MAX_ALLOWED_QUANTITY%>
+                                            </span>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
