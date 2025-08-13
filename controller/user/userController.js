@@ -265,7 +265,7 @@ const pageNotFound = async (req, res) => {
 
 
 
-// Load Login Page
+
 const loadLogin = async (req, res) => {
   try {
     if(!req.session.user){

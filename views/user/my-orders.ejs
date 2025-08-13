@@ -127,11 +127,11 @@
                                     </div>
                                     <div class="mt-4 flex justify-end gap-2">
                                         <a href="/userOrder-details/<%= order.orderID %>" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">View Details</a>
-                                        <a href="/download-invoice/<%= order.orderID %>" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Download Invoice</a>
+                                        <!-- <a href="/download-invoice/<%= order.orderID %>" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Download Invoice</a> -->
                                         <% if (order.orderStatus === 'Processing' || order.orderStatus === 'Shipped') { %>
                                             <button onclick="showCancelModal('<%= order.orderID %>')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Cancel Order</button>
                                         <% } %>
-                                        <% if (order.orderStatus === 'Delivered' && !order.returnRejected) { %>
+                                        <% if (order.orderStatus === 'Delivered' && !order.returnRejected ) { %>
                                             <button onclick="showReturnModal('<%= order.orderID %>')" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">Return Order</button>
                                         <% } %>
                                     </div>

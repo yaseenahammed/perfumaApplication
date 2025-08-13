@@ -55,6 +55,7 @@ const count=await Coupon.countDocuments(query)
 
 const addCoupon=async(req,res)=>{
     try {
+       
         const {couponCode,status,discountPrice,minPrice,expireOn,isList}=req.body
 
         if (typeof couponCode !== 'string' || couponCode.trim() === '' || typeof status === 'undefined' ||
@@ -110,15 +111,7 @@ const updateCoupon=async(req,res)=>{
         if (!discountPrice || !minPrice || !expireOn) {
             return res.json({ success: false, message: 'All required fields must be provided.' });
         }
-         console.log('Updating coupon:', {
-      couponCode,
-      discountPrice,
-      minPrice,
-      expireOn,
-      status,
-      isList,
-    
-    });
+      
 
         
         const updateData = {

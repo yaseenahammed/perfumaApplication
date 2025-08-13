@@ -350,7 +350,7 @@
                       <%= brandId.includes(brand._id.toString()) ? 'checked' : '' %>
                       onchange="updateFilters()"
                     />
-                    <%= brand.name %>
+                    <%= brand && !brand.isBlocked ? brand.name:'' %>
                   </label>
                 </li>
               <% }) %>

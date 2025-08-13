@@ -55,10 +55,14 @@ items: [
   },
   orderStatus: {
     type: String,
-    enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled','ReturnRequest','Returned'],
+    enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled','ReturnRequest','Returned','Return Rejected'],
     default: 'Processing'
   },
   cancellationReason: {
+  type: String,
+  default: null
+},
+ rejectReturnReason: {
   type: String,
   default: null
 },

@@ -7,49 +7,36 @@ const crypto = require('crypto');
 
 const getWallet = async (req, res) => {
   try {
-    
+    const user = req.user;
 
-    const user = req.user
-    
-    
     if (!user) {
-      return res.status(401).send( { message: 'Please log in to view your wishlist' });
+      return res.status(401).send({ message: 'Please log in to view your wallet' });
     }
 
     const wallet = await Wallet.findOne({ user: user._id });
-    const transactions = await Transactions.find({ user: user._id }).sort({ createdAt: -1 });
+    const previewTransactions = await Transactions.find({ user: user._id })
+      .sort({ createdAt: -1 })
+      .limit(5); 
 
+    const totalWithdrawnResult = await Transactions.aggregate([
+      { $match: { user: user._id, type: 'debit', status: 'Success' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
 
-const previewTransactions = transactions.slice(0, 3); 
-const allTransactions = transactions; 
+    const totalWithdrawn = totalWithdrawnResult.length > 0 ? totalWithdrawnResult[0].total : 0;
 
-
-
-
-
-const totalWithdrawnResult = await Transactions.aggregate([
-  { $match: { user: user._id, type: 'debit', status: 'Success' } },
-  { $group: { _id: null, total: { $sum: '$amount' } } }
-]);
-
-
-const totalWithdrawn = totalWithdrawnResult.length > 0 ? totalWithdrawnResult[0].total : 0;
-
-
-
-res.render('wallet', {
-  wallet: wallet || { balance: 0 },
-  user,
-  totalWithdrawn,
-  transactions: previewTransactions,
-  allTransactions
-});
-
+    res.render('wallet', {
+      wallet: wallet || { balance: 0 },
+      user,
+      totalWithdrawn,
+      transactions: previewTransactions
+    });
   } catch (error) {
     console.error('Error in getting wallet:', error);
     res.status(500).render('error', { message: 'Something went wrong while fetching wallet data.' });
   }
 };
+
 
 
 
@@ -144,14 +131,13 @@ const verifyWalletOrder = async (req, res) => {
 const filterTransaction = async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
-        const user = req.user; // Or req.session.user depending on your setup
+        const user = req.user; 
 
-        // 1️⃣ Ensure user is logged in
+      
         if (!user) {
             return res.status(401).json({ success: false, message: 'Please log in to view transactions.' });
         }
 
-        // 2️⃣ Check both dates provided
         if (!startDate || !endDate) {
             return res.status(400).json({
                 success: false,
@@ -163,7 +149,7 @@ const filterTransaction = async (req, res) => {
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999);
 
-        // 3️⃣ Validate no future dates
+    
         const today = new Date();
         today.setHours(23, 59, 59, 999);
         if (start > today || end > today) {
@@ -173,7 +159,7 @@ const filterTransaction = async (req, res) => {
             });
         }
 
-        // 4️⃣ Validate date order
+      
         if (start > end) {
             return res.status(400).json({
                 success: false,
@@ -181,27 +167,26 @@ const filterTransaction = async (req, res) => {
             });
         }
 
-        // 5️⃣ Get wallet and filtered transactions
+    
         const wallet = await Wallet.findOne({ user: user._id });
         const transactions = await Transactions.find({
             user: user._id,
             createdAt: { $gte: start, $lte: end }
         }).sort({ createdAt: -1 }).lean();
 
-        // 6️⃣ Total withdrawn (keep same logic as getWallet)
         const totalWithdrawnResult = await Transactions.aggregate([
             { $match: { user: user._id, type: 'debit', status: 'Success' } },
             { $group: { _id: null, total: { $sum: '$amount' } } }
         ]);
         const totalWithdrawn = totalWithdrawnResult.length > 0 ? totalWithdrawnResult[0].total : 0;
 
-        // 7️⃣ Render view with same structure as getWallet
+  
         res.render('wallet', {
             wallet: wallet || { balance: 0 },
             user,
             totalWithdrawn,
-            transactions,        // Only filtered list
-            allTransactions: transactions, // So modal still works
+            transactions,     
+            allTransactions: transactions, 
             startDate,
             endDate
         });
@@ -212,10 +197,66 @@ const filterTransaction = async (req, res) => {
     }
 };
 
+
+
+const getAllTransactions = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).send({ message: 'Please log in' });
+
+    let { page = 1, limit = 10, startDate, endDate, type, status } = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    const query = { user: user._id };
+
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      query.createdAt = { $gte: start, $lte: end };
+    }
+
+
+    if (type && ['credit', 'debit'].includes(type)) {
+      query.type = type;
+    }
+
+
+    if (status) {
+      query.status = status;
+    }
+
+    const total = await Transactions.countDocuments(query);
+
+    const transactions = await Transactions.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    res.render('transaction', {
+      transactions,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      filters: { startDate, endDate, type, status },
+      user
+    });
+
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    res.status(500).render('error', { message: 'Error fetching transactions.' });
+  }
+};
+
+
+
 module.exports={
     getWallet,
     createWalletOrder,
     verifyWalletOrder,
-    filterTransaction
+    filterTransaction,
+    getAllTransactions
 }
 

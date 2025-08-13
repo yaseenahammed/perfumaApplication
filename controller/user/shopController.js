@@ -26,12 +26,12 @@ const loadShop = async (req, res) => {
     if (searchQuery) query.name = { $regex: searchQuery, $options: 'i' };
 
     const products = await Product.find(query)
-    .populate('category', 'name offer isOfferActive isListed')
+      .populate('category', 'name offer isOfferActive isListed')
       .populate('brand')
       .lean()
       .exec();
 
-    // Filter invalid products and calculate finalPrice and bestOffer
+   
     const enrichedProducts = await Promise.all(
       products
         .filter(product =>
@@ -45,7 +45,7 @@ const loadShop = async (req, res) => {
         })
     );
 
-    // Price filtering
+
     let filteredProducts = enrichedProducts;
     if (priceRange) {
       if (priceRange === 'under500') {
@@ -59,7 +59,7 @@ const loadShop = async (req, res) => {
       }
     }
 
-    // Sorting
+   
     if (sort === 'priceLowToHigh') {
       filteredProducts.sort((a, b) => a.finalPrice - b.finalPrice);
     } else if (sort === 'priceHighToLow') {
@@ -72,7 +72,7 @@ const loadShop = async (req, res) => {
       filteredProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
-    // Pagination
+
     const startIndex = (page - 1) * limit;
     const paginatedProducts = filteredProducts.slice(startIndex, startIndex + limit);
     const totalPages = Math.ceil(filteredProducts.length / limit);
@@ -87,7 +87,7 @@ const loadShop = async (req, res) => {
       req.session.userId = user._id;
     }
 
-    // Wishlist
+
     let wishlistItems = [];
     if (userId) {
       const wishlist = await Wishlist.find({ user: userId }).populate('product');
@@ -101,6 +101,8 @@ const loadShop = async (req, res) => {
         },
       }));
     }
+
+    
 
   
 
@@ -132,6 +134,7 @@ const loadShop = async (req, res) => {
 
 const searchProducts = async (req, res) => {
   try {
+    const userId=req.session.userId
     const { query, sort } = req.body;
     let categoryId = req.body.category || []; 
     let brandId = req.body.brand || []; 
@@ -156,6 +159,9 @@ const searchProducts = async (req, res) => {
     }
     if (query) searchQuery.name = { $regex: query, $options: 'i' };
 
+        const activeBrands = await Brand.find({ isBlocked: false }).select('_id');
+    searchQuery.brand = { $in: activeBrands.map(b => b._id) }
+
     let sortOption = {};
     if (sort === 'priceLowToHigh') sortOption = { salePrice: 1 };
     else if (sort === 'priceHighToLow') sortOption = { salePrice: -1 };
@@ -179,12 +185,39 @@ const searchProducts = async (req, res) => {
 
     const categories = await Category.find({ isListed: true }).lean();
     const brandIds = await Product.distinct('brand').lean();
-    const brands = await Brand.find({ _id: { $in: brandIds } }).lean();
+    const brands = await Brand.find({ _id: { $in: brandIds },isBlocked: false }).lean();
     const user = req.session.user ? await User.findById(req.session.user).lean() : null;
+
+    let wishlistItems = [];
+    if (userId) {
+      const wishlist = await Wishlist.find({ user: userId }).populate('product');
+      wishlistItems = wishlist.map(item => ({
+        _id: item._id,
+        product: {
+          _id: item.product._id,
+          name: item.product.name,
+          productImages: item.product.productImages,
+          finalPrice: item.product.finalPrice || item.product.salePrice || item.product.regularPrice,
+        },
+      }));
+    }
+
+     const enrichedProducts = await Promise.all(
+      products
+        .filter(product =>
+          product.brand && !product.brand.isBlocked &&
+          product.category && product.category.isListed &&
+          !product.isBlocked
+        )
+        .map(async (product) => {
+          const { finalPrice, bestOffer } = await getBestPrice(product);
+          return { ...product, finalPrice, bestOffer };
+        })
+    );
 
     res.render('shop', {
       user,
-      products,
+      products:enrichedProducts,
       categories,
       brands,
       currentPage: page,
@@ -194,6 +227,7 @@ const searchProducts = async (req, res) => {
       brandId,
       priceRange,
       searchQuery: query || '',
+      wishlistItems
     });
   } catch (error) {
     console.error('Error in searchProducts:', error.stack);

@@ -6,7 +6,7 @@
     <title>Shopping Cart - Perfuma</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
         tailwind.config = {
@@ -32,7 +32,6 @@
     </script>
 
     <style>
-        /* Custom button styles */
         .btn-decrement, .btn-increment, .btn-remove {
             transition: all 0.3s ease;
         }
@@ -53,17 +52,17 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
+        
+        .blocked-item {
+            opacity: 0.5;
+        }
     </style>
 </head>
 
 <body class="bg-gray-50">
     <%- include("../../views/partials/user/header")%>
 
-    <!-- Page Header -->
-    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 ">
-        <!-- <div class="absolute inset-0">
-            <img src="/images/banner.jpg" alt="Banner" class="w-full h-full object-cover opacity-30">
-        </div> -->
+    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
         <div class="relative z-10 container mx-auto px-4 text-center text-white">
             <h1 class="text-4xl lg:text-5xl font-bold mb-4">Shopping Cart</h1>
             <nav class="flex items-center justify-center space-x-2 text-lg">
@@ -74,13 +73,11 @@
         </div>
     </section>
 
-    <!-- Main Cart Section -->
     <main class="py-16">
         <div class="container mx-auto px-4">
             <div class="max-w-7xl mx-auto">
                 <div class="grid lg:grid-cols-3 gap-8">
-                    
-                    <!-- Cart Items Section -->
+                    <!-- CART ITEMS -->
                     <div class="lg:col-span-2">
                         <div class="bg-white rounded-2xl shadow-xl p-8 animate-fade-in">
                             <div class="flex items-center justify-between mb-8">
@@ -88,31 +85,36 @@
                                     <i class="fas fa-shopping-cart text-amber-500 mr-3"></i>
                                     Shopping Cart
                                 </h2>
-                                <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-semibold">
-                                    <%= cartItems.length %> Items
-                                </span>
+                                <% if (cartItems.length === 0) { %>
+                                    <h3 class="text-2xl font-semibold text-gray-900 mb-4">Your cart is empty</h3>
+                                <% } else { %>
+                                    <span id="cart-item-count" class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                        <%= cartItemCount %> Items
+                                    </span>
+                                <% } %>
                             </div>
 
                             <% if (cartItems.length === 0) { %>
-                                <!-- Empty Cart -->
+                                <!-- EMPTY CART VIEW -->
                                 <div class="text-center py-16">
                                     <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
                                         <i class="fas fa-shopping-cart text-gray-400 text-3xl"></i>
                                     </div>
                                     <h3 class="text-2xl font-semibold text-gray-900 mb-4">Your cart is empty</h3>
-                                    <p class="text-gray-600 mb-8">Looks like you haven't added any items to your cart yet.</p>
+                                    <p class="text-gray-600 mb-8">Looks like you haven't added any items yet.</p>
                                     <a href="/shop" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
                                         <i class="fas fa-shopping-bag mr-2"></i>
                                         Continue Shopping
                                     </a>
                                 </div>
                             <% } else { %>
-                                <!-- Cart Items -->
-                                <div class="space-y-6">
-                                    <% cartItems.forEach(item => { %>
-                                        <div class="cart-item-card bg-gray-50 rounded-xl p-6 border border-gray-200">
+                                <!-- CART ITEMS LIST -->
+                                <div id="cart-items" class="space-y-6">
+                                    <% cartItems.forEach(item => { 
+                                        const isBlockedItem = item.isBlocked;
+                                    %>
+                                        <div class="cart-item-card bg-gray-50 rounded-xl p-6 border border-gray-200 <%= isBlockedItem ? 'blocked-item' : '' %>" data-id="<%= item.product._id %>">
                                             <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
-                                                
                                                 <!-- Product Image -->
                                                 <div class="flex-shrink-0">
                                                     <img 
@@ -122,51 +124,48 @@
                                                     >
                                                 </div>
 
-                                                <!-- Product Details -->
+                                                <!-- Product Info -->
                                                 <div class="flex-1 space-y-3">
                                                     <h3 class="text-xl font-semibold text-gray-900"><%= item.product.name %></h3>
-                                                    
                                                     <div class="flex flex-wrap items-center gap-4 text-sm">
-                                                       
-                                                        <span class="flex items-center <%= item.product.quantity > 0 && item.product.isListed && !item.product.isBlocked ? 'text-green-600' : 'text-red-600' %>">
+                                                        <span class="flex items-center <%= !isBlockedItem && item.product.quantity > 0 ? 'text-green-600' : 'text-red-600' %>">
                                                             <i class="fas fa-circle text-xs mr-2"></i>
-                                                            <%= item.product.quantity > 0 && item.product.isListed && !item.product.isBlocked ? 'Available' : 'Not Available' %>
-                                                            <%= item.product.quantity > 0 ? '(' + item.product.quantity + ' left)' : '' %>
+                                                            <%= !isBlockedItem && item.product.quantity > 0 ? 'Available' : 'Not Available' %>
+                                                            <%= !isBlockedItem && item.product.quantity > 0 ? '(' + item.product.quantity + ' left)' : '' %>
                                                         </span>
                                                     </div>
-
                                                     <div class="flex items-center text-2xl font-bold text-amber-600">
                                                         ₹<%= item.product.finalPrice %> 
                                                         <span class="text-sm font-normal text-gray-500 ml-2">per item</span>
                                                     </div>
                                                 </div>
 
-                                                <!-- Quantity Controls -->
+                                                <!-- Quantity & Remove -->
                                                 <div class="flex flex-col items-center space-y-4">
                                                     <div class="flex items-center bg-white rounded-lg border-2 border-gray-200 overflow-hidden">
+                                                        <!-- Decrement -->
                                                         <button 
-                                                            class="btn-decrement w-10 h-10 bg-gray-100 hover:bg-amber-500 hover:text-white text-gray-600 border-none cursor-pointer font-semibold transition-all duration-300 flex items-center justify-center"
+                                                            class="btn-decrement w-10 h-10 bg-gray-100 hover:bg-amber-500 hover:text-white text-gray-600 border-none cursor-pointer font-semibold transition-all duration-200 flex items-center justify-center"
                                                             data-id="<%= item.product._id %>" 
-                                                            <%= item.quantity <= 1 ? 'disabled' : '' %>
-                                                        >
+                                                            <%= (item.quantity <= 1 || isBlockedItem) ? 'disabled' : '' %>>
                                                             <i class="fas fa-minus"></i>
                                                         </button>
-                                                        <span class="w-12 h-10 flex items-center justify-center font-semibold text-gray-900 bg-white">
+                                                        <!-- Quantity -->
+                                                        <span class="w-12 h-10 flex items-center justify-center font-semibold text-gray-900 bg-white quantity">
                                                             <%= item.quantity %>
                                                         </span>
+                                                        <!-- Increment -->
                                                         <button 
                                                             class="btn-increment w-10 h-10 bg-gray-100 hover:bg-amber-500 hover:text-white text-gray-600 border-none cursor-pointer font-semibold transition-all duration-300 flex items-center justify-center"
                                                             data-id="<%= item.product._id %>" 
-                                                            <%= item.quantity >= item.product.stock ? 'disabled' : '' %>
-                                                        >
+                                                            <%= (item.quantity >= item.product.quantity || isBlockedItem) ? 'disabled' : '' %>>
                                                             <i class="fas fa-plus"></i>
                                                         </button>
                                                     </div>
-
+                                                    <!-- Remove -->
                                                     <button 
                                                         class="btn-remove bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 flex items-center"
-                                                        data-id="<%= item.product._id %>"
-                                                    >
+                                                        data-id="<%= item.product._id %>">
                                                         <i class="fas fa-trash mr-2"></i>
                                                         Remove
                                                     </button>
@@ -176,7 +175,6 @@
                                     <% }) %>
                                 </div>
 
-                                <!-- Continue Shopping -->
                                 <div class="mt-8 pt-6 border-t border-gray-200">
                                     <a href="/shop" class="inline-flex items-center text-amber-600 hover:text-amber-700 font-semibold transition duration-200">
                                         <i class="fas fa-arrow-left mr-2"></i>
@@ -187,7 +185,7 @@
                         </div>
                     </div>
 
-                    <!-- Order Summary Section -->
+                    <!-- ORDER SUMMARY -->
                     <div class="lg:col-span-1">
                         <div class="bg-white rounded-2xl shadow-xl p-8 sticky top-32 animate-slide-up">
                             <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
@@ -197,36 +195,28 @@
 
                             <div class="space-y-4 mb-6">
                                 <div class="flex justify-between items-center py-2">
-                                    <span class="text-gray-600">Subtotal (<%= cartItems.length %> items):</span>
-                                    <span class="font-semibold text-gray-900">₹<%= subtotal %></span>
+                                    <span class="text-gray-600">Subtotal (<span id="summary-item-count"><%= cartItemCount %></span> items):</span>
+                                    <span id="subtotal" class="font-semibold text-gray-900">₹<%= subtotal %></span>
                                 </div>
-                                
                                 <div class="flex justify-between items-center py-2">
                                     <span class="text-gray-600">Shipping:</span>
-                                    <span class="font-semibold text-gray-900"><%= shipping %></span>
+                                    <span id="shipping" class="font-semibold text-gray-900">₹<%= shipping %></span>
                                 </div>
-                                
-                                
-                               
-                                
                                 <div class="border-t border-gray-200 pt-4">
                                     <div class="flex justify-between items-center">
                                         <span class="text-xl font-bold text-gray-900">Total:</span>
-                                        <span class="text-2xl font-bold text-amber-600">₹<%= total %></span>
+                                        <span id="total" class="text-2xl font-bold text-amber-600">₹<%= total %></span>
                                     </div>
                                 </div>
                             </div>
 
-                            <% let disableCheckout = total === 0 || cartItems.some(item => !item.product.isListed || item.product.isBlocked); %>
-                            
                             <button 
                                 class="btn-checkout w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center justify-center"
- <%= disableCheckout ? 'disabled' : '' %>>
+                                <%= disableCheckout ? 'disabled' : '' %>>
                                 <i class="fas fa-credit-card mr-2"></i>
                                 Proceed to Checkout
                             </button>
 
-                            <!-- Payment Methods -->
                             <div class="mt-6 pt-6 border-t border-gray-200">
                                 <p class="text-sm text-gray-600 mb-3">We accept:</p>
                                 <div class="flex items-center space-x-4 text-2xl">
@@ -237,7 +227,6 @@
                                 </div>
                             </div>
 
-                            <!-- Security Badge -->
                             <div class="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
                                 <div class="flex items-center text-green-700">
                                     <i class="fas fa-shield-alt mr-2"></i>
@@ -249,105 +238,173 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
 
-    <%- include("../../views/partials/user/footer")%>
+        <%- include("../../views/partials/user/footer")%>
 
-    <script src="/js/cart.js"></script>
+        <script src="/js/cart.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const incrementButtons = document.querySelectorAll('.btn-increment');
+                const decrementButtons = document.querySelectorAll('.btn-decrement');
+                const removeButtons = document.querySelectorAll('.btn-remove');
+                const checkoutButton = document.querySelector('.btn-checkout');
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const incrementButtons = document.querySelectorAll('.btn-increment');
-            const decrementButtons = document.querySelectorAll('.btn-decrement');
-            const removeButtons = document.querySelectorAll('.btn-remove');
-            const checkoutButton = document.querySelector('.btn-checkout');
+                const updateCartUI = (data, productId = null, isRemove = false) => {
+                    const { updatedQuantity, productQuantity, subtotal, shipping, total, cartItemCount, disableCheckout } = data;
 
-            const updateCartUI = async () => {
-                try {
-                    const response = await fetch('/cart', {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json' }
+                    // Update item count
+                    const itemCountElement = document.getElementById('cart-item-count');
+                    const summaryItemCountElement = document.getElementById('summary-item-count');
+                    itemCountElement.textContent = `${cartItemCount} Items`;
+                    summaryItemCountElement.textContent = cartItemCount;
+
+                    // Update cart items or show empty cart
+                    const cartItemsContainer = document.getElementById('cart-items');
+                    if (cartItemCount === 0) {
+                        cartItemsContainer.innerHTML = `
+                            <div class="text-center py-16">
+                                <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <i class="fas fa-shopping-cart text-gray-400 text-3xl"></i>
+                                </div>
+                                <h3 class="text-2xl font-semibold text-gray-900 mb-4">Your cart is empty</h3>
+                                <p class="text-gray-600 mb-8">Looks like you haven't added any items to your cart yet.</p>
+                                <a href="/shop" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
+                                    <i class="fas fa-shopping-bag mr-2"></i>
+                                    Continue Shopping
+                                </a>
+                            </div>
+                        `;
+                        checkoutButton.disabled = true;
+                    } else if (isRemove) {
+                        const itemElement = document.querySelector(`.cart-item-card[data-id="${productId}"]`);
+                        if (itemElement) {
+                            itemElement.style.opacity = '0';
+                            setTimeout(() => itemElement.remove(), 300);
+                        }
+                    } else {
+                        const itemElement = document.querySelector(`.cart-item-card[data-id="${productId}"]`);
+                        if (itemElement) {
+                            const quantityElement = itemElement.querySelector('.quantity');
+                            const decrementButton = itemElement.querySelector('.btn-decrement');
+                            const incrementButton = itemElement.querySelector('.btn-increment');
+                            quantityElement.textContent = updatedQuantity;
+                            decrementButton.disabled = updatedQuantity <= 1;
+                            incrementButton.disabled = productQuantity ? updatedQuantity >= productQuantity : false;
+                            itemElement.style.opacity = '1';
+                            itemElement.style.display = 'block';
+                        } else {
+                            console.warn(`Item element not found for productId: ${productId}`);
+                        }
+                    }
+
+                    // Update order summary
+                    document.getElementById('subtotal').textContent = `₹${subtotal.toFixed(2)}`;
+                    document.getElementById('shipping').textContent = `₹${parseFloat(shipping).toFixed(2)}`;
+                    document.getElementById('total').textContent = `₹${total.toFixed(2)}`;
+
+                    // Update checkout button state
+                    checkoutButton.disabled = disableCheckout || total === 0;
+                };
+
+                incrementButtons.forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const productId = e.target.closest('button').getAttribute('data-id');
+                        try {
+                            const response = await fetch(`/cart/add/${productId}`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ productId })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                updateCartUI(result, productId);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: result.message || 'Failed to update quantity',
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error incrementing quantity:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred',
+                            });
+                        }
                     });
-                    if (response.ok) {
-                        window.location.reload(); 
-                    }
-                } catch (error) {
-                    console.error('Error updating cart:', error);
+                });
+
+                decrementButtons.forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const productId = e.target.closest('button').getAttribute('data-id');
+                        try {
+                            const response = await fetch(`/cart/decrement/${productId}`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ productId })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                updateCartUI(result, productId);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: result.message || 'Failed to update quantity',
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error decrementing quantity:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred',
+                            });
+                        }
+                    });
+                });
+
+                removeButtons.forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const productId = e.target.closest('button').getAttribute('data-id');
+                        try {
+                            const response = await fetch(`/cart/remove/${productId}`, {
+                                method: 'DELETE', // Changed to POST for consistency
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ productId })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                updateCartUI(result, productId, true);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: result.message || 'Failed to remove item',
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error removing item:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred',
+                            });
+                        }
+                    });
+                });
+
+                if (checkoutButton) {
+                    checkoutButton.addEventListener('click', (e) => {
+                        if (!checkoutButton.disabled) {
+                            window.location.href = '/checkout';
+                        }
+                    });
                 }
-            };
-
-            incrementButtons.forEach(button => {
-                button.addEventListener('click', async (e) => {
-                    const productId = e.target.closest('button').getAttribute('data-id');
-                    try {
-                        const response = await fetch(`/cart/add/${productId}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' }
-                        });
-                        const result = await response.json();
-                        if (result.success) {
-                            await updateCartUI();
-                        } else {
-                            Swal.fire(result.error || 'Failed to update quantity');
-                        }
-                    } catch (error) {
-                        console.error('Error incrementing quantity:', error);
-                        Swal.fire('An error occurred');
-                    }
-                });
             });
-
-            decrementButtons.forEach(button => {
-                button.addEventListener('click', async (e) => {
-                    const productId = e.target.closest('button').getAttribute('data-id');
-                    try {
-                        const response = await fetch(`/cart/decrement/${productId}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' }
-                        });
-                        const result = await response.json();
-                        if (result.success) {
-                            await updateCartUI();
-                        } else {
-                            Swal.fire(result.error || 'Failed to update quantity');
-                        }
-                    } catch (error) {
-                        console.error('Error decrementing quantity:', error);
-                        Swal.fire('An error occurred');
-                    }
-                });
-            });
-
-            removeButtons.forEach(button => {
-                button.addEventListener('click', async (e) => {
-                    const productId = e.target.closest('button').getAttribute('data-id');
-                    try {
-                        const response = await fetch(`/cart/remove/${productId}`, {
-                            method: 'DELETE',
-                            headers: { 'Content-Type': 'application/json' }
-                        });
-                        const result = await response.json();
-                        if (result.success) {
-                            await updateCartUI();
-                        } else {
-                            Swal.fire(result.error || 'Failed to remove item');
-                        }
-                    } catch (error) {
-                        console.error('Error removing item:', error);
-                        Swal.fire('An error occurred');
-                    }
-                });
-            });
-
-            if (checkoutButton) {
-                checkoutButton.addEventListener('click', (e) => {
-                    if (!checkoutButton.disabled) {
-                        window.location.href = '/checkout';
-                    }
-                });
-            }
-        });
-    </script>
-</body>
+        </script>
+    </body>
 </html>

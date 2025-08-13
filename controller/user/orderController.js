@@ -159,7 +159,7 @@ const cancelOrder = async (req, res) => {
             return res.status(400).json({ message: 'Cannot cancel this order' });
         }
 
-        const refundAmount=order.totalAmount
+        const refundAmount=order.finalAmount
 
         await Wallet.findOneAndUpdate(
           {user:userId},

@@ -391,7 +391,7 @@ const unblockProduct = async (req, res) => {
     }
 
     await Product.findByIdAndUpdate(productId, {
-      status: product.offer > 0 ? 'not available' : 'available', 
+      status:  'available'  ,
       isBlocked: false 
     });
     res.status(200).json({ success: true, message: 'Product unblocked successfully' });

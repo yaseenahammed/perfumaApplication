@@ -5,6 +5,7 @@ const User = require('../../models/userSchema');
 const Cart = require('../../models/cartSchema');
 const Wishlist = require('../../models/wishlistSchema');
 const { getBestPrice } = require('../../helpers/offerHelper');
+const Brand = require('../../models/brandSchema');
 
 const productDetails = async (req, res) => {
   try {
@@ -35,7 +36,7 @@ const productDetails = async (req, res) => {
       .populate('brand')
       .lean();
 
-    if (!product) {
+    if (!product || product.isBlocked|| product.brand.isBlocked) {
       req.flash('error', 'Product not found');
       return res.redirect('/shop');
     }
@@ -178,94 +179,8 @@ const addToCart = async (req, res) => {
 };
 
 
-
-const incrementQuantity = async (req, res) => {
-  try {
-    const userId = req.session.userId;
-    const productId = req.params.productId;
-
-    const cart = await Cart.findOne({ user: userId });
-    const product = await Product.findById(productId).populate('category');
-
-    if (!cart || !product) return res.status(404).json({ error: 'Not found' });
-
-    const item = cart.items.find(i => i.product.toString() === productId);
-    if (!item) return res.status(400).json({ error: 'Item not in cart' });
-
-    if (
-      product.isBlocked ||
-      !product.isListed ||
-      product.quantity <= 0 ||
-      product.category.isBlocked ||
-      !product.category.isListed
-    ) {
-      return res.status(400).json({ error: 'Product is not available' });
-    }
-
-    if (item.quantity >= product.quantity || item.quantity >= MAX_ALLOWED_QUANTITY) {
-      return res.status(400).json({ error: 'Maximum quantity reached' });
-    }
-
-    item.quantity += 1;
-    item.totalPrice = item.quantity * item.price;
-    await cart.save();
-
-    const subtotal = cart.items.reduce((sum, item) => sum + item.totalPrice, 0);
-    const total = subtotal; 
-    const cartItemsLength = cart.items.length;
-
-    res.json({
-      success: true,
-      updatedQuantity: item.quantity,
-      subtotal: subtotal,
-      total: total,
-      cartItemsLength: cartItemsLength,
-    });
-  } catch (err) {
-    console.error('Increment error:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-};
-
-const decrementQuantity = async (req, res) => {
-  try {
-    const userId = req.session.userId;
-    const productId = req.params.productId;
-
-    const cart = await Cart.findOne({ user: userId });
-    if (!cart) return res.status(404).json({ error: 'Cart not found' });
-
-    const item = cart.items.find(i => i.product.toString() === productId);
-    if (!item) return res.status(400).json({ error: 'Item not in cart' });
-
-    if (item.quantity <= 1) {
-      return res.status(400).json({ error: 'Minimum quantity is 1' });
-    }
-
-    item.quantity -= 1;
-    item.totalPrice = item.quantity * item.price;
-    await cart.save();
-
-    const subtotal = cart.items.reduce((sum, item) => sum + item.totalPrice, 0);
-    const total = subtotal; 
-    const cartItemsLength = cart.items.length;
-
-    res.json({
-      success: true,
-      updatedQuantity: item.quantity,
-      subtotal: subtotal,
-      total: total,
-      cartItemsLength: cartItemsLength,
-    });
-  } catch (err) {
-    console.error('Decrement error:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-};
-
 module.exports = {
   productDetails,
   addToCart,
-  incrementQuantity,
-  decrementQuantity
+  
 };

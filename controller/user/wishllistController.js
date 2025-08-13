@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Wishlist = require('../../models/wishlistSchema');
 const Product = require('../../models/productSchema');
+const Cart=require('../../models/cartSchema.js')
 
 const getWishlist = async (req, res) => {
   try {
@@ -62,6 +63,12 @@ const addToWishlist = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Product already in wishlist' });
     }
 
+    const inCart = await Cart.findOne({user:userId,'items.product':productId });
+  if (inCart) {
+  return res.status(409).json({ success: false, error: 'Product already in cart' });
+}
+
+
     await Wishlist.create({ user:userId,product: productId });
     res.json({ success: true });
  
@@ -74,6 +81,8 @@ const addToWishlist = async (req, res) => {
     res.status(500).json({ success: false, error: 'Failed to add to wishlist' });
   }
 };
+
+
 
 const removeFromWishlist = async (req, res) => {
   try {
@@ -107,7 +116,7 @@ const removeFromWishlist = async (req, res) => {
 
 const clearWishlist = async (req, res) => {
   try {
-    const userId = req.session.user._id;
+    const userId = req.session.userId;
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Please log in to clear wishlist' });
     }

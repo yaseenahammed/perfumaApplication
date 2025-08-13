@@ -287,7 +287,7 @@
             <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">Add New Address</h2>
             <form id="add-address-form" class="space-y-4">
                 <div>
-                    <label for="add-street" class="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
+                    <label id="add-street" class="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
                     <input type="text" id="add-street" name="street" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500" required>
                 </div>
                 <div>
@@ -415,6 +415,8 @@
     <%- include("../../views/partials/user/footer") %>
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBk3uC49F8torqiQcA_FbvBT_gX3odyRF0&libraries=places"></script>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -427,10 +429,12 @@
             const viewOrderDetailsBtn = document.querySelector('.view-order-details-btn');
             const continueShoppingBtn = document.querySelector('.continue-shopping-btn');
             const retryPaymentBtn =document.querySelector('.retry-payment-btn')
+
             const addAddressModal = document.getElementById('add-address-modal');
             const addAddressContent = document.getElementById('add-address-content');
             const addNewAddressBtn = document.querySelector('.add-new-address-btn');
             const addAddressForm = document.getElementById('add-address-form');
+
             const editAddressModal = document.getElementById('edit-address-modal');
             const editAddressContent = document.getElementById('edit-address-content');
             const editAddressForm = document.getElementById('edit-address-form');
@@ -446,16 +450,15 @@
             const couponMessage = document.getElementById('coupon-message');
             const walletButton= document.getElementById('wallet-btn');
 
-            // Initialize selectedAddressId from backend
+            
             window.selectedAddressId = '<%= selectedAddressId || "" %>';
 
             let selectedPaymentMethod = null;
             let appliedCoupon = <%= appliedCouponCode ? `{ couponCode: "${appliedCouponCode}", discountPrice: ${appliedDiscountPrice} }` : 'null' %>;
 
-            // --- Address Selection Logic ---
             document.querySelectorAll('.address-card').forEach(card => {
                 card.addEventListener('click', async (event) => {
-                    if (event.target.closest('.edit-address-btn')) return; // Ignore clicks on edit button
+                    if (event.target.closest('.edit-address-btn')) return;
                     const addressId = card.dataset.id;
                     try {
                         const response = await fetch('/select-address', {
@@ -482,7 +485,7 @@
                 });
             });
 
-            // --- Coupon Selection Logic ---
+        
             document.querySelectorAll('.coupon-card').forEach(card => {
                 card.addEventListener('click', (event) => {
                     if (!event.target.closest('.apply-coupon-btn')) {
@@ -628,61 +631,90 @@
                 });
             });
 
-            // --- Add New Address Functionality ---
-            addNewAddressBtn.addEventListener('click', () => {
-                addAddressForm.reset();
-                openModal(addAddressModal, addAddressContent);
-            });
+         let autocomplete;
 
-            addAddressForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
-                const formData = new FormData(addAddressForm);
-                const addressData = Object.fromEntries(formData.entries());
+  function initAutocomplete() {
+    autocomplete = new google.maps.places.Autocomplete(
+      document.getElementById('add-street'),
+      { types: ['address'] }
+    );
+    autocomplete.addListener('place_changed', fillInAddress);
+  }
 
-                const phone = addressData.phone.trim();
-                const zip = addressData.zip.trim();
-                const street = addressData.street.trim();
-                const city = addressData.city.trim();
-                const state = addressData.state.trim();
-                const country = addressData.country.trim();
+  function fillInAddress() {
+    const place = autocomplete.getPlace();
+    let city = '', state = '', country = '', postal_code = '';
 
-                const digitOnly = /^\d+$/;
-                const textValid = /^[a-zA-Z0-9\s,.'-]{2,}$/;
+    if (place.address_components) {
+      place.address_components.forEach(component => {
+        const types = component.types;
+        if (types.includes('locality')) city = component.long_name;
+        if (types.includes('administrative_area_level_1')) state = component.long_name;
+        if (types.includes('country')) country = component.long_name;
+        if (types.includes('postal_code')) postal_code = component.long_name;
+      });
+    }
 
-                if (!digitOnly.test(phone) || phone.length !== 10 || /^0+$/.test(phone)) {
-                    return Swal.fire("Invalid", "Phone must be 10 digits and not all zeroes.", "error");
-                }
+    document.getElementById('add-city').value = city;
+    document.getElementById('add-state').value = state;
+    document.getElementById('add-country').value = country;
+    document.getElementById('add-pincode').value = postal_code;
+  }
 
-                if (!digitOnly.test(zip) || zip.length !== 6 || /^0+$/.test(zip)) {
-                    return Swal.fire("Invalid", "Pincode must be 6 digits and not all zeroes.", "error");
-                }
+  // Modal open
+  addNewAddressBtn.addEventListener('click', () => {
+    addAddressForm.reset();
+    openModal(addAddressModal, addAddressContent);
+    setTimeout(initAutocomplete, 300); // delay so input is visible
+  });
 
-                if (!textValid.test(street) || !textValid.test(city) || !textValid.test(state) || !textValid.test(country)) {
-                    return Swal.fire("Invalid", "Please enter valid address details.", "error");
-                }
+  // Submit validation + save
+  addAddressForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(addAddressForm);
+    const addressData = Object.fromEntries(formData.entries());
 
-                try {
-                    const response = await fetch('/addressAdd', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(addressData)
-                    });
+    const phone = addressData.phone.trim();
+    const zip = addressData.zip.trim();
+    const street = addressData.street.trim();
+    const city = addressData.city.trim();
+    const state = addressData.state.trim();
+    const country = addressData.country.trim();
 
-                    if (response.ok) {
-                        Swal.fire("Success", "Address added successfully!", "success").then(() => {
-                            closeModal(addAddressModal, addAddressContent);
-                            window.location.reload();
-                        });
-                    } else {
-                        const errorData = await response.json();
-                        Swal.fire("Failed", errorData.message || "Unknown error", "error");
-                    }
-                } catch (error) {
-                    console.error('Error adding address:', error);
-                    Swal.fire("Error", "An error occurred while adding the address.", "error");
-                }
-            });
+    const digitOnly = /^\d+$/;
+    const textValid = /^[a-zA-Z0-9\s,.'-]{2,}$/;
 
+    if (!digitOnly.test(phone) || phone.length !== 10 || /^0+$/.test(phone)) {
+      return Swal.fire("Invalid", "Phone must be 10 digits and not all zeroes.", "error");
+    }
+    if (!digitOnly.test(zip) || zip.length !== 6 || /^0+$/.test(zip)) {
+      return Swal.fire("Invalid", "Pincode must be 6 digits and not all zeroes.", "error");
+    }
+    if (!textValid.test(street) || !textValid.test(city) || !textValid.test(state) || !textValid.test(country)) {
+      return Swal.fire("Invalid", "Please enter valid address details.", "error");
+    }
+
+    try {
+      const response = await fetch('/addressAdd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(addressData)
+      });
+
+      if (response.ok) {
+        Swal.fire("Success", "Address added successfully!", "success").then(() => {
+          closeModal(addAddressModal, addAddressContent);
+          window.location.reload();
+        });
+      } else {
+        const errorData = await response.json();
+        Swal.fire("Failed", errorData.message || "Unknown error", "error");
+      }
+    } catch (error) {
+      console.error('Error adding address:', error);
+      Swal.fire("Error", "An error occurred while adding the address.", "error");
+    }
+  });
             // --- Edit Address ---
             document.querySelectorAll('.edit-address-btn').forEach(button => {
                 button.addEventListener('click', (event) => {

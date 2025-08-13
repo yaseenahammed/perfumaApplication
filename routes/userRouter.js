@@ -4,7 +4,7 @@ const userController = require('../controller/user/userController');
 const productController = require('../controller/user/productController');
 const profileController = require('../controller/user/profileController');
 const userProfileController=require('../controller/user/userProfileController')
-const CartController=require('../controller/user/cartController')
+const cartController=require('../controller/user/cartController')
 const checkoutController=require('../controller/user/checkoutController')
 const orderController=require('../controller/user/orderController')
 const wishlistController=require('../controller/user/wishllistController')
@@ -79,8 +79,7 @@ router.post('/forget-resend-otp', nocache(), isLogin, profileController.resendOt
 // Product Details
 router.get('/productDetails',productController.productDetails);
 router.post('/add-to-cart/:productId',userAuth,productController.addToCart);
-router.post('/cart/add/:productId', userAuth, productController.incrementQuantity);
-router.post('/cart/decrement/:productId', userAuth, productController.decrementQuantity);
+
 
 
 //user profile
@@ -96,8 +95,10 @@ router.post('/verify-email-otp', userAuth, userProfileController.verifyEmailOtp)
 router.post('/change-password', userAuth, userProfileController.changePassword);
 
 //cart
-router.get('/cart',userAuth,CartController.getCart);
-router.delete('/cart/remove/:productId', userAuth,CartController.removeFromCart);
+router.get('/cart',userAuth,cartController.getCart);
+router.post('/cart/add/:productId', userAuth, cartController.incrementQuantity);
+router.post('/cart/decrement/:productId', userAuth, cartController.decrementQuantity);
+router.delete('/cart/remove/:productId', userAuth,cartController.removeFromCart);
 
 //checkout 
 router.get('/checkout',userAuth,checkoutController.getCheckout)
@@ -131,6 +132,7 @@ router.get('/wallet',userAuth,walletController.getWallet)
 router.post('/wallet/create-walletOrder',userAuth,walletController.createWalletOrder)
 router.post('/wallet/verify-walletOrder',userAuth,walletController.verifyWalletOrder)
 router.get('/wallet/transaction-filter',userAuth,walletController.filterTransaction)
+router.get('/wallet/transactions', userAuth,walletController.getAllTransactions);
 
 
 

@@ -126,7 +126,7 @@
                         if (data.success) {
                             button.closest('.wishlist-item').remove();
                             if (document.querySelectorAll('.wishlist-item').length === 0) {
-                                window.location.reload(); // Reload to show empty message
+                                window.location.reload();
                             }
                         } else {
                             Swal.fire('Error', data.message || 'Failed to remove item', 'error');
@@ -138,7 +138,7 @@
                 });
             });
 
-            // Add to Cart
+     
             addToCartButtons.forEach(button => {
                 button.addEventListener('click', async (event) => {
                     const productId = button.dataset.id;
@@ -153,7 +153,7 @@
                             Swal.fire('Success', 'Item added to cart!', 'success').then(() => {
                                 button.closest('.wishlist-item').remove();
                                 if (document.querySelectorAll('.wishlist-item').length === 0) {
-                                    window.location.reload(); // Reload to show empty message
+                                    window.location.reload(); 
                                 }
                             });
                         } else {
@@ -166,7 +166,7 @@
                 });
             });
 
-            // Clear Wishlist
+        
             clearWishlistBtn?.addEventListener('click', async () => {
                 try {
                     const response = await fetch('/wishlist/clear', {

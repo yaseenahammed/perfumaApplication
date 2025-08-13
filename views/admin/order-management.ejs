@@ -1,3 +1,5 @@
+
+<%- include("../../views/partials/admin/header") %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +8,7 @@
     <title>Order Management - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- Added for Swal.fire -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
@@ -26,7 +28,7 @@
         .order-table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed; /* Ensures consistent column widths */
+            table-layout: fixed; 
         }
         .order-table th, .order-table td {
             padding: 12px;
@@ -43,7 +45,7 @@
             z-index: 10;
         }
         .order-table td {
-            word-wrap: break-word; /* Prevents overflow for long text */
+            word-wrap: break-word; 
         }
         .status-btn {
             padding: 4px 8px;
@@ -80,7 +82,7 @@
                 overflow-x: auto;
             }
             .order-table th, .order-table td {
-                min-width: 100px; /* Adjusted for better readability */
+                min-width: 100px; 
                 font-size: 0.9rem;
             }
             .order-table th {
@@ -88,9 +90,10 @@
             }
         }
     </style>
+    
 </head>
 <body class="bg-gray-50">
-    <%- include("../../views/partials/admin/header") %>
+    
 
     <main class="main-wrap">
         <div class="container mx-auto px-4">
@@ -169,7 +172,7 @@
                                         <tr>
                                             <td><%= order.orderID %></td>
                                             <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
-                                            <td><%= order.user.name || 'Unknown' %></td>
+                                            <td><%= order.user ? order.user.name : 'Unknown' %></td>
                                             <td>
                                                 <span class="status-btn <%= order.orderStatus === 'Delivered' ? 'bg-green-200 text-green-800' : order.orderStatus === 'Processing' ? 'bg-yellow-200 text-yellow-800' : order.orderStatus === 'Shipped' ? 'bg-blue-200 text-blue-800' : order.orderStatus === 'Out for Delivery' ? 'bg-indigo-200 text-indigo-800' : order.orderStatus === 'Cancelled' ? 'bg-red-200 text-red-800' : order.orderStatus === 'ReturnRequest' ? 'bg-orange-200 text-orange-800' : 'bg-gray-200 text-gray-800' %>">
                                                     <%= order.orderStatus %>
@@ -196,7 +199,7 @@
                                                 <% } %>
                                                 <% if (order.orderStatus === 'ReturnRequest') { %>
 <button 
-  onclick="showReturnModal('<%= order.orderID %>', <%= order.totalAmount %>, <%= JSON.stringify(order.returnReason || "No reason provided") %>)" 
+  onclick="showReturnModal('<%= order.orderID %>', <%= order.finalAmount %>, <%= JSON.stringify(order.returnReason || "No reason provided") %>)" 
   class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 w-full sm:w-auto block text-center">
   Verify Return
 </button>
@@ -231,7 +234,7 @@
                     <div id="returnModal" class="modal">
                         <div class="modal-content">
                             <h3 class="text-lg font-bold mb-4">Verify Return for Order <span id="modalOrderID"></span></h3>
-                            <p class="mb-4">Total Amount: ₹<span id="modalTotalAmount"></span></p>
+                            <p class="mb-4">Final Amount: ₹<span id="modalFinalAmount"></span></p>
                             <p class="mb-4">Return Reason: <span id="modalReturnReason"></span></p>
                             <p class="mb-4">Please select an action for this return request:</p>
                             <div class="flex justify-end gap-2">
@@ -279,10 +282,10 @@
             .catch(error => Swal.fire('Network error. Please try again.'));
         }
 
-        function showReturnModal(orderID, totalAmount,returnReason) {
+        function showReturnModal(orderID, finalAmount,returnReason) {
             currentOrderID = orderID;
             document.getElementById('modalOrderID').textContent = orderID;
-            document.getElementById('modalTotalAmount').textContent = totalAmount;
+            document.getElementById('modalFinalAmount').textContent = finalAmount;
             document.getElementById('modalReturnReason').textContent = returnReason;
             document.getElementById('returnModal').style.display = 'block';
         }

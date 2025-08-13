@@ -1,3 +1,5 @@
+<%- include("../../views/partials/admin/header") %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -108,7 +110,7 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <%- include("../../views/partials/admin/header") %>
+    
 
   
 
@@ -145,6 +147,7 @@
                                         type="date" 
                                         name="startDate" 
                                         value="<%= startDate || '' %>"
+                                        max="<%= new Date().toISOString().split('T')[0] %>"
                                         class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
                                         required
                                     >
@@ -152,6 +155,7 @@
                                         type="date" 
                                         name="endDate" 
                                         value="<%= endDate || '' %>"
+                                        max="<%= new Date().toISOString().split('T')[0] %>"
                                         class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
                                         required
                                     >
@@ -237,7 +241,7 @@
                                         <tr>
                                             <td><%= order.orderID %></td>
                                             <td><%= new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
-                                            <td><%= order.user.name || 'Unknown' %></td>
+                                            <td><%= order.user ? order.user.name : 'Unknown' %></td>
                                             <td class="text-amber-600 font-semibold">$<%= order.totalAmount ? order.totalAmount.toFixed(2) : '0.00' %></td>
                                             <td>$<%= order.discountPrice ? order.discountPrice.toFixed(2) : '0.00' %></td>
                                             <td><%= order.couponCode || 'None' %></td>
@@ -277,9 +281,30 @@
         </div>
     </main>
 
+<script>
     
 
+</script>
+
     <script>
+
+        const today = new Date().toISOString().split('T')[0];
+document.getElementById('startDate').setAttribute('max', today);
+document.getElementById('endDate').setAttribute('max', today);
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+  const periodSelect = document.getElementById('periodSelect');
+  toggleCustomDate(periodSelect.value);
+
+  // Reset custom date inputs if period is not custom
+  if (periodSelect.value !== 'custom') {
+    const startInput = document.querySelector('input[name="startDate"]');
+    const endInput = document.querySelector('input[name="endDate"]');
+    if (startInput) startInput.value = '';
+    if (endInput) endInput.value = '';
+  }
+});
         function toggleCustomDate(period) {
             const customDateRange = document.getElementById('customDateRange');
             customDateRange.classList.toggle('hidden', period !== 'custom');

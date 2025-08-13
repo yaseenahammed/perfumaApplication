@@ -42,139 +42,90 @@
     </section>
 
   
-
-    <main class="py-16">
-        <div class="container mx-auto px-4">
-            <div class="max-w-7xl mx-auto">
-                <div class="grid lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2">
-                        <div class="bg-white rounded-2xl shadow-xl p-8 fade-in mb-8">
-                            <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-6 flex items-center">
-                                <i class="fas fa-wallet text-amber-500 mr-3"></i>
-                                Wallet Balance
-                            </h2>
-                            <div class="text-center">
-                                <div class="text-4xl font-semibold text-gray-900 mb-2"><span class="currency">₹</span><%= wallet.balance%></div>
-                                <p class="text-gray-600">Available for Use</p>
-                                <button onclick="openWalletRazorpay(500)" class="mt-6 w-full flex items-center justify-center px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition duration-200">
-                                    <i class="fas fa-plus mr-2"></i> Add Money
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="lg:col-span-1">
-                        <div class="bg-white rounded-2xl shadow-xl p-8 sticky top-32 fade-in">
-                            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                                <i class="fas fa-file-invoice-dollar text-amber-500 mr-3"></i>
-                                Wallet Summary
-                            </h2>
-                            <div class="space-y-4">
-                                <!-- <div class="flex justify-between items-center py-2">
-                                    <span class="text-gray-600">Total Deposits</span>
-                                    <span class="font-semibold text-gray-900"><span class="currency">₹</span><%= wallet.balance%></span>
-                                </div> -->
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="text-gray-600">Available for Withdrawal</span>
-                                    <span class="font-semibold text-gray-900"><span class="currency">₹</span><%= wallet.balance%></span>
-                                </div>
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="text-gray-600">Total Withdrawals</span>
-                                    <span class="font-semibold text-gray-900"><span class="currency">₹</span><%= totalWithdrawn%></span>
-                                </div>
-                                
-
-                                
-                            </div>
-                            
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-8">
-                    <div class="bg-white rounded-2xl shadow-xl p-8 fade-in">
+<main class="py-16">
+    <div class="container mx-auto px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Wallet Balance Section -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 fade-in mb-8">
                         <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-6 flex items-center">
-                            <i class="fas fa-exchange-alt text-amber-500 mr-3"></i>
-                            Recent Transactions
+                            <i class="fas fa-wallet text-amber-500 mr-3"></i>
+                            Wallet Balance
                         </h2>
-                        <div class="flex justify-between mb-4">
-           <div class="flex space-x-4 mb-4">
-    <input type="date" id="startDate" class="border border-gray-300 rounded-lg px-3 py-2">
-    <input type="date" id="endDate" class="border border-gray-300 rounded-lg px-3 py-2">
-    <button id="filterBtn" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition duration-200">
-        Filter
-    </button>
-</div>
-
-                            <button onclick="openModal()" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition duration-200">
-                                View All
-                          </button>
-
+                        <div class="text-center">
+                            <div class="text-4xl font-semibold text-gray-900 mb-2">
+                                <span class="currency">₹</span><%= wallet.balance %>
+                            </div>
+                            <p class="text-gray-600">Available for Use</p>
+                            <button onclick="openWalletRazorpay(500)" class="mt-6 w-full flex items-center justify-center px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition duration-200">
+                                <i class="fas fa-plus mr-2"></i> Add Money
+                            </button>
                         </div>
-
-                        <div class="space-y-4">
-                            <% if(transactions && transactions.length>0){ %>
-                              <% transactions.forEach(txn => { %>
-  <div class="flex justify-between items-center py-2">
-    <div>
-      <p class="<%= txn.type === 'Top-up' ? 'text-green-600' : 'text-blue-600' %>">
-        TXN<%= txn._id.toString().slice(-10) %>
-      </p>
-      <p class="text-gray-600"><%= txn.createdAt.toLocaleString() %></p>
-      <p class="text-gray-600"><%= txn.description %></p>
-    </div>
-    <div class="text-right">
-      <p class="<%= txn.type === 'Top-up' ? 'text-green-600' : 'text-red-600' %>">
-        ₹<%= txn.amount %>
-      </p>
-      <p class="text-gray-600"><%= txn.status %></p>
-    </div>
-  </div>
-<% }) %>
-
-                             <% } else {%>
-                                <p class="text-gray-500 text-center">No transactions yet.</p>
-                            <% } %>
-                            
-                        </div>
-                       
                     </div>
                 </div>
 
+                <!-- Wallet Summary Section -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 sticky top-32 fade-in">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-file-invoice-dollar text-amber-500 mr-3"></i>
+                            Wallet Summary
+                        </h2>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600">Available for Withdrawal</span>
+                                <span class="font-semibold text-gray-900"><span class="currency">₹</span><%= wallet.balance %></span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600">Total Withdrawals</span>
+                                <span class="font-semibold text-gray-900"><span class="currency">₹</span><%= totalWithdrawn %></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </main>
 
-    <!-- View All Modal -->
-<div id="viewAllModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">
-  <div class="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-xl font-bold">All Transactions</h3>
-      <button onclick="closeModal()" class="text-gray-500 hover:text-gray-800">&times;</button>
+            <!-- Recent Transactions -->
+            <div class="mt-8">
+                <div class="bg-white rounded-2xl shadow-xl p-8 fade-in">
+                    <h2 class="text-2xl font-bold mb-6">Recent Transactions</h2>
+
+                    <% if (transactions && transactions.length > 0) { %>
+                        <% transactions.forEach(txn => { %>
+                            <div class="flex justify-between items-center py-2 border-b">
+                                <div>
+                                    <p class="<%= txn.type === 'credit' ? 'text-green-600' : 'text-red-600' %>">
+                                        TXN<%= txn._id.toString().slice(-10) %>
+                                    </p>
+                                    <p class="text-gray-600"><%= txn.createdAt.toLocaleString() %></p>
+                                    <p class="text-gray-600"><%= txn.description %></p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="<%= txn.type === 'credit' ? 'text-green-600' : 'text-red-600' %>">
+                                        ₹<%= txn.amount %>
+                                    </p>
+                                    <p class="text-gray-600"><%= txn.status %></p>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <p class="text-gray-500 text-center">No transactions yet.</p>
+                    <% } %>
+
+                    <!-- Single View All Button -->
+                    <div class="mt-4 text-center">
+                        <a href="/wallet/transactions" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition duration-200">
+                            View All Transactions
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
+</main>
 
-    <% if (allTransactions && allTransactions.length > 0) { %>
-      <% allTransactions.forEach(txn => { %>
-        <div class="flex justify-between items-center py-2 border-b">
-          <div>
-            <p class="<%= txn.type === 'Top-up' ? 'text-green-600' : 'text-blue-600' %>">
-              TXN<%= txn._id.toString().slice(-10) %>
-            </p>
-            <p class="text-gray-600"><%= txn.createdAt.toLocaleString() %></p>
-            <p class="text-gray-600"><%= txn.description %></p>
-          </div>
-          <div class="text-right">
-            <p class="<%= txn.type === 'Top-up' ? 'text-green-600' : 'text-red-600' %>">
-              ₹<%= txn.amount %>
-            </p>
-            <p class="text-gray-600"><%= txn.status %></p>
-          </div>
-        </div>
-      <% }) %>
-    <% } else { %>
-      <p class="text-gray-500">No transactions yet.</p>
-    <% } %>
-  </div>
-</div>
 
 </body>
 </html>

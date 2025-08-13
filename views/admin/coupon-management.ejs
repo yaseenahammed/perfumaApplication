@@ -1,3 +1,5 @@
+  <%- include("../../views/partials/admin/header") %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -90,7 +92,8 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <%- include("../../views/partials/admin/header") %>
+   
+  
 
     <main class="main-wrap">
         <div class="container mx-auto px-4">
@@ -365,7 +368,7 @@
 
   
 
-            // Basic client-side validation
+            
             if (!couponData.couponCode || isNaN(couponData.discountPrice) || isNaN(couponData.minPrice) || !couponData.expireOn) {
                 Swal.fire({
                     icon: 'error',
@@ -449,12 +452,12 @@
 
 
   document.getElementById('clearFilters').addEventListener('click', () => {
-    // Clear input values
+   
     document.getElementById('searchCoupon').value = '';
     document.getElementById('filterStatus').value = '';
     document.getElementById('filterIsList').value = '';
 
-    // Redirect to the base URL without query params
+
     window.location.href = '/admin/coupon';
 });
 

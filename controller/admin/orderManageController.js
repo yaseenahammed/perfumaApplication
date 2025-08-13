@@ -69,7 +69,7 @@ const updateStatus = async (req, res) => {
 
         
         if (!status || status === 'Returned') {
-            return res.json({ success: false, message: 'Invalid status. Only "Returned" is allowed.' });
+            return res.json({ success: false, message: 'Invalid status' });
         }
 
         const order = await Order.findOneAndUpdate(
@@ -102,14 +102,13 @@ const verifyReturn = async (req, res) => {
             return res.json({ success: false, message: 'Invalid return request' });
         }
 
-        // Update status
+   
         order.orderStatus = 'Returned';
         await order.save();
 
-        const refundAmount = order.totalAmount;
+        const refundAmount = order.finalAmount;
         const userId = order.user._id;
 
-        // Update wallet balance
         await Wallet.findOneAndUpdate(
             { user: userId },
             {
@@ -161,8 +160,9 @@ const rejectReturn = async (req, res) => {
         }
 
         
-        order.orderStatus = 'Delivered'; 
-        order.cancellationReason=reason || 'No reason Provided'
+        order.orderStatus = 'Return Rejected'; 
+        order.returnRejected = true;
+        order.rejectReturnReason=reason || 'No reason Provided'
         await order.save();
 
         res.json({ success: true, message: 'Return request rejected.' });
