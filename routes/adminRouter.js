@@ -70,7 +70,9 @@ router.post('/update-status/:orderId',adminAuth,orderManageController.updateStat
 router.post('/verify-return/:orderID',adminAuth,orderManageController.verifyReturn)
 router.post('/reject-return/:orderID',adminAuth,orderManageController.rejectReturn)
 router.get('/order-details/:orderID',adminAuth,orderManageController.orderDetails)
-
+router.post('/verify-returnItem/:orderID/:itemID', adminAuth, orderManageController.verifyReturnItem);
+router.post('/reject-returnItem/:orderID/:itemID', adminAuth, orderManageController.rejectReturnItem);
+ 
 
 //coupon
 router.get('/coupon',adminAuth,couponManageController.getCoupon)

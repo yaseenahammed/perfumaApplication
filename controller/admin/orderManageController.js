@@ -144,6 +144,66 @@ const verifyReturn = async (req, res) => {
 };
 
 
+const verifyReturnItem = async (req, res) => {
+    try {
+        console.log('Reached item return');
+        const { orderID, itemID } = req.params;
+
+        const order = await Order.findOne({ orderID })
+            .populate('user')
+            .populate('items.product');
+
+        if (!order) return res.json({ success: false, message: 'Order not found' });
+
+        const item = order.items.id(itemID);
+        if (!item || item.orderStatus !== 'ReturnRequest') {
+            return res.json({ success: false, message: 'Invalid return request for this item' });
+        }
+
+        // Mark item as returned
+        item.orderStatus = 'Returned';
+
+        await order.save();
+
+        const refundAmount = item.price * item.quantity;
+        const userId = order.user._id;
+
+        await Wallet.findOneAndUpdate(
+            { user: userId },
+            {
+                $inc: { balance: refundAmount },
+                $push: {
+                    transactions: {
+                        type: 'credit',
+                        amount: refundAmount,
+                        description: `Refund for returned item ${item.product.name}`,
+                        date: new Date()
+                    }
+                }
+            },
+            { upsert: true }
+        );
+
+        await Transactions.create({
+            user: userId,
+            type: 'Return',
+            orderId: order._id,
+            amount: refundAmount,
+            status: 'Success',
+            description: `Refund for returned item ${item.product.name}`
+        });
+
+        res.json({ success: true, message: 'Item return verified and refund processed' });
+
+    } catch (error) {
+        console.error('Error in verifyReturnItem:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
+
+
+
 const rejectReturn = async (req, res) => {
     try {
    
@@ -172,6 +232,34 @@ const rejectReturn = async (req, res) => {
     }
 };
 
+const rejectReturnItem = async (req, res) => {
+    try {
+        console.log('reached item reject');
+        const { orderID, itemID } = req.params;
+        const { reason } = req.body;
+
+        const order = await Order.findOne({ orderID });
+        if (!order) return res.json({ success: false, message: 'Order not found' });
+
+        const item = order.items.id(itemID);
+        if (!item || item.orderStatus !== 'ReturnRequest') {
+            return res.json({ success: false, message: 'Invalid return request for this item' });
+        }
+
+
+        item.orderStatus = 'Return Rejected';
+        item.returned = false; 
+        item.returnRejectReason = reason || 'No reason provided';
+
+        await order.save();
+
+        res.json({ success: true, message: 'Item return request rejected.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
 const orderDetails = async (req, res) => {
     try {
         const { orderID } = req.params;
@@ -194,6 +282,8 @@ module.exports = {
     orderListing,
     updateStatus,
     verifyReturn,
+    verifyReturnItem,
     orderDetails,
-    rejectReturn
+    rejectReturn,
+    rejectReturnItem
 };

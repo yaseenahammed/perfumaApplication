@@ -9,6 +9,8 @@ const transactionSchema = new Schema({
     required: true
   },
   orderId: { type: Schema.Types.ObjectId, ref: 'Order', default: null },
+
+  
   amount: { type: Number, required: true },
   status: { type: String, enum: ['Success', 'Pending', 'Failed'], default: 'Success' },
   description: { type: String },

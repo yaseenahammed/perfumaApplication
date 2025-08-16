@@ -394,27 +394,48 @@
         </div>
     </div>
 
-    <div id="order-failed-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden animate-fade-in">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center animate-slide-up transform scale-95 opacity-0" id="order-failed-content">
-            <div class="w-32 h-32 mx-auto mb-6">
-                <img src="https://cdn-icons-png.flaticon.com/512/463/463612.png" alt="Failure Cross" class="w-20 h-20 mx-auto mb-6">
-            </div>
-            <h2 class="text-3xl font-bold text-red-600 mb-4">Payment Failed</h2>
-            <p class="text-gray-700 text-lg mb-8">Oops! Something went wrong while processing your payment. Please try again or use a different method.</p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <button  onclick="retryOrder()"  class="retry-payment-btn px-8 py-4 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-300">
-                    <i class="fas fa-redo mr-2"></i> Retry
-                </button>
-                <button onclick="closeModal(document.getElementById('order-failed-modal'), document.getElementById('order-failed-content'))" class="cancel-btn px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300">
-                    <i class="fas fa-times-circle mr-2"></i> Cancel
-                </button>
-            </div>
+   <script>
+function showOrderFailedModal() {
+    const retryBtn = document.getElementById('retry-payment-btn');
+    retryBtn.style.display = window.latestOrderId ? 'inline-block' : 'none';
+    openModal(document.getElementById('order-failed-modal'), document.getElementById('order-failed-content'));
+}
+</script>
+
+<div id="order-failed-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden animate-fade-in">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center animate-slide-up transform scale-95 opacity-0" id="order-failed-content">
+        <div class="w-32 h-32 mx-auto mb-6">
+            <img src="https://cdn-icons-png.flaticon.com/512/463/463612.png" alt="Failure Cross" class="w-20 h-20 mx-auto mb-6">
+        </div>
+        <h2 class="text-3xl font-bold text-red-600 mb-4">Payment Failed</h2>
+        <p class="text-gray-700 text-lg mb-8">Oops! Something went wrong while processing your payment. Please try again or use a different method.</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <button id="retry-payment-btn" onclick="retryOrder()" class="px-8 py-4 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-300">
+                <i class="fas fa-redo mr-2"></i> Retry Payment
+            </button>
+            <button 
+      onclick="closeModal('order-failed-modal', 'order-failed-content')" 
+      class="cancel-btn px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300">
+      <i class="fas fa-times-circle mr-2"></i> Cancel
+    </button>
         </div>
     </div>
+</div>
+<script>
+  function closeModal(modalId, contentId) {
+    const modal = document.getElementById(modalId);
+    const content = document.getElementById(contentId);
+
+    if (modal) modal.classList.add("hidden");
+    if (content) content.classList.add("hidden");
+  }
+</script>
 
     <%- include("../../views/partials/user/footer") %>
 
+    <
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBk3uC49F8torqiQcA_FbvBT_gX3odyRF0&libraries=places"></script>
 
 
@@ -424,6 +445,8 @@
             const orderConfirmModal = document.getElementById('order-confirm-modal');
             const orderSuccessfulModal = document.getElementById('order-successful-modal');
             const orderSuccessfulContent = document.getElementById('order-successful-content');
+            const orderFailedModal= document.getElementById('order-failed-modal')
+            const orderFailedContent=document.getElementById('order-failed-content')
             const confirmPlaceBtn = document.querySelector('#confirm-place-order-btn');
             const cancelConfirmBtn = document.querySelector('#cancel-confirmation-btn');
             const viewOrderDetailsBtn = document.querySelector('.view-order-details-btn');
@@ -631,35 +654,9 @@
                 });
             });
 
-         let autocomplete;
 
-  function initAutocomplete() {
-    autocomplete = new google.maps.places.Autocomplete(
-      document.getElementById('add-street'),
-      { types: ['address'] }
-    );
-    autocomplete.addListener('place_changed', fillInAddress);
-  }
 
-  function fillInAddress() {
-    const place = autocomplete.getPlace();
-    let city = '', state = '', country = '', postal_code = '';
 
-    if (place.address_components) {
-      place.address_components.forEach(component => {
-        const types = component.types;
-        if (types.includes('locality')) city = component.long_name;
-        if (types.includes('administrative_area_level_1')) state = component.long_name;
-        if (types.includes('country')) country = component.long_name;
-        if (types.includes('postal_code')) postal_code = component.long_name;
-      });
-    }
-
-    document.getElementById('add-city').value = city;
-    document.getElementById('add-state').value = state;
-    document.getElementById('add-country').value = country;
-    document.getElementById('add-pincode').value = postal_code;
-  }
 
   // Modal open
   addNewAddressBtn.addEventListener('click', () => {
@@ -781,162 +778,233 @@
                 }
             });
 
-            // --- Place Order ---
-            placeOrderBtn.addEventListener('click', () => {
-                if (!window.selectedAddressId) {
-                    Swal.fire('Error', 'Please select a shipping address.', 'error');
-                    return;
-                }
+           placeOrderBtn.addEventListener('click', () => {
+    if (!window.selectedAddressId) {
+        Swal.fire('Error', 'Please select a shipping address.', 'error');
+        return;
+    }
 
-                const selectedPaymentRadio = document.querySelector('input[name="payment_method"]:checked');
-                if (!selectedPaymentRadio) {
-                    Swal.fire('Error', 'Please select a payment method.', 'error');
-                    return;
-                }
+    const selectedPaymentRadio = document.querySelector('input[name="payment_method"]:checked');
+    if (!selectedPaymentRadio) {
+        Swal.fire('Error', 'Please select a payment method.', 'error');
+        return;
+    }
 
-                selectedPaymentMethod = selectedPaymentRadio.value;
+    selectedPaymentMethod = selectedPaymentRadio.value;
 
-                const paymentMethodText = {
-                    'card': 'Card Payment',
-                    'upi': 'UPI Payment',
-                    'netbanking': 'Net Banking',
-                    'cod': 'Cash on Delivery',
-                    'wallet':'Wallet'
-                }[selectedPaymentMethod] || 'Unknown Method';
+    const paymentMethodText = {
+        'card': 'Card Payment',
+        'upi': 'UPI Payment',
+        'netbanking': 'Net Banking',
+        'cod': 'Cash on Delivery',
+        'wallet': 'Wallet'
+    }[selectedPaymentMethod] || 'Unknown Method';
 
-                document.getElementById('confirm-payment-method').textContent = paymentMethodText;
-                document.getElementById('confirm-coupon-code').textContent = appliedCoupon ? appliedCoupon.couponCode : 'None';
+    document.getElementById('confirm-payment-method').textContent = paymentMethodText;
+    document.getElementById('confirm-coupon-code').textContent = appliedCoupon ? appliedCoupon.couponCode : 'None';
 
-                openModal(orderConfirmModal, null);
+    openModal(orderConfirmModal, null);
+});
+
+confirmPlaceBtn.addEventListener('click', async () => {
+    console.log('Confirm place order clicked', { selectedPaymentMethod, windowSelectedAddressId: window.selectedAddressId });
+
+    closeModal(orderConfirmModal, null);
+
+    const orderData = {
+        addressId: window.selectedAddressId,
+        paymentMethod: selectedPaymentMethod,
+        couponCode: appliedCoupon ? appliedCoupon.couponCode : null,
+        discountPrice: appliedCoupon ? appliedCoupon.discountPrice : 0
+    };
+
+    if (selectedPaymentMethod === 'cod' || selectedPaymentMethod === 'wallet') {
+        try {
+            const res = await fetch('/place-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
             });
 
-            confirmPlaceBtn.addEventListener('click', async () => {
-                closeModal(orderConfirmModal, null);
+            const data = await res.json();
+            if (data.success) {
+                window.latestOrderId = data.orderId;
+                openModal(orderSuccessfulModal, orderSuccessfulContent);
+            } else {
+                showOrderFailedModal();
+            }
+        } catch (err) {
+            console.error('Error placing order:', err);
+            Swal.fire('Error', 'An error occurred. Please try again.', 'error');
+        }
+    } else {
+        try {
+            const res = await fetch('/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
 
-                const orderData = {
-                    addressId: window.selectedAddressId,
-                    paymentMethod: selectedPaymentMethod,
-                    couponCode: appliedCoupon ? appliedCoupon.couponCode : null,
-                    discountPrice: appliedCoupon ? appliedCoupon.discountPrice : 0
-                };
+            const data = await res.json();
+            console.log('Razorpay order response:', data);
 
-                if (selectedPaymentMethod === 'cod' || selectedPaymentMethod === 'wallet') {
+            if (!data.success) {
+                Swal.fire('Error', data.message || 'Failed to create order.', 'error');
+                return;
+            }
+
+            window.latestOrderId = data.orderId; // Set orderId here
+
+            const options = {
+                key: data.key,
+                amount: parseInt(data.amount, 10),
+                currency: data.currency,
+                order_id: data.razorpayOrderId,
+                name: 'Perfuma',
+                description: 'Order Payment',
+                handler: async function (response) {
                     try {
-                        const res = await fetch('/place-order', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(orderData)
-                        });
-
-                        const data = await res.json();
-                        if (data.success) {
-                            window.latestOrderId = data.orderId;
-                            openModal(orderSuccessfulModal, orderSuccessfulContent);
-                        } else {
-                            showOrderFailedModal();
-                        }
-                    } catch (err) {
-                        console.error('Error placing order:', err);
-                        Swal.fire('Error', 'An error occurred. Please try again.', 'error');
-                    }
-                } else {
-                    try {
-                        const res = await fetch('/create-order', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                paymentMethod: selectedPaymentMethod,
-                                couponCode: appliedCoupon ? appliedCoupon.couponCode : null,
-                                discountPrice: appliedCoupon ? appliedCoupon.discountPrice : 0
-                            })
-                        });
-
-                        const { razorpayOrderId, amount, key, currency } = await res.json();
-
-                        const options = {
-                            key: key,
-                            amount: amount.toString(),
-                            currency: currency,
-                            order_id: razorpayOrderId,
-                            name: 'Perfuma',
-                            description: 'Order Payment',
-                            handler: async function (response) {
-                                const paymentDetails = {
-                                    razorpayPaymentId: response.razorpay_payment_id,
-                                    razorpayOrderId: response.razorpay_order_id,
-                                    razorpaySignature: response.razorpay_signature,
-                                    addressId: window.selectedAddressId,
-                                    paymentMethod: selectedPaymentMethod,
-                                    couponCode: appliedCoupon ? appliedCoupon.couponCode : null,
-                                    discountPrice: appliedCoupon ? appliedCoupon.discountPrice : 0
-                                };
-
-                                const placeOrderRes = await fetch('/place-order', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(paymentDetails)
-                                });
-
-                                const data = await placeOrderRes.json();
-                                if (data.success) {
-                                    window.latestOrderId = data.orderId;
-                                    openModal(orderSuccessfulModal, orderSuccessfulContent);
-                                } else {
-                                    showOrderFailedModal();
-                                }
-                            },
-                            theme: {
-                                color: '#6366f1',
-                                modal: {
-                                    ondismiss: function () {
-                                        showOrderFailedModal();
-                                    }
-                                }
-                            }
+                        const paymentDetails = {
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature,
+                            orderId: window.latestOrderId
                         };
 
-                        const rzp = new Razorpay(options);
-                        rzp.open();
+                        const verifyRes = await fetch('/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(paymentDetails)
+                        });
+
+                        const verifyData = await verifyRes.json();
+                        if (verifyData.success) {
+                            openModal(orderSuccessfulModal, orderSuccessfulContent);
+                        } else {
+                            handlePaymentFailure(window.latestOrderId);
+                            Swal.fire('Error', verifyData.message || 'Payment verification failed.', 'error');
+                        }
                     } catch (err) {
-                        console.error('Error initiating Razorpay:', err);
-                        Swal.fire('Error', 'Payment initiation failed.', 'error');
+                        console.error('Error verifying payment:', err);
+                        handlePaymentFailure(window.latestOrderId);
+                        Swal.fire('Error', 'An error occurred during payment verification.', 'error');
                     }
+                },
+                modal: {
+                    ondismiss: function () {
+                        handlePaymentFailure(window.latestOrderId);
+                    }
+                },
+                theme: {
+                    color: '#6366f1'
                 }
-            });
+            };
 
-            // Cancel Confirmation Button Click
-            cancelConfirmBtn.addEventListener('click', () => {
-                closeModal(orderConfirmModal, null);
-            });
+            const rzp = new Razorpay(options);
+            rzp.open();
+        } catch (err) {
+            console.error('Error initiating Razorpay:', err);
+            Swal.fire('Error', 'Payment initiation failed.', 'error');
+        }
+    }
+});
 
-            viewOrderDetailsBtn.addEventListener('click', () => {
-                if (window.latestOrderId) {
-                    window.location.href = `/order-details/${window.latestOrderId}`;
-                } else {
-                    Swal.fire('Error', 'Order ID not found.', 'error');
-                }
-            });
+cancelConfirmBtn.addEventListener('click', () => {
+    closeModal(orderConfirmModal, null);
+});
 
-            continueShoppingBtn.addEventListener('click', () => {
-                window.location.href = '/shop';
-            });
+viewOrderDetailsBtn.addEventListener('click', () => {
+    if (window.latestOrderId) {
+        window.location.href = `/order-details/${window.latestOrderId}`;
+    } else {
+        Swal.fire('Error', 'Order ID not found.', 'error');
+    }
+});
 
-            function showOrderFailedModal() {
-                openModal(document.getElementById('order-failed-modal'), document.getElementById('order-failed-content'));
-            }
+continueShoppingBtn.addEventListener('click', () => {
+    window.location.href = '/shop';
+});
 
-            retryPaymentBtn.addEventListener('click', () => {
-                window.location.href = '/checkout';
-            });
+function showOrderFailedModal() {
+    const retryBtn = document.getElementById('retry-payment-btn');
+    retryBtn.style.display = window.latestOrderId ? 'inline-block' : 'none';
+    openModal(document.getElementById('order-failed-modal'), document.getElementById('order-failed-content'));
+}
 
-            function retryOrder() {
-                closeModal(document.getElementById('order-failed-modal'), document.getElementById('order-failed-content'));
-                openModal(orderConfirmModal, null);
-            }
+window.handlePaymentFailure = function (orderId) {
+    window.latestOrderId = orderId; // Use window.latestOrderId consistently
+    showOrderFailedModal();
+};
 
-            // Update payment summary on page load
-            updatePaymentSummary();
+window.retryOrder = async function () {
+    if (!window.latestOrderId) {
+        Swal.fire('Error', 'No order found to retry!', 'error');
+        return;
+    }
+
+    console.log('Retrying order:', window.latestOrderId);
+    try {
+        const response = await fetch('/retry-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId: window.latestOrderId })
         });
+        const result = await response.json();
+        console.log('Retry payment response:', result);
+        if (result.success) {
+            const options = {
+                key: result.key,
+                amount: result.amount,
+                currency: result.currency,
+                order_id: result.razorpayOrderId,
+                name: 'Perfuma',
+                description: 'Retry Order Payment',
+                handler: async function (response) {
+                    const verifyResponse = await fetch('/verify-payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            orderId: window.latestOrderId,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature
+                        })
+                    });
+                    const verifyResult = await verifyResponse.json();
+                    if (verifyResult.success) {
+                        Swal.fire('Success', 'Payment successful!', 'success');
+                        closeModal(document.getElementById('order-failed-modal'), document.getElementById('order-failed-content'));
+                        window.location.href = `/order-details/${window.latestOrderId}`;
+                    } else {
+                        handlePaymentFailure(window.latestOrderId);
+                        Swal.fire('Error', verifyResult.message || 'Payment verification failed.', 'error');
+                    }
+                },
+                modal: {
+                    ondismiss: function () {
+                        handlePaymentFailure(window.latestOrderId);
+                    }
+                },
+                theme: {
+                    color: '#6366f1'
+                }
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
+        } else {
+            Swal.fire('Error', result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Retry order error:', error);
+        Swal.fire('Error', 'Failed to retry payment.', 'error');
+    }
+};
+
+// Call payment summary update after DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    updatePaymentSummary();
+})})
+
     </script>
 </body>
 </html>

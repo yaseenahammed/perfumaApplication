@@ -23,11 +23,29 @@ items: [
       type: Number,
       required: true
     },
+    orderStatus: {
+    type: String,
+    enum: ['Processing', 'Shipped','Pending', 'Delivered', 'Cancelled','ReturnRequest','Returned','Return Rejected'],
+    default: 'Processing'
+  },
     cancelled: {
       type: Boolean,
       default: false
     },
     cancelReason: {
+      type: String,
+      default: ''
+    },
+    returned: {
+      type: Boolean,
+      default: false
+    },
+    returnReason:{
+  type:String,
+  default:null
+},
+   
+    returnRejectReason: {
       type: String,
       default: ''
     }
@@ -53,9 +71,14 @@ items: [
     enum: ['Paid', 'Pending', 'Failed'],
     default: 'Pending'
   },
+  isPaid: { 
+    type: Boolean, 
+    default: false
+   },
+
   orderStatus: {
     type: String,
-    enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled','ReturnRequest','Returned','Return Rejected'],
+    enum: ['Processing', 'Shipped','Pending','Delivered', 'Cancelled','ReturnRequest','Returned','Return Rejected'],
     default: 'Processing'
   },
   cancellationReason: {
