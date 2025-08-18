@@ -123,29 +123,52 @@
                                                         ₹<%= item.price || 0 %>
                                                     </div>
                                                 </div>
-                                                <div class="flex flex-col items-center space-y-4">
-                                                    <div class="flex items-center text-sm">
-                                                        <span class="flex items-center <%= item.orderStatus === 'Delivered' || item.orderStatus === 'Shipped' || item.orderStatus === 'Processing' ? 'text-green-600' : 'text-red-600' %>">
-                                                            <i class="fas fa-circle text-xs mr-2"></i>
-                                                            Status: <%= item.orderStatus %>
-                                                        </span>
-                                                    </div>
-                                                    <div class="flex flex-col md:flex-row gap-2">
-                                                        <% if (order.orderStatus !== 'Delivered' && item.orderStatus === 'Shipped' &&order.orderStatus !=='Cancelled'  ) { %>
-                                                            <button 
-                                                                onclick="showItemCancelModal('<%= order._id %>', '<%= item.product._id %>')" 
-                                                                class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 transform hover:scale-105 font-semibold">
-                                                                Cancel
-                                                            </button>
-                                                        <% } %>
-                                                        <% if (order.orderStatus !=='Cancelled' && item.orderStatus !=='Cancelled' && item.orderStatus !== 'Processing' && order.orderStatus!== 'ReturnRequest'&& item.orderStatus!== 'ReturnRequest' &&item.orderStatus!== 'Returned' && order.orderStatus === 'Delivered'  && order.orderStatus !== 'returnRejected') { %>
-                                                            <button 
-                                                                onclick="showItemReturnModal('<%= order._id %>', '<%= item.product._id %>')" 
-                                                                class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 transform hover:scale-105 font-semibold">
-                                                                Return
-                                                            </button>
-                                                        <% } %>
-                                                    </div>
+     <div class="flex flex-col items-center space-y-4">
+<% 
+   let finalItemStates = ['Cancelled', 'ReturnRequest', 'Return Rejected', 'Returned'];
+
+   let displayStatus;
+   if (finalItemStates.includes(item.orderStatus)) {
+       // If item already has a final state, keep it
+       displayStatus = item.orderStatus;
+   } else {
+       // Otherwise, follow the order status
+       displayStatus = order.orderStatus;
+   }
+
+   let statusClass = ['Delivered', 'Shipped', 'Processing'].includes(displayStatus) 
+                     ? 'text-green-600' 
+                     : 'text-red-600';
+%>
+
+<div class="flex items-center text-sm">
+  <span class="flex items-center <%= statusClass %>">
+    <i class="fas fa-circle text-xs mr-2"></i>
+    Status: <%= displayStatus %>
+  </span>
+</div>
+
+<div class="flex flex-col md:flex-row gap-2">
+
+  <% if (order.orderStatus === 'Processing' || order.orderStatus === 'Shipped' && !finalItemStates.includes(item.orderStatus)) { %>
+    <button 
+      onclick="showItemCancelModal('<%= order._id %>', '<%= item.product._id %>')" 
+      class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 transform hover:scale-105 font-semibold">
+      Cancel
+    </button>
+  <% } %>
+
+  <% if (order.orderStatus === 'Delivered' && !finalItemStates.includes(item.orderStatus)) { %>
+    <button 
+      onclick="showItemReturnModal('<%= order._id %>', '<%= item.product._id %>')" 
+      class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 transform hover:scale-105 font-semibold">
+      Return
+    </button>
+  <% } %>
+
+</div>
+
+
                                                 </div>
                                             </div>
                                         </div>

@@ -137,10 +137,30 @@
                                         </div>
                                         <div class="flex flex-col items-center space-y-4">
                                             <div class="flex items-center text-sm">
-                                                <span class="flex items-center <%= order.orderStatus === 'Delivered' || order.orderStatus === 'Shipped' || order.orderStatus === 'Processing' ? 'text-green-600' : 'text-red-600' %>">
-                                                    <i class="fas fa-circle text-xs mr-2"></i>
-                                                    Status: <%= order.orderStatus %>
-                                                </span>
+                                               <% 
+   const itemStatuses = order.items.map(i => i.orderStatus);
+
+   let displayOrderStatus;
+
+   if (itemStatuses.every(s => s === 'Cancelled')) {
+       displayOrderStatus = 'Cancelled';
+   } else if (itemStatuses.every(s => s === 'Returned')) {
+       displayOrderStatus = 'Returned';
+   
+   }else {
+       displayOrderStatus = order.orderStatus;
+   }
+
+   let orderStatusClass = ['Delivered','Shipped','Processing'].includes(displayOrderStatus)
+                          ? 'text-green-600'
+                          : 'text-red-600';
+%>
+
+<span class="flex items-center <%= orderStatusClass %>">
+    <i class="fas fa-circle text-xs mr-2"></i>
+    Status: <%= displayOrderStatus %>
+</span>
+
                                             </div>
                                             <% if (order.orderStatus === 'ReturnRequest') { %>
                                                 <p class="text-yellow-600 text-sm">Return request pending admin verification...</p>
@@ -150,15 +170,28 @@
                                                 <p class="text-red-600 text-sm">Return request rejected.</p>
                                             <% } %>
                                             <div class="flex flex-col md:flex-row gap-2">
-                                                <a href="/userOrder-details/<%= order.orderID %>" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 transform hover:scale-105">View Details</a>
-                                                <% if (order.orderStatus === 'Processing' || order.orderStatus === 'Shipped') { %>
-                                                    <button onclick="showCancelModal('<%= order.orderID %>')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 transform hover:scale-105">Cancel Order</button>
-                                                <% } %>
-                                               
-                                                <% if (order.orderStatus !=='Cancelled' && order.orderStatus!== 'returnRequest' && order.orderStatus === 'Delivered'  && order.orderStatus !== 'returnRejected') { %>
-                                                    <button onclick="showReturnModal('<%= order.orderID %>')" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 transform hover:scale-105">Return Order</button>
-                                                <% } %>
-                                            </div>
+    <a href="/userOrder-details/<%= order.orderID %>" 
+       class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 transform hover:scale-105">
+       View Details
+    </a>
+
+    <% if (displayOrderStatus === 'Processing' || displayOrderStatus === 'Shipped') { %>
+        <button onclick="showCancelModal('<%= order.orderID %>')" 
+                class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 transform hover:scale-105">
+            Cancel Order
+        </button>
+    <% } %>
+
+  <% if (order.items.length > 0 && order.items.every(i => i.orderStatus.trim() === 'Delivered')) { %>
+  <button onclick="showReturnModal('<%= order.orderID %>')" 
+          class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 transform hover:scale-105">
+      Return Order
+  </button>
+<% } %>
+
+
+</div>
+
                                         </div>
                                     </div>
                                 </div>

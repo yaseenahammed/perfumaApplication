@@ -161,6 +161,7 @@
                                         <th>Order ID</th>
                                         <th>Date</th>
                                         <th>User</th>
+                                        <th>Items</th>
                                         <th>Status</th>
                                         <th>Total</th>
                                         <th>Details</th>
@@ -173,30 +174,49 @@
                                             <td><%= order.orderID %></td>
                                             <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
                                             <td><%= order.user ? order.user.name : 'Unknown' %></td>
+                                            
+                                              <td><%= order.items ? order.items.length : 0 %></td>
                                             <td>
                                                 <span class="status-btn <%= order.orderStatus === 'Delivered' ? 'bg-green-200 text-green-800' : order.orderStatus === 'Processing' ? 'bg-yellow-200 text-yellow-800' : order.orderStatus === 'Shipped' ? 'bg-blue-200 text-blue-800' : order.orderStatus === 'Out for Delivery' ? 'bg-indigo-200 text-indigo-800' : order.orderStatus === 'Cancelled' ? 'bg-red-200 text-red-800' : order.orderStatus === 'ReturnRequest' ? 'bg-orange-200 text-orange-800' : 'bg-gray-200 text-gray-800' %>">
                                                     <%= order.orderStatus %>
-                                                </span>
+                                                </span><br>
+                                                 <% if(order.returnRequestCount > 0) { %>
+        <div class="status-btn bg-violet-300 text-black-800">
+            RtnReq <%= order.returnRequestCount %>
+        </div>
+    <% } %>
                                             </td>
                                             <td>₹<%= order.finalAmount %></td>
                                             <td>
                                                 <a href="/admin/order-details/<%= order.orderID %>" 
                                                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 block text-center w-full sm:w-auto">
-                                                    View Details
+                                                    View
                                                 </a>
                                             </td>
                                             <td>
-                                                <% if (order.orderStatus !== 'Cancelled' && order.orderStatus !== 'Delivered' && order.orderStatus !== 'ReturnRequest' && order.orderStatus !== 'Returned') { %>
-                                                    <select name="status" 
-                                                            onchange="updateStatus('<%= order.orderID %>', this.value)" 
-                                                            class="border border-gray-200 rounded-lg py-2 px-1 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-auto mb-2">
-                                                        <option value="" disabled <%= !order.orderStatus ? 'selected' : '' %>>Select Status</option>
-                                                        <option value="Processing" <%= order.orderStatus === 'Processing' ? 'selected' : '' %>>Processing</option>
-                                                        <option value="Shipped" <%= order.orderStatus === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                                                        <option value="Out for Delivery" <%= order.orderStatus === 'Out for Delivery' ? 'selected' : '' %>>Out for Delivery</option>
-                                                        <option value="Delivered" <%= order.orderStatus === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                                    </select>
-                                                <% } %>
+<% if (!['Cancelled', 'Returned', 'Delivered'].includes(order.orderStatus)) { %>
+    <select name="status" 
+            onchange="updateStatus('<%= order.orderID %>', this.value)" 
+            class="border border-gray-200 rounded-lg py-2 px-1 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-auto mb-2">
+        <option value="" disabled>Select Status</option>
+
+        <% if (order.orderStatus === 'Processing') { %>
+            <option value="Shipped">Shipped</option>
+            <option value="Cancelled">Cancelled</option>
+        <% } else if (order.orderStatus === 'Shipped') { %>
+            <option value="Out for Delivery">Out for Delivery</option>
+            <option value="Cancelled">Cancelled</option>
+        <% } else if (order.orderStatus === 'Out for Delivery') { %>
+            <option value="Delivered">Delivered</option>
+            <option value="Cancelled">Cancelled</option>
+        <% } %>
+
+        <!-- Current status as hidden selected option -->
+        <option value="<%= order.orderStatus %>" selected hidden><%= order.orderStatus %></option>
+    </select>
+<% } %>
+
+
                                                 <% if (order.orderStatus === 'ReturnRequest') { %>
 <button 
   onclick="showReturnModal('<%= order.orderID %>', <%= order.finalAmount %>, <%= JSON.stringify(order.returnReason || "No reason provided") %>)" 

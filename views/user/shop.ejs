@@ -208,7 +208,7 @@
   .wishlist-btn:hover svg {
     stroke: #ff4444;
   }
-  .wishlist-button {
+  .button-add-to-cart {
     background: linear-gradient(to right, #f97316, #ef4444);
     color: #fff;
     padding: 10px;
@@ -220,11 +220,11 @@
     font-size: 14px;
     transition: background 0.3s, transform 0.2s;
   }
-  .wishlist-button:hover {
+  .button-add-to-cart:hover {
     background: linear-gradient(to right,  #f97316, #ef4444);
     transform: scale(1.05);
   }
-  .wishlist-button.active {
+  .button-add-to-cart.active {
     background: linear-gradient(to right, #f97316, #ef4444);
   }
   .pagination {
@@ -384,13 +384,14 @@
           <% products.forEach(product => { %>
             <div class="product-card">
               <span
-                class="wishlist-btn <%= wishlistItems && wishlistItems.some(item => item.product._id.toString() === product._id.toString()) ? 'active' : '' %>"
-                onclick="toggleWishlist('<%= product._id %>', this)"
-              >
-                <svg viewBox="0 0 24 24">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                </svg>
-              </span>
+  class="wishlist-btn <%= wishlistItems && wishlistItems.some(item => item.product._id.toString() === product._id.toString()) ? 'active' : '' %>"
+  onclick="toggleWishlist('<%= product._id %>', this)"
+>
+  <svg viewBox="0 0 24 24">
+    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+  </svg>
+</span>
+
               <a href="/productDetails?id=<%= product._id %>">
                 <img src="<%= product.productImages[0] %>" alt="<%= product.name %>" />
                 <h4><%= product.name %></h4>
@@ -414,12 +415,19 @@
                   <% } %>
                 </p>
               </a>
-              <button 
-                class="wishlist-button <%= wishlistItems && wishlistItems.some(item => item.product._id.toString() === product._id.toString()) ? 'active' : '' %>"
-                onclick="toggleWishlist('<%= product._id %>', this)"
-              >
-                <%= wishlistItems && wishlistItems.some(item => item.product._id.toString() === product._id.toString()) ? 'Remove from Wishlist' : 'Add to Wishlist' %>
-              </button>
+              <button
+    type="button"
+    class="button-add-to-cart flex-1 <%= product.quantity <= 0 || !product.isListed || product.isBlocked ? 'disabled' : '' %>"
+    id="addToCart"
+    data-product-id="<%= product._id %>"
+    data-max-stock="<%= product.quantity %>"
+    <%= product.quantity <= 0 || !product.isListed || product.isBlocked ? 'disabled' : '' %>
+    
+>
+    <i class="fas fa-shopping-cart mr-2"></i>
+    <%= product.quantity <= 0 || !product.isListed || product.isBlocked ? 'Out of Stock' : 'Add to Cart' %>
+</button>
+
             </div>
           <% }) %>
         <% } %>
@@ -445,14 +453,60 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  function addToCart(productId) {
-    console.log('Add to cart:', productId);
-    // Implement cart addition logic
-  }
+  
+document.addEventListener('DOMContentLoaded', () => {
+  const addToCartBtns = document.querySelectorAll('.button-add-to-cart');
 
- function toggleWishlist(productId, buttonElement) {
-  const productCard = buttonElement.closest('.product-card');
-  const heartIcon = productCard.querySelector('.wishlist-btn');
+  addToCartBtns.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const productId = btn.getAttribute('data-product-id');
+      const maxStock = parseInt(btn.getAttribute('data-max-stock'));
+      const qtyInput = btn.closest('.product-card')?.querySelector('.qty-input');
+      const quantity = qtyInput ? parseInt(qtyInput.value) : 1;
+
+      btn.classList.add('loading');
+
+      try {
+        const response = await fetch(`/add-to-cart/${productId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ quantity }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Added to cart',
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: data.error || 'Failed to add to cart',
+            timer: 1500,
+          });
+        }
+
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'An error occurred. Please try again.',
+          timer: 1500,
+        });
+      } finally {
+        btn.classList.remove('loading');
+      }
+    });
+  });
+});
+
+
+
+function toggleWishlist(productId, buttonElement) {
   const isInWishlist = buttonElement.classList.contains('active');
   const url = `/wishlist/${isInWishlist ? 'remove' : 'add'}/${productId}`;
 
@@ -464,19 +518,8 @@
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      // Toggle both the heart icon and the button styles
-      heartIcon.classList.toggle('active');
+      // Toggle only the clicked button
       buttonElement.classList.toggle('active');
-
-      // Update the button text
-      buttonElement.textContent = isInWishlist ? 'Add to Wishlist' : 'Remove from Wishlist';
-
-      Swal.fire({
-        icon: 'success',
-        title: isInWishlist ? 'Removed from Wishlist' : 'Added to Wishlist',
-        showConfirmButton: false,
-        timer: 1500,
-      });
     } else {
       Swal.fire({
         icon: 'error',
@@ -490,7 +533,7 @@
     Swal.fire({
       icon: 'error',
       title: 'Error',
-      text: 'Something went wrong',
+      text: 'Something went wrong, confirm you are logged in',
     });
   });
 }

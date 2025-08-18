@@ -58,9 +58,11 @@
                                             class="w-16 h-16 object-cover rounded"
                                         >
                                         <div>
-                                            <p class="font-semibold"><%= item.name || 'Unknown Item' %></p>
+                                            <p class="font-semibold"><%= (item.product && item.product.name ? item.product.name : 'Unknown Product') %></p>
                                             <p class="text-sm text-gray-600">Qty: <%= item.quantity || 'N/A' %></p>
-                                            <p class="text-sm text-gray-600">Price: ₹<%= item.price?.toFixed(2) || '0.00' %></p>
+                                             <p class="text-sm text-gray-600">Price: ₹<%= item.price?.toFixed(2) || '0.00' %></p>
+                                            <p class="text-sm text-red-600">Status: <%= item.orderStatus %></p>
+                                           
                                         </div>
                                     </div>
                                     <% if (  item.orderStatus === 'ReturnRequest' && item.orderStatus !== 'Returned' && !item.returnRejectReason) { %>

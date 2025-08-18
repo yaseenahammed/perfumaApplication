@@ -38,6 +38,17 @@ const orderListing = async (req, res) => {
         const totalOrders = await Order.countDocuments(query);
         const totalPages = Math.ceil(totalOrders / perPage);
         const currentPage = parseInt(page);
+        
+
+        orders.forEach(order=>{
+            order.itemCount=order.items ? order.items.length : 0
+
+            order.returnRequestCount=order.items ? 
+            order.items.filter(item=>item.orderStatus==='ReturnRequest').length :0
+        })
+
+
+        
 
         res.render('order-management', {
             orders,
