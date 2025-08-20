@@ -17,8 +17,11 @@ const getOrders = async (req, res) => {
     const search = req.query.search || '';
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
-
+     
+  
     const user = await User.findById(userId).lean();
+ 
+   
 
     const query = {
       user: userId,
@@ -39,7 +42,8 @@ const getOrders = async (req, res) => {
       user,
       orders,
       currentPage:page,
-      totalPages
+      totalPages,
+  
     });
 
   } catch (error) {
@@ -363,6 +367,8 @@ const downloadInvoice = async (req, res) => {
     try {
         const { orderID } = req.params;
         const userId = req.session.userId;
+        const user = await User.findById(userId).lean();
+
 
         // Fetch the order
         const order = await Order.findOne({ orderID, user: userId })
@@ -379,22 +385,22 @@ const downloadInvoice = async (req, res) => {
         const doc = new PDFDocument({ margin: 50 });
         doc.pipe(res);
 
-        // ---- HEADER ----
+     
         doc.fontSize(20).text('Perfuma Invoice', { align: 'center', underline: true });
         doc.moveDown();
 
-        // Invoice info
+    
         doc.fontSize(12).text(`Invoice Number: ${orderID}`);
         doc.text(`Order Date: ${new Date(order.createdAt).toLocaleDateString()}`);
         doc.moveDown();
 
-        // Customer info
-        doc.text(`Customer: ${order.shippingAddress.name}`);
-        doc.text(`Address: ${order.shippingAddress.address}, ${order.shippingAddress.city}, ${order.shippingAddress.state}`);
+     
+        doc.text(`Customer: ${user.name}`);
+        doc.text(`Address: ${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.state}`);
         doc.text(`Phone: ${order.shippingAddress.phone}`);
         doc.moveDown(2);
 
-        // ---- TABLE HEADER ----
+       
         const tableTop = doc.y;
         const itemCodeX = 50;
         const descriptionX = 100;
@@ -408,10 +414,10 @@ const downloadInvoice = async (req, res) => {
         doc.text('Price', priceX, tableTop);
         doc.text('Total', totalX, tableTop);
 
-        // Draw a line under the header
+
         doc.moveTo(50, tableTop + 15).lineTo(500, tableTop + 15).stroke();
 
-        // ---- TABLE ROWS ----
+   
         let totalAmount = 0;
         let i = 0;
         order.items.forEach(item => {

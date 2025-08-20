@@ -394,13 +394,7 @@
         </div>
     </div>
 
-   <script>
-function showOrderFailedModal() {
-    const retryBtn = document.getElementById('retry-payment-btn');
-    retryBtn.style.display = window.latestOrderId ? 'inline-block' : 'none';
-    openModal(document.getElementById('order-failed-modal'), document.getElementById('order-failed-content'));
-}
-</script>
+
 
 <div id="order-failed-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden animate-fade-in">
     <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center animate-slide-up transform scale-95 opacity-0" id="order-failed-content">
@@ -999,6 +993,13 @@ window.retryOrder = async function () {
         Swal.fire('Error', 'Failed to retry payment.', 'error');
     }
 };
+
+
+function showOrderFailedModal() {
+    const retryBtn = document.getElementById('retry-payment-btn');
+    retryBtn.style.display = window.latestOrderId ? 'inline-block' : 'none';
+    openModal(document.getElementById('order-failed-modal'), document.getElementById('order-failed-content'));
+}
 
 // Call payment summary update after DOM ready
 document.addEventListener('DOMContentLoaded', () => {

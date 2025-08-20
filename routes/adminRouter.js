@@ -6,7 +6,7 @@ const router = express.Router();
 
 const uploads = require('../helpers/multer'); 
  
-
+const dashboardController=require('../controller/admin/dashboardController')
 const adminController = require('../controller/admin/adminController');
 const customerController = require('../controller/admin/customerController');
 const categoryController = require('../controller/admin/categoryController');
@@ -21,15 +21,17 @@ const { adminAuth,isAdmin} = require("../middlewares/auth");
 
 
 
-router.get('/pageError', adminController.pageError);
+
 
 // Login 
 router.get('/login',nocache(),isAdmin, adminController.loadLogin);
 router.post('/login', adminController.login);
+router.get('/logout', adminAuth, adminController.logout);
+router.get('/pageError', adminController.pageError);
 
 //dashboard
-router.get('/dashboard', adminAuth, adminController.loadDashboard);
-router.get('/logout', adminAuth, adminController.logout);
+router.get('/dashboard', adminAuth, dashboardController.loadDashboard);
+
 
 // Customer
 router.get('/users', customerController.customerInfo);

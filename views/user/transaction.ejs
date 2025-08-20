@@ -50,15 +50,18 @@
                         Filter Transactions
                     </h2>
                     <form method="get" action="/wallet/transactions" class="mb-8 flex flex-wrap gap-4">
-                        <input type="date" name="startDate" value="<%= filters.startDate || '' %>" 
-                               class="border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
-                        <input type="date" name="endDate" value="<%= filters.endDate || '' %>" 
-                               class="border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
-                        <select name="type" class="border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
-                            <option value="">All Types</option>
-                            <option value="credit" <%= filters.type === 'credit' ? 'selected' : '' %>>Credit</option>
-                            <option value="debit" <%= filters.type === 'debit' ? 'selected' : '' %>>Debit</option>
-                        </select>
+                       <% const today = new Date().toISOString().split("T")[0]; %>
+
+<input type="date" name="startDate" 
+       value="<%= filters.startDate || '' %>" 
+       max="<%= today %>"
+       class="border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+
+<input type="date" name="endDate" 
+       value="<%= filters.endDate || '' %>" 
+       max="<%= today %>"
+       class="border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+
                         <select name="status" class="border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
                             <option value="">All Status</option>
                             <option value="Success" <%= filters.status === 'Success' ? 'selected' : '' %>>Success</option>

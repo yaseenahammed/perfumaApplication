@@ -150,7 +150,7 @@
 
 <div class="flex flex-col md:flex-row gap-2">
 
-  <% if (order.orderStatus === 'Processing' || order.orderStatus === 'Shipped' && !finalItemStates.includes(item.orderStatus)) { %>
+  <% if (order.orderStatus === 'Processing' && item.orderStatus!=="Cancelled" && !finalItemStates.includes(item.orderStatus)) { %>
     <button 
       onclick="showItemCancelModal('<%= order._id %>', '<%= item.product._id %>')" 
       class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 transform hover:scale-105 font-semibold">
