@@ -11,6 +11,7 @@ const { getBestPrice } = require('../../helpers/offerHelper');
 
 
 
+
 const getOrders = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -31,6 +32,8 @@ const getOrders = async (req, res) => {
     const totalOrders = await Order.countDocuments(query);
     const totalPages = Math.ceil(totalOrders / limit);
 
+    
+
     const orders = await Order.find(query)
       .populate('items.product')
       .sort({ createdAt: -1 })
@@ -43,6 +46,7 @@ const getOrders = async (req, res) => {
       orders,
       currentPage:page,
       totalPages,
+      
   
     });
 
@@ -84,8 +88,9 @@ const userOrderDetails = async (req, res) => {
   try {
    
     const userId = req.session.userId;
-    const orderID = req.params.orderID;
+   
     const user = await User.findById(userId).lean();
+     const orderID = req.query.search || req.params.orderID;
     
     if (typeof orderID !== 'string' || !orderID.trim()) {
       return res.status(400).send('Invalid order ID');
@@ -96,9 +101,15 @@ const userOrderDetails = async (req, res) => {
       .populate('user items.product shippingAddress') 
       .lean();
 
-    if (!order) {
-      return res.status(404).send('Order not found');
-    }
+   if (!order ) {
+  return res.render("orderDetails-user", {
+    order: null,
+    user,
+    summary: null,
+    message: "Order not found"
+  });
+}
+
 
   
     
@@ -200,7 +211,10 @@ const cancelOrder = async (req, res) => {
 
         order.orderStatus = 'Cancelled';
         order.cancellationReason = reason || 'No reason provided';
+        order.refundAmount = refundAmount;   
+        order.netAmount = order.finalAmount- order.refundAmount
         await order.save();
+       
 
         res.json({ success: true, message: 'Order cancelled successfully' });
     } catch (error) {
@@ -211,42 +225,11 @@ const cancelOrder = async (req, res) => {
 
 
 
-const returnOrder = async (req, res) => {
- 
-    try {
-        const userId = req.session.userId;
-        const { orderID } = req.params;
-        const { reason } = req.body;
-
-        if (!userId) {
-            return res.status(401).json({ message: 'Unauthorized' });
-        }
-
-        const order = await Order.findOne({ orderID, user: userId });
-
-        if (!order || order.orderStatus !== 'Delivered') {
-            return res.status(400).json({ message: 'Cannot return this order' });
-        }
-
-
-
-        order.orderStatus = 'ReturnRequest';
-        order.returnReason = reason;
-        await order.save();
-
-        res.json({ success: true, message: 'Return request submitted to admin' });
-    } catch (error) {
-        console.error('Error in returnOrder:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-};
-
-
 
 const cancelItem=async(req,res)=>{
   try {
     const userId=req.session.userId;
-    console.log('Cancel request received:', req.params, req.body);
+  
 
     const {orderID,itemID}=req.params;
     const {reason}=req.body
@@ -300,10 +283,8 @@ const cancelItem=async(req,res)=>{
     item.cancelReason = reason || 'No reason provided';
     item.orderStatus='Cancelled'
 
-
-
-
-
+    order.refundAmount=(order.refundAmount || 0) + refundAmount;
+    order.netAmount = order.finalAmount - order.refundAmount;
 
     await order.save();
 
@@ -326,11 +307,44 @@ if (order.items.every(i => i.orderStatus === 'Cancelled')) {
 
 
 
+const returnOrder = async (req, res) => {
+ 
+    try {
+        const userId = req.session.userId;
+        const { orderID } = req.params;
+        const { reason } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        const order = await Order.findOne({ orderID, user: userId });
+
+        if (!order || order.orderStatus !== 'Delivered') {
+            return res.status(400).json({ message: 'Cannot return this order' });
+        }
+
+
+
+        order.orderStatus = 'ReturnRequest';
+        order.returnReason = reason;
+
+        
+        await order.save();
+
+        res.json({ success: true, message: 'Return request submitted to admin' });
+    } catch (error) {
+        console.error('Error in returnOrder:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
 
 
 const returnItem = async (req, res) => {
   try {
-     console.log('return request received:', req.params, req.body);
+    
     const userId = req.session.userId;
     const { orderID, itemID } = req.params;
     const { reason } = req.body;
@@ -370,7 +384,7 @@ const downloadInvoice = async (req, res) => {
         const user = await User.findById(userId).lean();
 
 
-        // Fetch the order
+
         const order = await Order.findOne({ orderID, user: userId })
             .populate('items.product')
             .lean();
@@ -431,12 +445,12 @@ const downloadInvoice = async (req, res) => {
             i++;
         });
 
-        // ---- TOTAL SECTION ----
+      
         doc.moveDown(2);
         doc.fontSize(12).text(`Total Amount: ₹${totalAmount}`, { align: 'right' });
         doc.text(`Payment Method: ${order.paymentMethod}`, { align: 'right' });
 
-        // Footer
+      
         doc.moveDown(4);
         doc.fontSize(10).text('Thank you for shopping with Perfuma!', { align: 'center', italic: true });
 

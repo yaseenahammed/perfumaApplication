@@ -55,7 +55,7 @@
             </nav>
         </div>
     </section>
-
+   
     <main class="py-16">
         <div class="container mx-auto px-4">
             <div class="max-w-7xl mx-auto">
@@ -64,7 +64,8 @@
                         <div class="bg-white rounded-2xl shadow-xl p-8 animate-fade-in">
                             <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-6 flex items-center">
                                 <i class="fas fa-heart text-amber-500 mr-3"></i>
-                                Your Wishlist
+                                Your Wishlist 
+                               
                             </h2>
                             <% if (wishlistItems && wishlistItems.length > 0) { %>
                                 <div class="space-y-6">
@@ -126,7 +127,7 @@
                         if (data.success) {
                             button.closest('.wishlist-item').remove();
                             if (document.querySelectorAll('.wishlist-item').length === 0) {
-                                window.location.reload();
+                               
                             }
                         } else {
                             Swal.fire('Error', data.message || 'Failed to remove item', 'error');

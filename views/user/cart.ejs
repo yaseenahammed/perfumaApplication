@@ -253,13 +253,13 @@
                 const updateCartUI = (data, productId = null, isRemove = false) => {
                     const { updatedQuantity, productQuantity, subtotal, shipping, total, cartItemCount, disableCheckout } = data;
 
-                    // Update item count
+               
                     const itemCountElement = document.getElementById('cart-item-count');
                     const summaryItemCountElement = document.getElementById('summary-item-count');
                     itemCountElement.textContent = `${cartItemCount} Items`;
                     summaryItemCountElement.textContent = cartItemCount;
 
-                    // Update cart items or show empty cart
+               
                     const cartItemsContainer = document.getElementById('cart-items');
                     if (cartItemCount === 0) {
                         cartItemsContainer.innerHTML = `
@@ -298,12 +298,11 @@
                         }
                     }
 
-                    // Update order summary
                     document.getElementById('subtotal').textContent = `₹${subtotal.toFixed(2)}`;
                     document.getElementById('shipping').textContent = `₹${parseFloat(shipping).toFixed(2)}`;
                     document.getElementById('total').textContent = `₹${total.toFixed(2)}`;
 
-                    // Update checkout button state
+                
                     checkoutButton.disabled = disableCheckout || total === 0;
                 };
 
@@ -372,7 +371,7 @@
                         const productId = e.target.closest('button').getAttribute('data-id');
                         try {
                             const response = await fetch(`/cart/remove/${productId}`, {
-                                method: 'DELETE', // Changed to POST for consistency
+                                method: 'DELETE', 
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ productId })
                             });

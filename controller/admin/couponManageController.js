@@ -5,45 +5,38 @@ const Coupon=require('../../models/couponSchema')
 const getCoupon=async(req,res)=>{
     try {
     
-        const {search='',status='',isList='',page=1}=req.query;
-        const limit =3
-        const pageNumber=parseInt(page) || 1
+    const {search='',isList=''}=req.query;
+        
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
 
-        let query={}
+     let query={}
 
         if(search){
             query.couponCode={$regex:search,$options:'i'}
         }
 
-        if(status!==undefined&&status!==''){
-            query.status=status==='true'
-        }
- 
-        if(isList!==undefined&&isList!==''){
-            query.isList=isList==='true'
+         if(isList!==undefined&&isList!==''){
+            query.isList = isList==='true'
         }
 
     
-const count=await Coupon.countDocuments(query)
+        const totalCoupons=await Coupon.countDocuments(query)
         const coupons=await Coupon.find(query)  
+        .sort({createdAt:-1})
         .limit(limit)
-        .skip((pageNumber - 1) * limit)
+        .skip((page - 1) * limit)
         .exec();
 
 
-          
-
-     
-
-
-
+    
         res.render('coupon-management',{
             coupons:coupons || [],
             search:search || '',
-            status:status || '',
             isList:isList || '',
-            totalPages: Math.ceil(count / limit),
-            currentPage: pageNumber,
+            totalPages: Math.ceil(totalCoupons / limit),
+            currentPage: page,
 
         })
     } catch (error) {
@@ -56,9 +49,9 @@ const count=await Coupon.countDocuments(query)
 const addCoupon=async(req,res)=>{
     try {
        
-        const {couponCode,status,discountPrice,minPrice,expireOn,isList}=req.body
+        const {couponCode,discountPrice,minPrice,expireOn,isList}=req.body
 
-        if (typeof couponCode !== 'string' || couponCode.trim() === '' || typeof status === 'undefined' ||
+        if (typeof couponCode !== 'string' || couponCode.trim() === '' ||
              isNaN(discountPrice) ||  isNaN(minPrice) || !expireOn || typeof isList === 'undefined') {
              return res.json({ success: false, message: 'All fields are required and must be valid' });
           }
@@ -87,7 +80,6 @@ const addCoupon=async(req,res)=>{
             discountPrice:parseFloat(discountPrice),
             minPrice:parseFloat(minPrice),
             expireOn,
-            status: Boolean(req.body.status),
             isList: Boolean(req.body.isList),
 
             
@@ -104,8 +96,9 @@ const addCoupon=async(req,res)=>{
 
 const updateCoupon=async(req,res)=>{
     try {
+      
          const { couponCode } = req.params;
-        const { discountPrice, minPrice, expireOn, status, isList} = req.body;
+        const { discountPrice, minPrice, expireOn, isList} = req.body;
 
       
         if (!discountPrice || !minPrice || !expireOn) {
@@ -118,13 +111,15 @@ const updateCoupon=async(req,res)=>{
             discountPrice: parseFloat(discountPrice),
             minPrice: parseFloat(minPrice),
             expireOn,
-            status: Boolean(req.body.status),
             isList: Boolean(req.body.isList),
 
             
         };
 
-        const coupon=await Coupon.findOneAndUpdate({couponCode},updateData,{new:true,runValidators:true})
+        const coupon=await Coupon.findOneAndUpdate({couponCode},
+            updateData,
+            {new:true,runValidators:true})
+            
         if (!coupon) {
             return res.json({ success: false, message: 'Coupon not found.' });
         }

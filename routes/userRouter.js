@@ -110,6 +110,7 @@ router.post('/create-order',userAuth,checkoutController.createRazorpayOrder)
 router.post('/retry-payment',userAuth,checkoutController.retryPayment)
 router.post('/verify-payment',userAuth,checkoutController.verifyPayment)
 router.post('/apply-coupon',userAuth,checkoutController.applyCoupon)
+router.post('/checkout/coupon/remove',userAuth,checkoutController.removeCoupon)
 router.post('/select-address', userAuth, checkoutController.selectAddress);
 
 
@@ -119,6 +120,7 @@ router.get('/my-orders',userAuth,orderController.getOrders)
 router.post('/cancel-order/:orderID',userAuth, orderController.cancelOrder);
 router.post('/cancel-item/:orderID/:itemID',userAuth, orderController.cancelItem);
 router.get('/userOrder-details/:orderID',userAuth,orderController.userOrderDetails)
+router.get('/userOrder-details', userAuth,orderController.userOrderDetails);
 router.post('/return-order/:orderID', userAuth, orderController.returnOrder);
 router.post('/return-item/:orderID/:itemID',userAuth, orderController.returnItem);
 router.get('/download-invoice/:orderID', userAuth, orderController.downloadInvoice);

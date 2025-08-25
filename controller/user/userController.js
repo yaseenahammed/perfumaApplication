@@ -173,25 +173,19 @@ if (referredBy) {
     const couponCode = `REF-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
     const coupon = new Coupon({
       couponCode,
-      discountPrice: 10,
-      minPrice: 100,
+      discountPrice: 100,
+      minPrice: 1000,
       expireOn: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       isList: true,
-      status: true,
       userId: [referrer._id],
     });
 
     await coupon.save();
 
-    await transporter.sendMail({
-      to: referrer.email,
-      subject: 'You earned a referral coupon!',
-      text: `Congratulations! You received a referral coupon:\n\nCoupon Code: ${couponCode}\nDiscount: $10 off on orders over $100\nExpires: ${coupon.expireOn}`,
-    });
+   
   }
 }
 
-// Now create user
 const newUser = new User({
   name,
   email,

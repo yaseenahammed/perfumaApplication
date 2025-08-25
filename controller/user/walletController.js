@@ -64,6 +64,7 @@ const createWalletOrder=async(req,res)=>{
         res.json({success:true,orderId:order.id,amount:order.amount,currency:order.currency,key:process.env.RAZORPAY_KEY_ID})
     } catch (error) {
         console.error('error in adding money to wallet',error)
+        return res.status(500).json({ success:false, message:'Could not create order' })
     }
 }
 
@@ -72,6 +73,8 @@ const verifyWalletOrder = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
     const userId = req.session.userId;
+
+
 
     const generatedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
@@ -82,8 +85,8 @@ const verifyWalletOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid signature' });
     }
 
-    const amount = parseInt(req.body.amount) / 100 || 500;
-
+     const payment = await razorpay.payments.fetch(razorpay_payment_id);
+    const amount = payment.amount / 100;
     const wallet = await Wallet.findOne({ user: userId });
 
     if (wallet) {
@@ -114,12 +117,15 @@ const verifyWalletOrder = async (req, res) => {
 
     
     await Transactions.create({
-      user: userId,
-      type: 'credit',
-      amount: amount,
-      status: 'Success',
-      description: `Added ₹${amount} via Razorpay`
-    });
+  user: userId,
+  transactionId: razorpay_payment_id,
+  type: 'credit',
+  amount: amount,
+  status: 'Success',
+  description: `Added ₹${amount} via Razorpay`
+});
+
+    
 
     res.json({ success: true });
   } catch (error) {
@@ -129,87 +135,80 @@ const verifyWalletOrder = async (req, res) => {
 };
 
 const filterTransaction = async (req, res) => {
-    try {
-        const { startDate, endDate } = req.query;
-        const user = req.user; 
+  try {
+    const { startDate, endDate } = req.query;
+    const userId = req.session.userId; 
 
-      
-        if (!user) {
-            return res.status(401).json({ success: false, message: 'Please log in to view transactions.' });
-        }
-
-        if (!startDate || !endDate) {
-            return res.status(400).json({
-                success: false,
-                message: 'Please select both start and end dates.'
-            });
-        }
-
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-
-    
-        const today = new Date();
-        today.setHours(23, 59, 59, 999);
-        if (start > today || end > today) {
-            return res.status(400).json({
-                success: false,
-                message: 'Dates cannot be in the future.'
-            });
-        }
-
-      
-        if (start > end) {
-            return res.status(400).json({
-                success: false,
-                message: 'Start date cannot be after end date.'
-            });
-        }
-
-    
-        const wallet = await Wallet.findOne({ user: user._id });
-        const transactions = await Transactions.find({
-            user: user._id,
-            createdAt: { $gte: start, $lte: end }
-        }).sort({ createdAt: -1 }).lean();
-
-        const totalWithdrawnResult = await Transactions.aggregate([
-            { $match: { user: user._id, type: 'debit', status: 'Success' } },
-            { $group: { _id: null, total: { $sum: '$amount' } } }
-        ]);
-        const totalWithdrawn = totalWithdrawnResult.length > 0 ? totalWithdrawnResult[0].total : 0;
-
-  
-        res.render('wallet', {
-            wallet: wallet || { balance: 0 },
-            user,
-            totalWithdrawn,
-            transactions,     
-            allTransactions: transactions, 
-            startDate,
-            endDate
-        });
-
-    } catch (error) {
-        console.error('Error fetching transactions:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Please log in to view transactions.' });
     }
-};
 
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please select both start and end dates.'
+      });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    if (start > today || end > today) {
+      return res.status(400).json({
+        success: false,
+        message: 'Dates cannot be in the future.'
+      });
+    }
+
+    if (start > end) {
+      return res.status(400).json({
+        success: false,
+        message: 'Start date cannot be after end date.'
+      });
+    }
+
+    const wallet = await Wallet.findOne({ user: userId });
+    const transactions = await Transactions.find({
+      user: userId,
+      createdAt: { $gte: start, $lte: end }
+    }).sort({ createdAt: -1 }).lean();
+
+    const totalWithdrawnResult = await Transactions.aggregate([
+      { $match: { user: userId, type: 'debit', status: 'Success' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const totalWithdrawn = totalWithdrawnResult.length > 0 ? totalWithdrawnResult[0].total : 0;
+
+    res.render('wallet', {
+      wallet: wallet || { balance: 0 },
+      user: userId,
+      totalWithdrawn,
+      transactions,     
+      allTransactions: transactions, 
+      startDate,
+      endDate
+    });
+
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
 
 
 const getAllTransactions = async (req, res) => {
   try {
-    const user = req.user;
-    if (!user) return res.status(401).send({ message: 'Please log in' });
+    const userId = req.session.userId;
+    if (!userId) return res.status(401).send({ message: 'Please log in' });
 
     let { page = 1, limit = 10, startDate, endDate, type, status } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
 
-    const query = { user: user._id };
-
+    const query = { user: userId };
 
     if (startDate && endDate) {
       const start = new Date(startDate);
@@ -218,11 +217,9 @@ const getAllTransactions = async (req, res) => {
       query.createdAt = { $gte: start, $lte: end };
     }
 
-
     if (type && ['credit', 'debit'].includes(type)) {
       query.type = type;
     }
-
 
     if (status) {
       query.status = status;
@@ -241,7 +238,7 @@ const getAllTransactions = async (req, res) => {
       currentPage: page,
       totalPages: Math.ceil(total / limit),
       filters: { startDate, endDate, type, status },
-      user
+      user: userId
     });
 
   } catch (error) {
@@ -249,6 +246,7 @@ const getAllTransactions = async (req, res) => {
     res.status(500).render('error', { message: 'Error fetching transactions.' });
   }
 };
+
 
 
 

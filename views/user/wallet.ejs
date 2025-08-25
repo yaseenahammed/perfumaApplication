@@ -54,14 +54,39 @@
                             Wallet Balance
                         </h2>
                         <div class="text-center">
-                            <div class="text-4xl font-semibold text-gray-900 mb-2">
-                                <span class="currency">₹</span><%= wallet.balance %>
-                            </div>
-                            <p class="text-gray-600">Available for Use</p>
-                            <button onclick="openWalletRazorpay(500)" class="mt-6 w-full flex items-center justify-center px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition duration-200">
-                                <i class="fas fa-plus mr-2"></i> Add Money
-                            </button>
-                        </div>
+  <div class="text-4xl font-semibold text-gray-900 mb-2">
+    <span class="currency">₹</span><%= wallet.balance %>
+  </div>
+  <p class="text-gray-600">Available for Use</p>
+
+  <!-- Radio options -->
+<!-- Radio options in parallel -->
+<div class="mt-6 flex justify-center gap-6">
+  <label class="flex items-center gap-2 cursor-pointer">
+    <input type="radio" name="walletAmount" value="500" class="text-amber-500 focus:ring-amber-500" checked>
+    <span>₹500</span>
+  </label>
+  <label class="flex items-center gap-2 cursor-pointer">
+    <input type="radio" name="walletAmount" value="1000" class="text-amber-500 focus:ring-amber-500">
+    <span>₹1000</span>
+  </label>
+  <label class="flex items-center gap-2 cursor-pointer">
+    <input type="radio" name="walletAmount" value="5000" class="text-amber-500 focus:ring-amber-500">
+    <span>₹5000</span>
+  </label>
+</div>
+
+
+  <!-- Add money button -->
+  <button 
+    onclick="addSelectedAmount()" 
+    class="mt-6 w-full flex items-center justify-center px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition duration-200">
+    <i class="fas fa-plus mr-2"></i> Add Money
+  </button>
+</div>
+
+
+
                     </div>
                 </div>
 
@@ -135,6 +160,16 @@
 
 
  <script>
+
+     function addSelectedAmount() {
+    const selected = document.querySelector('input[name="walletAmount"]:checked');
+    if (selected) {
+      openWalletRazorpay(selected.value); // Call your Razorpay function
+    } else {
+      alert("Please select an amount");
+    }
+  }
+  
     async function openWalletRazorpay(amount) {
         try {
             const res=await fetch('/wallet/create-walletOrder',{
@@ -159,7 +194,7 @@
         description: "Wallet Top-up",
         order_id: data.orderId,
         handler: async function (response) {
-         
+         response.amount = data.amount;
           await fetch('/wallet/verify-walletOrder', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

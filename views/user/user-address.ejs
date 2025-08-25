@@ -58,6 +58,17 @@
             color: #fff;
             border-radius: 12px 12px 0 0;
         }
+
+        .mb-3 { position: relative; } /* so the list can align under the input */
+  .suggestions-box {
+    position: absolute;
+    left: 0; right: 0; top: 100%;
+    background: #fff; border: 1px solid #ddd; border-radius: .375rem;
+    max-height: 200px; overflow-y: auto; margin-top: 4px; padding: 0; z-index: 1056;
+  }
+  .suggestions-box li { padding: 8px 10px; cursor: pointer; }
+  .suggestions-box li:hover { background: #f8f9fa; }
+
     </style>
 </head>
 <body class="bg-gray-50">
@@ -164,15 +175,12 @@
                 </div>
                 <form id="addAddressForm" action="/add-address" method="POST">
                     <div class="modal-body">
-                   <div class="mb-3">
-                      <label for="phone" class="form-label text-gray-900">Phone</label>
-                      <input type="text" name="phone" class="form-control" id="phone" pattern="\d{10}" required title="Phone must be 10 digits">
-                      
-                   </div>
+                   
 
                         <div class="mb-3">
                             <label for="street" class="form-label text-gray-900">Street</label>
                             <input type="text" class="form-control" id="street" name="street" required>
+                              <ul id="addAddressSuggestions" class="suggestions-box list-unstyled"></ul>
                         </div>
                         <div class="mb-3">
                             <label for="city" class="form-label text-gray-900">City</label>
@@ -183,14 +191,28 @@
                             <input type="text" class="form-control" id="state" name="state" required>
                         </div>
                         <div class="mb-3">
+                            <label for="country" class="form-label text-gray-900">Country</label>
+                            <input type="text" class="form-control" id="country" name="country" required>
+                        </div>
+                        <div class="mb-3">
                             <label for="zip" class="form-label text-gray-900">Pincode</label>
                            
                             <input type="text" name="zip" class="form-control" id="zip" pattern="\d{6}" required title="Pincode must be 6 digits">
                         </div>
                         <div class="mb-3">
-                            <label for="country" class="form-label text-gray-900">Country</label>
-                            <input type="text" class="form-control" id="country" name="country" required>
-                        </div>
+  <label for="phone" class="form-label text-gray-900">Phone</label>
+  <div class="flex">
+    <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-500 text-sm">
+      +91
+    </span>
+    <input type="text" name="phone" class="form-control flex-1 min-w-0 px-3 py-2 rounded-r-md border border-gray-300"
+           id="phone" pattern="\d{10}" maxlength="10"
+           required title="Phone must be 10 digits"
+           placeholder="Enter 10-digit number">
+  </div>
+</div>
+
+                        
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn-cancel px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition duration-300" data-bs-dismiss="modal">Close</button>
@@ -212,14 +234,13 @@
                 <form id="editAddressForm" action="/edit-address" method="POST">
                     <div class="modal-body">
                         <input type="hidden" id="addressId" name="addressId">
-                        <div class="mb-3">
-                     <label for="phone" class="form-label text-gray-900">Phone</label>
-                     <input type="text" name="phone" class="form-control" id="editPhone" pattern="\d{10}" required title="Phone must be 10 digits">
-                        </div>
+                       
 
                         <div class="mb-3">
                             <label for="editStreet" class="form-label text-gray-900">Street</label>
                             <input type="text" class="form-control" id="editStreet" name="street" required>
+                          
+                            <ul id="editAddressSuggestions" class="suggestions-box list-unstyled"></ul>
                         </div>
                         <div class="mb-3">
                             <label for="editCity" class="form-label text-gray-900">City</label>
@@ -229,14 +250,29 @@
                             <label for="editState" class="form-label text-gray-900">State</label>
                             <input type="text" class="form-control" id="editState" name="state" required>
                         </div>
+                         
+                        <div class="mb-3">
+                            <label for="editCountry" class="form-label text-gray-900">Country</label>
+                            <input type="text" class="form-control" id="editCountry" name="country" required>
+                        </div>
                         <div class="mb-3">
                             <label for="editZip" class="form-label text-gray-900">Pincode</label>
                          <input type="text" name="zip" class="form-control" id="editZip" pattern="\d{6}" required title="Pincode must be 6 digits">
                         </div>
                         <div class="mb-3">
-                            <label for="editCountry" class="form-label text-gray-900">Country</label>
-                            <input type="text" class="form-control" id="editCountry" name="country" required>
-                        </div>
+  <label for="editPhone" class="form-label text-gray-900">Phone</label>
+  <div class="flex">
+    <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-500 text-sm">
+      +91
+    </span>
+    <input type="text" name="phone" class="form-control flex-1 min-w-0 px-3 py-2 rounded-r-md border border-gray-300"
+           id="editPhone" pattern="\d{10}" maxlength="10"
+           required title="Phone must be 10 digits"
+           placeholder="Enter 10-digit number">
+  </div>
+</div>
+
+                       
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn-cancel px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition duration-300" data-bs-dismiss="modal">Close</button>
@@ -248,35 +284,108 @@
     </div>
 
     <%- include("../partials/user/footer") %>
+    
 
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const editModal = document.getElementById('editAddressModal');
+<script>
+function setupAddressAutocomplete({ inputId, suggestionId, cityId, stateId, countryId, pincodeId, phoneId }) {
+  const addressInput = document.getElementById(inputId);
+  const suggestions = document.getElementById(suggestionId);
 
-      
-        editModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget; 
+  if (!addressInput || !suggestions) {
+    console.warn(`Input or suggestion element not found for ${inputId}`);
+    return;
+  }
 
-          
-            const addressId = button.getAttribute('data-address-id');
-            const phone = button.getAttribute('data-phone');
-            const street = button.getAttribute('data-street');
-            const city = button.getAttribute('data-city');
-            const state = button.getAttribute('data-state');
-            const zip = button.getAttribute('data-zip');
-            const country = button.getAttribute('data-country');
+  addressInput.addEventListener("input", async function () {
+    const query = this.value.trim();
+    if (query.length < 3) {
+      suggestions.innerHTML = "";
+      return;
+    }
 
-          
-            this.querySelector('#addressId').value = addressId;
-            this.querySelector('#editPhone').value = phone;
-            this.querySelector('#editStreet').value = street;
-            this.querySelector('#editCity').value = city;
-            this.querySelector('#editState').value = state;
-            this.querySelector('#editZip').value = zip;
-            this.querySelector('#editCountry').value = country;
+    try {
+      const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`);
+      const data = await res.json();
+
+      suggestions.innerHTML = "";
+
+      if (!data.features || data.features.length === 0) return;
+
+      data.features.forEach(item => {
+        const props = item.properties;
+
+        const fullAddress = [
+          props.name,
+          props.street,
+          props.city,
+          props.state,
+          props.country
+        ].filter(Boolean).join(", ");
+
+        const li = document.createElement("li");
+        li.style.cursor = "pointer";
+        li.style.padding = "5px";
+        li.innerText = fullAddress;
+
+        li.addEventListener("click", () => {
+          addressInput.value = fullAddress;
+          suggestions.innerHTML = "";
+
+         
+          validateAddress(item.geometry.coordinates[1], item.geometry.coordinates[0], { cityId, stateId, countryId, pincodeId, phoneId });
         });
-    });
 
+        suggestions.appendChild(li);
+      });
+    } catch (err) {
+      console.error("Error fetching suggestions:", err);
+    }
+  });
+}
+
+
+async function validateAddress(lat, lon, { cityId, stateId, countryId, pincodeId, phoneId }) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`
+    );
+    const data = await res.json();
+
+    if (data && data.address) {
+      const addr = data.address;
+
+      if (cityId && addr.city && document.getElementById(cityId)) {
+        document.getElementById(cityId).value = addr.city;
+      }
+      if (stateId && addr.state && document.getElementById(stateId)) {
+        document.getElementById(stateId).value = addr.state;
+      }
+      if (countryId && addr.country && document.getElementById(countryId)) {
+        document.getElementById(countryId).value = addr.country;
+      }
+      if (pincodeId && addr.postcode && document.getElementById(pincodeId)) {
+        document.getElementById(pincodeId).value = addr.postcode;
+      }
+    } else {
+      console.warn(" Address could not be validated");
+    }
+
+ 
+    if (phoneId && document.getElementById(phoneId)) {
+      const phoneInput = document.getElementById(phoneId);
+      phoneInput.addEventListener("input", () => {
+        const phonePattern = /^[0-9]{10}$/;
+        if (!phonePattern.test(phoneInput.value)) {
+          phoneInput.setCustomValidity("Enter a valid 10-digit phone number");
+        } else {
+          phoneInput.setCustomValidity("");
+        }
+      });
+    }
+  } catch (err) {
+    console.error("Error validating address:", err);
+  }
+}
 
 
 function validateAddressForm(form) {
@@ -286,7 +395,6 @@ function validateAddressForm(form) {
   const state = form.state.value.trim();
   const zip = form.zip.value.trim();
   const country = form.country.value.trim();
-
 
   const phoneRegex = /^(?!.*(\d)\1{9})(?!.*[^\d])\d{10}$/;
   const zipRegex = /^(?!.*(\d)\1{5})(?!.*[^\d])\d{6}$/;
@@ -318,51 +426,104 @@ function validateAddressForm(form) {
     return false;
   }
 
-  return true; 
+  return true;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const editModal = document.getElementById('editAddressModal');
+  if (editModal) {
+    editModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+
+      const addressId = button.getAttribute('data-address-id');
+      const phone = button.getAttribute('data-phone');
+      const street = button.getAttribute('data-street');
+      const city = button.getAttribute('data-city');
+      const state = button.getAttribute('data-state');
+      const zip = button.getAttribute('data-zip');
+      const country = button.getAttribute('data-country');
+
+      this.querySelector('#addressId').value = addressId;
+      this.querySelector('#editPhone').value = phone;
+      this.querySelector('#editStreet').value = street;
+      this.querySelector('#editCity').value = city;
+      this.querySelector('#editState').value = state;
+      this.querySelector('#editZip').value = zip;
+      this.querySelector('#editCountry').value = country;
+    });
+  }
+
+  setupAddressAutocomplete({
+    inputId: "street",
+    suggestionId: "addAddressSuggestions",
+    cityId: "city",
+    stateId: "state",
+    countryId: "country",
+    pincodeId: "zip",
+    phoneId: "phone"
+  });
+
+
+  setupAddressAutocomplete({
+    inputId: "editStreet",
+    suggestionId: "editAddressSuggestions",
+    cityId: "editCity",
+    stateId: "editState",
+    countryId: "editCountry",
+    pincodeId: "editZip",
+    phoneId: "editPhone"
+  });
+
   const addForm = document.getElementById('addAddressForm');
   const editForm = document.getElementById('editAddressForm');
 
   if (addForm) {
     addForm.addEventListener('submit', function (e) {
-      if (!validateAddressForm(this)) {
-        e.preventDefault();
-      }
+      if (!validateAddressForm(this)) e.preventDefault();
     });
   }
 
   if (editForm) {
     editForm.addEventListener('submit', function (e) {
-      if (!validateAddressForm(this)) {
-        e.preventDefault();
-      }
+      if (!validateAddressForm(this)) e.preventDefault();
     });
   }
-});
 
-document.querySelectorAll('.delete-address-form').forEach(form=>{
-    form.addEventListener('submit',function(e){
-        e.preventDefault()
 
-        Swal.fire({
-            title:'Are you sure?',
-            text:'This address will be permanantly deleted.',
-            icon:'warning',
-            showCancelButton: true,
+  document.querySelectorAll('.delete-address-form').forEach(form => {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'This address will be permanently deleted.',
+        icon: 'warning',
+        showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
         confirmButtonText: 'Yes, delete it!',
         reverseButtons: true,
-        }).then((result)=>{
-            if(result.isConfirmed){
-                form.submit()
-            }
-        })
-    })
-})
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit();
+        }
+      });
+    });
+  });
+
+ 
+  document.addEventListener("click", (e) => {
+    document.querySelectorAll(".suggestions-box").forEach(box => {
+      if (!box.contains(e.target) && e.target.tagName !== "INPUT") {
+        box.innerHTML = "";
+      }
+    });
+  });
+});
 </script>
+
 
 
 

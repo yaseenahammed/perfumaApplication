@@ -10,10 +10,7 @@ const {Schema}=mongoose;
             required: true,
             unique: true
         },
-        status: {
-            type: Boolean,
-            default: true
-        },
+       
         discountPrice: {
             type: Number,
             required: true

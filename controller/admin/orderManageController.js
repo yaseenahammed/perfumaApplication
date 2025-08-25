@@ -72,14 +72,13 @@ const orderListing = async (req, res) => {
     }
 };
 
-
 const updateStatus = async (req, res) => {
     try {
         const { orderId } = req.params;
         const { status } = req.body;
 
-        
-        if (!status || status === 'Returned') {
+        const allowedStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Out for Delivery', 'Cancelled'];
+        if (!allowedStatuses.includes(status)) {
             return res.json({ success: false, message: 'Invalid status' });
         }
 
@@ -90,7 +89,17 @@ const updateStatus = async (req, res) => {
         );
 
         if (order) {
-            res.json({ success: true });
+          
+            let nextOptions = [];
+            if (order.orderStatus === 'Processing') nextOptions = ['Shipped', 'Cancelled'];
+            else if (order.orderStatus === 'Shipped') nextOptions = ['Out for Delivery', 'Cancelled'];
+            else if (order.orderStatus === 'Out for Delivery') nextOptions = ['Delivered', 'Cancelled'];
+
+            res.json({
+                success: true,
+                status: order.orderStatus,
+                nextOptions
+            });
         } else {
             res.json({ success: false, message: 'Order not found' });
         }
@@ -99,6 +108,7 @@ const updateStatus = async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 };
+
 
 const verifyReturn = async (req, res) => {
     try {
@@ -115,9 +125,13 @@ const verifyReturn = async (req, res) => {
 
    
         order.orderStatus = 'Returned';
+          const refundAmount = order.finalAmount;
+        order.refundAmount += refundAmount;
+order.netAmount = order.finalAmount - order.refundAmount;
+
         await order.save();
 
-        const refundAmount = order.finalAmount;
+      
         const userId = order.user._id;
 
         await Wallet.findOneAndUpdate(
@@ -171,12 +185,15 @@ const verifyReturnItem = async (req, res) => {
             return res.json({ success: false, message: 'Invalid return request for this item' });
         }
 
-        // Mark item as returned
+   
         item.orderStatus = 'Returned';
+         const refundAmount = item.price * item.quantity;
 
+        order.refundAmount += refundAmount;   
+        order.netAmount = order.finalAmount - order.refundAmount;
         await order.save();
 
-        const refundAmount = item.price * item.quantity;
+       
         const userId = order.user._id;
 
         await Wallet.findOneAndUpdate(

@@ -15,7 +15,7 @@ const customerInfo=async(req,res)=>{
 
     }
 
-    const limit=3
+    const limit=10
 
     const filter={
       isAdmin:false,

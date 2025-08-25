@@ -24,9 +24,12 @@ const getWishlist = async (req, res) => {
 
     }));
 
+   
+
     res.render('wishlist', {
      user,
       wishlistItems,
+   
     });
   } catch (error) {
     console.error('Error fetching wishlist:', error);

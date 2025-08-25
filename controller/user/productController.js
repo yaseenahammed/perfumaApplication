@@ -147,12 +147,6 @@ const addToCart = async (req, res) => {
     if (itemIndex > -1) {
       return res.status(400).json({ error: 'Product already in cart' });
 
-      // //  const newQuantity = cart.items[itemIndex].quantity + quantity;
-      // // if (newQuantity > product.quantity || newQuantity > MAX_ALLOWED_QUANTITY) {
-      // //   return res.status(400).json({ error: 'Maximum quantity reached' });
-      // }
-      // cart.items[itemIndex].quantity = newQuantity;
-      // cart.items[itemIndex].totalPrice = newQuantity * cart.items[itemIndex].price;
     } else {
       cart.items.push({
         product: productId,

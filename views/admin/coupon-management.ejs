@@ -132,22 +132,14 @@
 
     <!-- Second Row: Dropdowns -->
     <div class="flex gap-4 w-full justify-center">
-      <select
-        name="status"
-        id="filterStatus"
-        class="border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 w-40"
-      >
-        <option value="" <%= status === '' ? 'selected' : '' %>>All Statuses</option>
-        <option value="true" <%= status === 'true' ? 'selected' : '' %>>Active</option>
-        <option value="false" <%= status === 'false' ? 'selected' : '' %>>Inactive</option>
-      </select>
+      
 
       <select
         name="isList"
         id="filterIsList"
         class="border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 w-40"
       >
-        <option value="" <%= isList === '' ? 'selected' : '' %>>All Listing Status</option>
+        <option value="" <%= isList === '' ? 'selected' : '' %>>Filter by </option>
         <option value="true" <%= isList === 'true' ? 'selected' : '' %>>Listed</option>
         <option value="false" <%= isList === 'false' ? 'selected' : '' %>>Unlisted</option>
       </select>
@@ -203,7 +195,6 @@
                                         <th>Min Order (₹)</th>
                                         <th>Expires On</th>
                                         <th>Status</th>
-                                        <th>Listed</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -214,14 +205,9 @@
                                             <td>₹<%= coupon.discountPrice %></td>
                                             <td>₹<%= coupon.minPrice %></td>
                                             <td><%= new Date(coupon.expireOn).toLocaleDateString() %></td>
-                                            <% const isActive = coupon.status === true || coupon.status === 'true'; %>
-<% const isListed = coupon.isList === true || coupon.isList === 'true'; %>
+                                       <% const isListed = coupon.isList === true || coupon.isList === 'true'; %>
 
-<td>
-    <span class="status-btn <%= isActive ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800' %>">
-        <%= isActive ? 'Active' : 'Inactive' %>
-    </span>
-</td>
+
 <td>
     <span class="status-btn <%= isListed ? 'bg-blue-200 text-blue-800' : 'bg-gray-200 text-gray-800' %>">
         <%= isListed ? 'Listed' : 'Unlisted' %>
@@ -230,7 +216,7 @@
 
                                             <td>
                                                 <button 
-                                                    onclick="showEditCouponModal('<%= coupon.couponCode %>', <%= coupon.discountPrice %>, <%= coupon.minPrice %>, '<%= new Date(coupon.expireOn).toISOString().split('T')[0] %>', <%= coupon.status %>, <%= coupon.isList %>)"
+                                                    onclick="showEditCouponModal('<%= coupon.couponCode %>', <%= coupon.discountPrice %>, <%= coupon.minPrice %>, '<%= new Date(coupon.expireOn).toISOString().split('T')[0] %>', <%= coupon.isList %>)"
                                                     class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 w-full sm:w-auto mb-2 block text-center">
                                                     Edit
                                                 </button>
@@ -282,21 +268,15 @@
                                     >
                                 </div>
                                 <div class="mb-4">
-                                    <label for="expireOn" class="block text-sm font-medium text-gray-700">Expires On</label>
-                                    <input 
-                                        id="expireOn" 
-                                        type="date" 
-                                        class="w-full border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500" 
-                                        required
-                                    >
-                                </div>
-                                <div class="mb-4">
-                                    <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                                    <select id="status" class="w-full border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500" required>
-                                        <option value="true">Active</option>
-                                        <option value="false">Inactive</option>
-                                    </select>
-                                </div>
+    <label for="expireOn" class="block text-sm font-medium text-gray-700">Expires On</label>
+    <input 
+        id="expireOn" 
+        type="date" 
+        class="w-full border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500" 
+        required
+    >
+</div>
+                                
                                 <div class="mb-4">
                                     <label for="isList" class="block text-sm font-medium text-gray-700">Listing Status</label>
                                     <select id="isList" class="w-full border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500" required>
@@ -309,7 +289,26 @@
                                     <button type="button" onclick="closeCouponModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Cancel</button>
                                 </div>
                             </form>
+
+                            
                         </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container mt-8 flex justify-center items-center gap-2">
+                        <% if (currentPage > 1) { %>
+                            <a href="?page=<%= currentPage - 1 %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">« Previous</a>
+                        <% } %>
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <% if (i === currentPage) { %>
+                                <span class="current-page bg-amber-500 text-white border-amber-500 px-4 py-2 rounded-lg font-bold"><%= i %></span>
+                            <% } else { %>
+                                <a href="?page=<%= i %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200"><%= i %></a>
+                            <% } %>
+                        <% } %>
+                        <% if (currentPage < totalPages) { %>
+                            <a href="?page=<%= currentPage + 1 %>" class="bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-200">Next »</a>
+                        <% } %>
                     </div>
 
                 </div>
@@ -317,29 +316,29 @@
         </div>
     </main>
 
+    
+
     <script>
         function showCreateCouponModal() {
             document.getElementById('modalTitle').textContent = 'Create New Coupon';
-            document.getElementById('couponForm').action = '/admin/create-coupon';
+            document.getElementById('couponForm').action = '/admin/coupon/create';
             document.getElementById('couponCode').value = '';
             document.getElementById('discountPrice').value = '';
             document.getElementById('minPrice').value = '';
             document.getElementById('expireOn').value = '';
-            document.getElementById('status').value = 'true';
             document.getElementById('isList').value = 'true';
             document.getElementById('couponCode').disabled = false;
             document.getElementById('saveButton').textContent = 'Create';
             document.getElementById('couponModal').style.display = 'block';
         }
 
-        function showEditCouponModal(couponCode, discountPrice, minPrice, expireOn, status, isList) {
+        function showEditCouponModal(couponCode, discountPrice, minPrice, expireOn, isList) {
             document.getElementById('modalTitle').textContent = 'Edit Coupon';
-            document.getElementById('couponForm').action = `/admin/update-coupon/${couponCode}`;
+            document.getElementById('couponForm').action = `/admin/coupon/update/${couponCode}`;
             document.getElementById('couponCode').value = couponCode;
             document.getElementById('discountPrice').value = discountPrice;
             document.getElementById('minPrice').value = minPrice;
             document.getElementById('expireOn').value = expireOn;
-            document.getElementById('status').value = status.toString();
             document.getElementById('isList').value = isList.toString();
             document.getElementById('couponCode').disabled = true;
             document.getElementById('saveButton').textContent = 'Update';
@@ -359,7 +358,6 @@
                 discountPrice: parseFloat(document.getElementById('discountPrice').value),
                 minPrice: parseFloat(document.getElementById('minPrice').value),
                 expireOn: document.getElementById('expireOn').value,
-                status: document.getElementById('status').value === 'true',
                 isList: document.getElementById('isList').value === 'true'
 
 
@@ -421,6 +419,10 @@
             }
         });
 
+const expireInput = document.getElementById('expireOn');
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    expireInput.setAttribute('min', today);
+
 
         function deleteCoupon(couponCode) {
     Swal.fire({
@@ -433,7 +435,7 @@
       confirmButtonText: "Yes, delete it!"
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch(`/admin/delete-coupon/${couponCode}`, {
+        fetch(`/admin/coupon/delete/${couponCode}`, {
           method: "POST"
         })
         .then(response => {
@@ -454,7 +456,6 @@
   document.getElementById('clearFilters').addEventListener('click', () => {
    
     document.getElementById('searchCoupon').value = '';
-    document.getElementById('filterStatus').value = '';
     document.getElementById('filterIsList').value = '';
 
 

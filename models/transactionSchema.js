@@ -5,7 +5,7 @@ const transactionSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   type: {
     type: String,
-    enum: ['Top-up', 'Order', 'Cancellation', 'Return','debit'],
+    enum: ['Top-up', 'Order', 'Cancellation', 'Return','debit','credit'],
     required: true
   },
   orderId: { type: Schema.Types.ObjectId, ref: 'Order', default: null },

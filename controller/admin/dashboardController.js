@@ -47,7 +47,7 @@ const topBrands = await Order.aggregate([
   {
     $lookup: {
       from: "brands",
-      localField: "product.brand", // now we have product.brand
+      localField: "product.brand",
       foreignField: "_id",
       as: "brand"
     }
@@ -72,6 +72,7 @@ const formattedTopBrands = topBrands.map(b => ({
 }));
 
 
+
 const topCategories = await Order.aggregate([
   { $unwind: '$items' },
   {
@@ -82,10 +83,10 @@ const topCategories = await Order.aggregate([
       as: 'product'
     }
   },
-  { $unwind: '$product' }, // ✅ fixed here
+  { $unwind: '$product' }, 
   {
     $lookup: {
-      from: 'category',
+      from: 'categories',
       localField: 'product.category',
       foreignField: '_id',
       as: 'category'
@@ -105,10 +106,11 @@ const topCategories = await Order.aggregate([
 
 const formattedTopCategories=topCategories.map(c=>({
     name:c.name,
-    totalSold:c.totalSold,
+    sales:c.totalSold,
     revenue:c.grossRevenue
 
 }))
+
 
         res.render('dashboard',{
             topProducts:formattedTopProducts,

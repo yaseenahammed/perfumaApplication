@@ -135,7 +135,7 @@
 
                     <!-- Search, Sort, Filter Section -->
                     <header class="text-center mb-8">
-                        <form action="/admin/orderList" method="get" class="d-inline">
+                        <form action="/admin/order" method="get" class="d-inline">
                             <div class="flex justify-center">
                                 <div class="relative w-full max-w-md">
                                     <input 
@@ -154,29 +154,29 @@
                                 </div>
                             </div>
                         </form>
-                    </header>
-                    <div class="text-center mb-6">
-                        <div class="flex justify-center flex-wrap gap-4">
-                            <select id="sortOrder" class="border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-40" onchange="searchOrders()">
-                                <option value="desc">Newest First</option>
-                                <option value="asc">Oldest First</option>
-                            </select>
-                            <select id="filterStatus" class="border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-48" onchange="searchOrders()">
-                                <option value="">All Statuses</option>
-                                <option value="Processing">Processing</option>
-                                <option value="Shipped">Shipped</option>
-                                <option value="Out for Delivery">Out for Delivery</option>
-                                <option value="Delivered">Delivered</option>
-                                <option value="Cancelled">Cancelled</option>
-                                <option value="ReturnRequest">Return Request</option>
-                                <option value="Returned">Returned</option>
-                            </select>
-                            <button id="clearSearch" class="btn-block px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full sm:w-auto" onclick="clearSearch()">Clear</button>
+                        <div class="text-center mb-6">
+                            <div class="flex justify-center flex-wrap gap-4">
+                                <select id="sortOrder" class="border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-40" onchange="searchOrders()">
+                                    <option value="desc">Newest First</option>
+                                    <option value="asc">Oldest First</option>
+                                </select>
+                                <select id="filterStatus" class="border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-48" onchange="searchOrders()">
+                                    <option value="">All Statuses</option>
+                                    <option value="Processing">Processing</option>
+                                    <option value="Shipped">Shipped</option>
+                                    <option value="Out for Delivery">Out for Delivery</option>
+                                    <option value="Delivered">Delivered</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                    <option value="ReturnRequest">Return Request</option>
+                                    <option value="Returned">Returned</option>
+                                </select>
+                                <button id="clearSearch" class="btn-block px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full sm:w-auto" onclick="clearSearch()">Clear</button>
+                            </div>
                         </div>
-                    </div>
+                    </header>
 
                     <!-- Order Listing as Table -->
-                    <div id="orderList" class="space-y-6">
+                    <div id="order" class="space-y-6">
                         <% if (!orders || orders.length === 0) { %>
                             <p class="text-center text-gray-600">No orders found.</p>
                         <% } else { %>
@@ -196,12 +196,12 @@
                                     </thead>
                                     <tbody>
                                         <% orders.forEach(order => { %>
-                                            <tr class="table-row bg-gray-50 border-b border-gray-200 hover:bg-gray-100">
+                                            <tr class="table-row bg-gray-50 border-b border-gray-200 hover:bg-gray-100" data-order-id="<%= order.orderID %>">
                                                 <td class="px-6 py-4"><%= order.orderID %></td>
                                                 <td class="px-6 py-4"><%= new Date(order.createdAt).toLocaleDateString() %></td>
                                                 <td class="px-6 py-4"><%= order.user ? order.user.name : 'Unknown' %></td>
                                                 <td class="px-6 py-4"><%= order.items ? order.items.length : 0 %></td>
-                                                <td class="px-6 py-4">
+                                                <td class="px-6 py-4 status-cell">
                                                     <span class="status-btn <%= order.orderStatus === 'Delivered' ? 'bg-green-200 text-green-800' : order.orderStatus === 'Processing' ? 'bg-yellow-200 text-yellow-800' : order.orderStatus === 'Shipped' ? 'bg-blue-200 text-blue-800' : order.orderStatus === 'Out for Delivery' ? 'bg-indigo-200 text-indigo-800' : order.orderStatus === 'Cancelled' ? 'bg-red-200 text-red-800' : order.orderStatus === 'ReturnRequest' ? 'bg-orange-200 text-orange-800' : 'bg-gray-200 text-gray-800' %>">
                                                         <%= order.orderStatus %>
                                                     </span><br>
@@ -213,13 +213,13 @@
                                                 </td>
                                                 <td class="px-6 py-4">₹<%= order.finalAmount %></td>
                                                 <td class="px-6 py-4">
-                                                    <a href="/admin/order-details/<%= order.orderID %>" 
+                                                    <a href="/admin/order/details/<%= order.orderID %>" 
                                                        class="btn-block px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-300 block text-center w-full sm:w-auto">
                                                         View
                                                     </a>
                                                 </td>
-                                                <td class="px-6 py-4">
-                                                    <% if (!['Cancelled', 'Returned', 'Delivered'].includes(order.orderStatus)) { %>
+                                                <td class="px-6 py-4 actions-cell">
+                                                    <% if (!['Cancelled', 'Returned', 'Delivered','ReturnRequest','Return Rejected','Pending'].includes(order.orderStatus)) { %>
                                                         <select name="status" 
                                                                 onchange="updateStatus('<%= order.orderID %>', this.value)" 
                                                                 class="border border-gray-200 rounded-lg py-2 px-1 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-auto mb-2">
@@ -256,7 +256,7 @@
                     <!-- Pagination -->
                     <div class="pagination-container mt-8 flex justify-center items-center gap-2">
                         <% if (currentPage > 1) { %>
-                            <a href="/admin/orderList?page=<%= currentPage - 1 %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort %>&filter=<%= encodeURIComponent(filter || '') %>" 
+                            <a href="/admin/order?page=<%= currentPage - 1 %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort %>&filter=<%= encodeURIComponent(filter || '') %>" 
                                class="btn-block bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-300">
                                 « Previous
                             </a>
@@ -265,14 +265,14 @@
                             <% if (i === currentPage) { %>
                                 <span class="current-page bg-amber-500 text-white border-amber-500 px-4 py-2 rounded-lg font-bold"><%= i %></span>
                             <% } else { %>
-                                <a href="/admin/orderList?page=<%= i %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort %>&filter=<%= encodeURIComponent(filter || '') %>" 
+                                <a href="/admin/order?page=<%= i %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort %>&filter=<%= encodeURIComponent(filter || '') %>" 
                                    class="btn-block bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-300">
                                     <%= i %>
                                 </a>
                             <% } %>
                         <% } %>
                         <% if (currentPage < totalPages) { %>
-                            <a href="/admin/orderList?page=<%= currentPage + 1 %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort %>&filter=<%= encodeURIComponent(filter || '') %>" 
+                            <a href="/admin/order?page=<%= currentPage + 1 %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= sort %>&filter=<%= encodeURIComponent(filter || '') %>" 
                                class="btn-block bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 px-4 py-2 rounded-lg transition-all duration-300">
                                 Next »
                             </a>
@@ -329,7 +329,7 @@
                 Swal.fire('Please select a valid status.');
                 return;
             }
-            fetch(`/admin/update-status/${orderID}`, {
+            fetch(`/admin/order/status/update/${orderID}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status })
@@ -337,16 +337,70 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    Swal.fire('Order status updated successfully.');
-                    location.reload();
+                    
+                    const row = document.querySelector(`tr[data-order-id="${orderID}"]`);
+                    if (!row) {
+                        Swal.fire('Error: Order row not found.');
+                        return;
+                    }
+
+                   
+                    const statusCell = row.querySelector('.status-cell');
+                    const statusClasses = {
+                        'Delivered': 'bg-green-200 text-green-800',
+                        'Processing': 'bg-yellow-200 text-yellow-800',
+                        'Shipped': 'bg-blue-200 text-blue-800',
+                        'Out for Delivery': 'bg-indigo-200 text-indigo-800',
+                        'Cancelled': 'bg-red-200 text-red-800',
+                        'ReturnRequest': 'bg-orange-200 text-orange-800',
+                        'Returned': 'bg-gray-200 text-gray-800'
+                    };
+                    statusCell.innerHTML = `<span class="status-btn ${statusClasses[status] || 'bg-gray-200 text-gray-800'}">${status}</span>`;
+
+                    // Update actions cell
+                    const actionsCell = row.querySelector('.actions-cell');
+                    let newActions = '';
+                    if (!['Cancelled', 'Returned', 'Delivered', 'ReturnRequest'].includes(status)) {
+                        const statusOptions = {
+                            'Processing': ['Shipped', 'Cancelled'],
+                            'Shipped': ['Out for Delivery', 'Cancelled'],
+                            'Out for Delivery': ['Delivered', 'Cancelled']
+                        };
+                        const options = statusOptions[status] || [];
+                        newActions = `
+                            <select name="status" 
+                                    onchange="updateStatus('${orderID}', this.value)" 
+                                    class="border border-gray-200 rounded-lg py-2 px-1 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-auto mb-2">
+                                <option value="" disabled>Select Status</option>
+                                ${options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                                <option value="${status}" selected hidden>${status}</option>
+                            </select>
+                        `;
+                    }
+                    actionsCell.innerHTML = newActions;
+
+                    Swal.fire({
+  icon: 'success',
+  title: 'Status Updated!',
+  text: 'The status has been updated successfully.',
+  showConfirmButton: false,
+  timer: 1000
+});
+
                 } else {
-                    Swal.fire(data.message || 'Error updating status.');
+                    Swal.fire({
+                        icon:'error',
+                        title:'Error in updating',
+                        text:'status updating error',
+                        showConfirmButton:true,
+                        timer:1000
+                    });
                 }
             })
             .catch(error => Swal.fire('Network error. Please try again.'));
         }
 
-        function showReturnModal(orderID, finalAmount,returnReason) {
+        function showReturnModal(orderID, finalAmount, returnReason) {
             currentOrderID = orderID;
             document.getElementById('modalOrderID').textContent = orderID;
             document.getElementById('modalFinalAmount').textContent = finalAmount;
@@ -367,10 +421,10 @@
             let endpoint = '';
             let message = '';
             if (action === 'allow') {
-                endpoint = `/admin/verify-return/${currentOrderID}`;
+                endpoint = `/admin/order/return/verify/${currentOrderID}`;
                 message = 'Return verified and amount refunded to wallet.';
             } else if (action === 'reject') {
-                endpoint = `/admin/reject-return/${currentOrderID}`;
+                endpoint = `/admin/order/return/reject/${currentOrderID}`;
                 message = 'Return request rejected.';
             }
             fetch(endpoint, {
@@ -382,7 +436,7 @@
                 if (data.success) {
                     Swal.fire(message);
                     closeReturnModal();
-                    location.reload();
+                    location.reload(); 
                 } else {
                     Swal.fire(data.message || `Error ${action}ing return.`);
                 }
@@ -398,17 +452,17 @@
                 Swal.fire('Search term must contain only letters, numbers, and hyphens.');
                 return;
             }
-            window.location.href = `/admin/orderList?search=${encodeURIComponent(searchTerm)}&sort=${sortOrder}&filter=${encodeURIComponent(filterStatus)}&page=1&t=${Date.now()}`;
+            window.location.href = `/admin/order?search=${encodeURIComponent(searchTerm)}&sort=${sortOrder}&filter=${encodeURIComponent(filterStatus)}&page=1&t=${Date.now()}`;
         }
 
         document.getElementById('clearSearch').addEventListener('click', () => {
             document.getElementById('searchOrder').value = '';
             document.getElementById('sortOrder').value = 'desc';
             document.getElementById('filterStatus').value = '';
-            window.location.href = `/admin/orderList?page=1&t=${Date.now()}`;
+            window.location.href = `/admin/order?page=1&t=${Date.now()}`;
         });
     </script>
 
-    <%- include("../../views/partials/admin/footer") %>
+    <%- include("../partials/admin/footer") %>
 </body>
 </html>

@@ -478,17 +478,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (data.success) {
           Swal.fire({
-            icon: 'success',
-            title: 'Added to cart',
-            showConfirmButton: false,
-            timer: 1500,
-          });
+  icon: 'success',
+  title: 'Product added to cart',
+  text: 'Added to Cart',
+  showConfirmButton: false,
+  timer: 1500
+});
+
         } else {
           Swal.fire({
-            icon: 'error',
-            title: data.error || 'Failed to add to cart',
-            timer: 1500,
-          });
+  icon: 'error',
+  title: data.error || 'Failed to add cart',
+  text: 'Failed Adding to Cart',
+  showConfirmButton: true,
+  timer: 1500
+});
         }
 
       } catch (error) {
@@ -578,4 +582,3 @@ function toggleWishlist(productId, buttonElement) {
 </script>
 
 <%- include("../../views/partials/user/footer") %>
-```

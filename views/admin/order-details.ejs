@@ -1,12 +1,40 @@
- <%- include('../../views/partials/admin/header') %>
+<%- include('../../views/partials/admin/header') %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>-Order Details - Admin</title>
+    <title>Order Details - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
         .modal {
             display: none;
             position: fixed;
@@ -18,94 +46,193 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal.show {
+            display: flex;
+            opacity: 1;
         }
         .modal-content {
             background-color: white;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             width: 90%;
             max-width: 500px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-in-out;
+        }
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .btn {
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        .btn:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body class="bg-gray-50">
-   
-
     <main class="main-wrap">
         <div class="container mx-auto px-4">
-            <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-8 mt-6">
+            <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-8 mt-6 animate-fade-in">
                 <!-- Order Meta Information -->
                 <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Order Details: <%= order.orderID || 'N/A' %></h2>
-                    <p><strong>Date:</strong> <%= order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A' %></p>
-                    <p><strong>User:</strong> <%= order.user?.name || 'Unknown' %></p>
-                    <p><strong>Status:</strong> <%= order.orderStatus || 'N/A' %></p>
-                    <p><strong>Total:</strong> ₹<%= order.finalAmount?.toFixed(2) || '0.00' %></p>
-                    <p><strong>Payment Method:</strong> <%= order.paymentMethod || 'N/A' %></p>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-box-open text-amber-500 mr-3"></i>
+                        Order Details: <%= order.orderID || 'N/A' %>
+                    </h2>
+                    <p class="text-sm text-gray-600"><strong class="font-semibold text-gray-900">Date:</strong> <%= order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A' %></p>
+                    <p class="text-sm text-gray-600"><strong class="font-semibold text-gray-900">User:</strong> <%= order.user?.name || 'Unknown' %></p>
+                    <p class="text-sm text-gray-600"><strong class="font-semibold text-gray-900">Status:</strong> 
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-medium <%= order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-800' : order.orderStatus === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800' %>">
+                            <%= order.orderStatus || 'N/A' %>
+                        </span>
+                    </p>
+                    <p class="text-sm text-gray-600"><strong class="font-semibold text-gray-900">Total:</strong> ₹<%= order.finalAmount?.toFixed(2) || '0.00' %></p>
+                    <p class="text-sm text-gray-600"><strong class="font-semibold text-gray-900">Payment Method:</strong> <%= order.paymentMethod || 'N/A' %></p>
                 </div>
 
                 <!-- Items Section -->
                 <div class="mt-8">
-                    <h3 class="text-lg font-semibold mb-4">Items:</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-shopping-cart text-amber-500 mr-3"></i>
+                        Items
+                    </h3>
                     <% if (order.items && Array.isArray(order.items) && order.items.length > 0) { %>
                         <div class="space-y-4">
                             <% order.items.forEach(item => { %>
-                                <div class="flex items-center justify-between p-4 border rounded-lg shadow-sm bg-gray-50">
-                                    <div class="flex items-center gap-4">
-                                        <img 
-                                            src="<%= item.product?.productImages?.[0] || '/images/default-product.png' %>" 
-                                            alt="<%= item.product?.name || item.name || 'Product' %>" 
-                                            class="w-16 h-16 object-cover rounded"
-                                        >
-                                        <div>
-                                            <p class="font-semibold"><%= (item.product && item.product.name ? item.product.name : 'Unknown Product') %></p>
-                                            <p class="text-sm text-gray-600">Qty: <%= item.quantity || 'N/A' %></p>
-                                             <p class="text-sm text-gray-600">Price: ₹<%= item.price?.toFixed(2) || '0.00' %></p>
-                                            <p class="text-sm text-red-600">Status: <%= item.orderStatus %></p>
-                                           
+                                <div class="card flex items-center justify-between p-4 border rounded-lg bg-gray-50 border-gray-200">
+                                    <div class="flex items-center gap-4 w-full">
+                                        <div class="flex-shrink-0">
+                                            <img 
+                                                src="<%= item.product?.productImages?.[0] || '/images/default-product.png' %>" 
+                                                alt="<%= item.product?.name || item.name || 'Product' %>" 
+                                                class="w-16 h-16 object-cover rounded shadow-md"
+                                            >
                                         </div>
+                                        <div class="flex-1">
+  <p class="font-semibold text-gray-900">
+    <%= (item.product && item.product.name ? item.product.name : 'Unknown Product') %>
+  </p>
+  <p class="text-sm text-gray-600">Qty: <%= item.quantity || 'N/A' %></p>
+  <p class="text-sm text-gray-600">Price: ₹<%= item.price?.toFixed(2) || '0.00' %></p>
+
+  <% 
+     // ✅ Same logic as user side
+     let finalItemStates = ['Cancelled', 'ReturnRequest', 'Return Rejected', 'Returned'];
+     let displayStatus;
+
+     if (finalItemStates.includes(item.orderStatus)) {
+         displayStatus = item.orderStatus;
+     } else {
+         displayStatus = order.orderStatus; 
+     }
+
+     let statusClass = ['Delivered', 'Shipped', 'Processing'].includes(displayStatus) 
+                       ? 'text-green-600' 
+                       : (displayStatus === 'ReturnRequest' ? 'text-amber-600' : 'text-red-600');
+  %>
+
+  <p class="text-sm <%= statusClass %>">
+    Status: <%= displayStatus %>
+  </p>
+</div>
+
+                                        <% if (item.orderStatus === 'ReturnRequest' && item.orderStatus !== 'Returned' && !item.returnRejectReason) { %>
+                                            <div class="ml-auto">
+                                                <button
+                                                    onclick="showItemReturnModal(
+                                                        '<%= order.orderID || '' %>', 
+                                                        '<%= item._id || '' %>', 
+                                                        '<%= item.name %>', 
+                                                        '<%= item.quantity || '0' %>', 
+                                                        '<%= item.price?.toFixed(2) || '0.00' %>', 
+                                                        '<%= item.returnReason || 'No reason provided' %>'
+                                                    )"
+                                                    class="btn px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 font-semibold"
+                                                >
+                                                    Verify Return
+                                                </button>
+                                            </div>
+                                        <% } %>
                                     </div>
-                                    <% if (  item.orderStatus === 'ReturnRequest' && item.orderStatus !== 'Returned' && !item.returnRejectReason) { %>
-                                        <button
-                                            onclick="showItemReturnModal(
-                                                '<%= order.orderID || '' %>', 
-                                                '<%= item._id || '' %>', 
-                                                '<%= item.name %>', 
-                                                '<%= item.quantity || '0' %>', 
-                                                '<%= item.price?.toFixed(2) || '0.00' %>', 
-                                                '<%= item.returnReason || 'No reason provided' %>'
-                                            )"
-                                            class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 w-full sm:w-auto block text-center mt-2"
-                                        >
-                                            Verify Return <%= item.name || 'Item' %>
-                                        </button>
-                                    <% } %>
                                 </div>
                             <% }); %>
                         </div>
                     <% } else { %>
-                        <p class="text-center text-gray-600 text-sm">No items found for this order.</p>
+                        <div class="text-center py-8">
+                            <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-box-open text-gray-400 text-3xl"></i>
+                            </div>
+                            <p class="text-sm text-gray-600">No items found for this order.</p>
+                        </div>
                     <% } %>
                 </div>
 
                 <!-- Back Button -->
                 <div class="mt-6">
-                    <a href="/admin/orderList" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Back to Orders</a>
+                    <a href="/admin/order" class="btn inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 font-semibold">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to Orders
+                    </a>
                 </div>
 
                 <!-- Item Return Verification Modal -->
                 <div id="itemReturnModal" class="modal">
                     <div class="modal-content">
-                        <h3 class="text-lg font-bold mb-4">Verify Return for Item <span id="itemModalName"></span></h3>
-                        <p class="mb-2">Order ID: <span id="itemModalOrderID"></span></p>
-                        <p class="mb-2">Quantity: <span id="itemModalQty"></span></p>
-                        <p class="mb-2">Price: ₹<span id="itemModalPrice"></span></p>
-                        <p class="mb-2">Return Reason: <span id="itemModalReturnReason"></span></p>
-                        <div class="flex justify-end gap-2">
-                            <button onclick="verifyItemReturn('allow')" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Allow</button>
-                            <button onclick="verifyItemReturn('reject')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Reject</button>
-                            <button onclick="closeItemReturnModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Cancel</button>
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-undo text-amber-500 mr-2"></i>
+                            Verify Return for <span id="itemModalName"></span>
+                        </h3>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <p><strong class="font-semibold text-gray-900">Order ID:</strong> <span id="itemModalOrderID"></span></p>
+                            <p><strong class="font-semibold text-gray-900">Quantity:</strong> <span id="itemModalQty"></span></p>
+                            <p><strong class="font-semibold text-gray-900">Price:</strong> ₹<span id="itemModalPrice"></span></p>
+                            <p><strong class="font-semibold text-gray-900">Return Reason:</strong> <span id="itemModalReturnReason"></span></p>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-6">
+                            <button onclick="verifyItemReturn('allow')" class="btn px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 font-semibold">Allow</button>
+                            <button onclick="verifyItemReturn('reject')" class="btn px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 font-semibold">Reject</button>
+                            <button onclick="closeItemReturnModal()" class="btn px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 font-semibold">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-map-marker-alt text-amber-500 mr-3"></i>
+                            Shipping Address
+                        </h2>
+                        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                            <p class="text-sm font-normal text-gray-600">
+                                <% if (order.shippingAddress) { %>
+                                    <%= (order.shippingAddress.street ? order.shippingAddress.street + ', ' : '') %>
+                                    <%= (order.shippingAddress.city ? order.shippingAddress.city + ', ' : '') %>
+                                    <%= (order.shippingAddress.state ? order.shippingAddress.state + ', ' : '') %>
+                                    <%= (order.shippingAddress.pincode ? order.shippingAddress.pincode + ', ' : '') %>
+                                    <%= (order.shippingAddress.country ? order.shippingAddress.country : 'N/A') %>
+                                <% } else { %>
+                                    No shipping address available
+                                <% } %>
+                            </p>
+                            <p class="text-sm font-normal text-gray-600 mt-2">
+                                <% if (order.shippingAddress && order.shippingAddress.phone) { %>
+                                    Phone: <%= order.shippingAddress.phone %>
+                                <% } else { %>
+                                    Phone: N/A
+                                <% } %>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -114,80 +241,69 @@
     </main>
 
     <%- include('../../views/partials/admin/footer') %>
-</body>
-</html>
 
-<script>
-    let currentItemID = null;
-    let currentItemOrderID = null;
+    <script>
+        let currentItemID = null;
+        let currentItemOrderID = null;
 
-    function showItemReturnModal(orderID, itemID, itemName, qty, price, returnReason) {
-        if (!orderID || !itemID) {
-            showAlert('Invalid order or item ID.');
-            return;
-        }
-
-        currentItemID = itemID;
-        currentItemOrderID = orderID;
-
-        document.getElementById('itemModalOrderID').textContent = orderID;
-        document.getElementById('itemModalName').textContent = itemName || 'Unknown Item';
-        document.getElementById('itemModalQty').textContent = qty || 'N/A';
-        document.getElementById('itemModalPrice').textContent = price || '0.00';
-        document.getElementById('itemModalReturnReason').textContent = returnReason || 'No reason provided';
-
-        document.getElementById('itemReturnModal').style.display = 'flex';
-    }
-
-    function closeItemReturnModal() {
-        document.getElementById('itemReturnModal').style.display = 'none';
-        currentItemID = null;
-        currentItemOrderID = null;
-    }
-
-    function showAlert(message) {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                text: message,
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        } else {
-            alert(message);
-        }
-    }
-
-    async function verifyItemReturn(action) {
-        if (!currentItemID || !currentItemOrderID) {
-            showAlert('No item or order selected.');
-            return;
-        }
-
-        const endpoint = action === 'allow' 
-            ? `/admin/verify-returnItem/${currentItemOrderID}/${currentItemID}` 
-            : `/admin/reject-returnItem/${currentItemOrderID}/${currentItemID}`;
-        const message = action === 'allow' 
-            ? 'Item return verified and amount refunded.' 
-            : 'Item return request rejected.';
-
-        try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Add CSRF token if available (replace 'getCsrfToken()' with your actual method)
-                    // 'X-CSRF-Token': getCsrfToken()
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+        function showItemReturnModal(orderID, itemID, itemName, qty, price, returnReason) {
+            if (!orderID || !itemID) {
+                Swal.fire('Error', 'Invalid order or item ID.', 'error');
+                return;
             }
 
-            const data = await response.json();
+            currentItemID = itemID;
+            currentItemOrderID = orderID;
 
-            if (data.success) {
-                if (typeof Swal !== 'undefined') {
+            document.getElementById('itemModalOrderID').textContent = orderID;
+            document.getElementById('itemModalName').textContent = itemName || 'Unknown Item';
+            document.getElementById('itemModalQty').textContent = qty || 'N/A';
+            document.getElementById('itemModalPrice').textContent = price || '0.00';
+            document.getElementById('itemModalReturnReason').textContent = returnReason || 'No reason provided';
+
+            const modal = document.getElementById('itemReturnModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function closeItemReturnModal() {
+            const modal = document.getElementById('itemReturnModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                currentItemID = null;
+                currentItemOrderID = null;
+            }, 300);
+        }
+
+        async function verifyItemReturn(action) {
+            if (!currentItemID || !currentItemOrderID) {
+                Swal.fire('Error', 'No item or order selected.', 'error');
+                return;
+            }
+
+            const endpoint = action === 'allow' 
+                ? `/admin/order/returnItem/verify/${currentItemOrderID}/${currentItemID}` 
+                : `/admin/order/returnItem/reject/${currentItemOrderID}/${currentItemID}`;
+            const message = action === 'allow' 
+                ? 'Item return verified and amount refunded.' 
+                : 'Item return request rejected.';
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
                     Swal.fire({
                         text: message,
                         icon: 'success',
@@ -197,23 +313,20 @@
                         location.reload();
                     });
                 } else {
-                    alert(message);
-                    closeItemReturnModal();
-                    location.reload();
+                    Swal.fire('Error', data.message || `Error ${action}ing item return.`, 'error');
                 }
-            } else {
-                showAlert(data.message || `Error ${action}ing item return.`);
+            } catch (err) {
+                Swal.fire('Error', 'Network error. Please try again.', 'error');
+                console.error('Fetch error:', err);
             }
-        } catch (err) {
-            showAlert('Network error. Please try again.');
-            console.error('Fetch error:', err);
         }
-    }
 
-    // Close modal when clicking outside
-    document.getElementById('itemReturnModal').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('itemReturnModal')) {
-            closeItemReturnModal();
-        }
-    });
-</script>
+     
+        document.getElementById('itemReturnModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('itemReturnModal')) {
+                closeItemReturnModal();
+            }
+        });
+    </script>
+</body>
+</html>

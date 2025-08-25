@@ -92,7 +92,7 @@
             align-items: center;
             gap: 10px;
             width: 300px;
-            height: 200px;
+            height: 400px;
             margin-bottom: 20px;
         }
         
@@ -132,6 +132,26 @@
             margin-left: 250px;
             padding: 20px;
         }
+        .btn-save-crop {
+    height: 50px;             /* Fixed height */
+    width: 50px;              /* Fixed width */
+    font-size: 16px;          /* Adjusted to fit text (30px was too big) */
+    font-weight: 600;         /* Bold text for better visibility */
+    color: black;             /* Text color */
+    background-color: orange; /* Button background */
+    border: none;             /* Remove default button border */
+    border-radius: 8px;       /* Rounded corners */
+    cursor: pointer;          /* Show pointer on hover */
+    display: flex;            /* Flex for centering text */
+    align-items: center;      /* Vertically center text */
+    justify-content: center;  /* Horizontally center text */
+    transition: all 0.3s ease;/* Smooth hover effect */
+}
+
+.btn-save-crop:hover {
+    background-color: darkorange; /* Darker orange on hover */
+}
+
     </style>
 </head>
 <body class="bg-gray-50">
@@ -293,13 +313,13 @@
                                         style="display: none;"
                                     >
                                         <img id="croppedImg<%= i %>">
-                                        <button 
-                                            type="button" 
-                                            id="saveButton<%= i %>" 
-                                            class="btn-save-crop bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300"
-                                        >
-                                            Save Crop
-                                        </button>
+<button
+    type="button"
+    id="saveButton<%= i %>"
+    class="btn-save-crop">
+    Save
+</button>
+
                                     </div>
                                 </div>
                             <% } %>

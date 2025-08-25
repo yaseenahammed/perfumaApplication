@@ -11,7 +11,7 @@ const SHIPPING_FEE = 50;
 const calculateSummary = async (cartItems) => {
   let subtotal = 0;
   for (const item of cartItems) {
-    const { finalPrice } = await getBestPrice(item.product); // Ensure fresh price
+    const { finalPrice } = await getBestPrice(item.product); 
     item.product.finalPrice = finalPrice;
     subtotal += finalPrice * item.quantity;
   }
@@ -29,7 +29,7 @@ const isItemBlocked = (item) => {
     !item.product.isListed ||
     item.product.isBlocked ||
     (item.product.brand && item.product.brand.isBlocked) ||
-    (item.product.category && item.product.category.isBlocked) ||
+    (item.product.category && !item.product.category.isListed) ||
     item.quantity > item.product.quantity
   );
 };
@@ -47,7 +47,7 @@ const getCart = async (req, res) => {
         path: 'items.product',
         populate: [
           { path: 'brand', select: 'name isBlocked' },
-          { path: 'category', select: 'isBlocked' } // Added category population
+          { path: 'category', select: 'isListed isBlocked' } 
         ]
       })
       .lean();
@@ -100,7 +100,7 @@ const getCart = async (req, res) => {
 const incrementQuantity = async (req, res) => {
   try {
     const { productId } = req.body;
-    console.log('Increment req.body:', req.body); // Debug log
+    console.log('Increment req.body:', req.body);
     if (!mongoose.isValidObjectId(productId)) {
       return res.status(400).json({ success: false, message: 'Invalid product ID' });
     }
@@ -115,7 +115,7 @@ const incrementQuantity = async (req, res) => {
         path: 'items.product',
         populate: [
           { path: 'brand', select: 'isBlocked' },
-          { path: 'category', select: 'isBlocked' }
+          { path: 'category', select: 'isListed isBlocked' }
         ]
       });
 
@@ -176,7 +176,7 @@ const incrementQuantity = async (req, res) => {
 const decrementQuantity = async (req, res) => {
   try {
     const { productId } = req.body;
-    console.log('Decrement req.body:', req.body); // Debug log
+    console.log('Decrement req.body:', req.body); 
     if (!mongoose.isValidObjectId(productId)) {
       return res.status(400).json({ success: false, message: 'Invalid product ID' });
     }
@@ -191,7 +191,7 @@ const decrementQuantity = async (req, res) => {
         path: 'items.product',
         populate: [
           { path: 'brand', select: 'isBlocked' },
-          { path: 'category', select: 'isBlocked' }
+          { path: 'category', select: 'isListed isBlocked' }
         ]
       });
 
@@ -248,8 +248,8 @@ const decrementQuantity = async (req, res) => {
 const removeFromCart = async (req, res) => {
   try {
     const userId = req.session.userId;
-    const { productId } = req.body; // Changed to req.body for consistency
-    console.log('Remove req.body:', req.body); // Debug log
+    const { productId } = req.body; 
+    console.log('Remove req.body:', req.body); 
     if (!userId || !mongoose.isValidObjectId(userId)) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
@@ -262,7 +262,7 @@ const removeFromCart = async (req, res) => {
         path: 'items.product',
         populate: [
           { path: 'brand', select: 'isBlocked' },
-          { path: 'category', select: 'isBlocked' }
+          { path: 'category', select: 'isListed isBlocked' }
         ]
       });
 

@@ -67,24 +67,24 @@ router.post('/products/:id/block', adminAuth, productController.blockProduct);
 router.post('/products/:id/unblock', adminAuth,  productController.unblockProduct);
 
 //order
-router.get('/orderList',adminAuth,orderManageController.orderListing)
-router.post('/update-status/:orderId',adminAuth,orderManageController.updateStatus)
-router.post('/verify-return/:orderID',adminAuth,orderManageController.verifyReturn)
-router.post('/reject-return/:orderID',adminAuth,orderManageController.rejectReturn)
-router.get('/order-details/:orderID',adminAuth,orderManageController.orderDetails)
-router.post('/verify-returnItem/:orderID/:itemID', adminAuth, orderManageController.verifyReturnItem);
-router.post('/reject-returnItem/:orderID/:itemID', adminAuth, orderManageController.rejectReturnItem);
+router.get('/order',adminAuth,orderManageController.orderListing)
+router.post('/order/status/update/:orderId',adminAuth,orderManageController.updateStatus)
+router.post('/order/return/verify/:orderID',adminAuth,orderManageController.verifyReturn)
+router.post('/order/return/reject/:orderID',adminAuth,orderManageController.rejectReturn)
+router.get('/order/details/:orderID',adminAuth,orderManageController.orderDetails)
+router.post('/order/returnItem/verify/:orderID/:itemID', adminAuth, orderManageController.verifyReturnItem);
+router.post('/order/returnItem/reject/:orderID/:itemID', adminAuth, orderManageController.rejectReturnItem);
  
 
 //coupon
 router.get('/coupon',adminAuth,couponManageController.getCoupon)
-router.post('/create-coupon',adminAuth,couponManageController.addCoupon)
-router.post('/update-coupon/:couponCode',adminAuth,couponManageController.updateCoupon)
-router.post('/delete-coupon/:couponCode',adminAuth,couponManageController.deleteCoupon)
+router.post('/coupon/create',adminAuth,couponManageController.addCoupon)
+router.post('/coupon/update/:couponCode',adminAuth,couponManageController.updateCoupon)
+router.post('/coupon/delete/:couponCode',adminAuth,couponManageController.deleteCoupon)
 
 //salesReport
-router.get('/sales-report',adminAuth,salesController.getSalesReport)
-router.get('/sales-report/download', adminAuth,salesController.downloadSalesReport);
+router.get('/salesReport',adminAuth,salesController.getSalesReport)
+router.get('/salesReport/download', adminAuth,salesController.downloadSalesReport);
 
 
 

@@ -14,7 +14,7 @@ const categoryInfo = async (req, res) => {
             page = parseInt(req.query.page);
         }
 
-        const limit = 3; 
+        const limit = 5; 
 
      
         const category = await Category.find({
@@ -164,10 +164,15 @@ const editCategory = async (req, res) => {
     const id = req.body.id;
     const { categoryName, description } = req.body;
 
-    const existingCategory = await Category.findOne({ name: { $regex: `^${categoryName}$`, $options: 'i' } });
+      const existingCategory = await Category.findOne({
+      name: { $regex: `^${categoryName}$`, $options: "i" },
+      _id: { $ne: id } 
+    });
 
     if (existingCategory) {
-      return res.status(400).json({ error: "Category exists, please choose another name" });
+      return res
+        .status(400)
+        .json({ error: "Category exists, please choose another name" });
     }
 
     const updatedCategory = await Category.findByIdAndUpdate(id, {

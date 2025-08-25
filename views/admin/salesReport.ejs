@@ -107,6 +107,10 @@
                 white-space: nowrap;
             }
         }
+        .currency::before {
+  content: "₹";
+}
+
     </style>
 </head>
 <body class="bg-gray-50">
@@ -126,7 +130,7 @@
                             Sales of Perfuma
                         </h2>
                     </div>
-                    <form id="filterForm" action="/admin/sales-report" method="get" class="mb-8">
+                    <form id="filterForm" action="/admin/salesReport" method="get" class="mb-8">
                         <div class="flex justify-center flex-wrap gap-4">
                             <div class="relative w-full max-w-md">
                                 <select 
@@ -144,21 +148,24 @@
                             <div id="customDateRange" class="w-full max-w-md <%= period !== 'custom' ? 'hidden' : '' %>">
                                 <div class="flex gap-2">
                                     <input 
-                                        type="date" 
-                                        name="startDate" 
-                                        value="<%= startDate || '' %>"
-                                        max="<%= new Date().toISOString().split('T')[0] %>"
-                                        class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
-                                        required
-                                    >
-                                    <input 
-                                        type="date" 
-                                        name="endDate" 
-                                        value="<%= endDate || '' %>"
-                                        max="<%= new Date().toISOString().split('T')[0] %>"
-                                        class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
-                                        required
-                                    >
+  type="date" 
+  id="startDate"
+  name="startDate" 
+  value="<%= startDate || '' %>"
+  max="<%= new Date().toISOString().split('T')[0] %>"
+  class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+  <%= period === 'custom' ? 'required' : '' %>
+>
+<input 
+  type="date" 
+  id="endDate"
+  name="endDate" 
+  value="<%= endDate || '' %>"
+  max="<%= new Date().toISOString().split('T')[0] %>"
+  class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+  <%= period === 'custom' ? 'required' : '' %>
+>
+
                                 </div>
                             </div>
                             <div class="flex gap-2">
@@ -203,14 +210,19 @@
                                     <p class="text-xl font-bold text-amber-600"><%= summary.totalSales || 0 %></p>
                                 </div>
                                 <div class="summary-card bg-gray-50 rounded-xl p-6 border border-gray-200 text-center">
-                                    <i class="fas fa-dollar-sign text-amber-500 text-3xl mb-4"></i>
-                                    <h3 class="text-lg font-semibold text-gray-900">Total Order Amount</h3>
-                                    <p class="text-xl font-bold text-amber-600">$<%= summary.totalAmount ? summary.totalAmount.toFixed(2) : '0.00' %></p>
-                                </div>
+    <i class="fas fa-rupee-sign text-amber-500 text-3xl mb-4"></i> 
+    <h3 class="text-lg font-semibold text-gray-900">Total Order Amount</h3>
+    <p class="text-xl font-bold text-amber-600 currency">
+   <%= summary.totalAmount ? summary.totalAmount.toFixed(2) : '0.00' %>
+</p>
+
+</div>
+                     
                                 <div class="summary-card bg-gray-50 rounded-xl p-6 border border-gray-200 text-center">
                                     <i class="fas fa-tags text-amber-500 text-3xl mb-4"></i>
                                     <h3 class="text-lg font-semibold text-gray-900">Total Discounts</h3>
-                                    <p class="text-xl font-bold text-amber-600">$<%= summary.discountPrice ? summary.discountPrice.toFixed(2) : '0.00' %></p>
+                                    
+                                    <p class="text-xl font-bold text-amber-600">₹<%= summary.totalDiscount ? summary.totalDiscount.toFixed(2) : '0.00' %></p>
                                 </div>
                             </div>
                         <% } else { %>
@@ -220,7 +232,7 @@
                             </p>
                         <% } %>
                     </div>
-
+          
                     <!-- Table Section -->
                     <div class="space-y-6">
                         <% if (salesData && salesData.length > 0) { %>
@@ -230,10 +242,13 @@
                                         <th>Order ID</th>
                                         <th>Date</th>
                                         <th>Customer</th>
-                                        <th>Total Amount</th>
+                                        <th>Subtotal</th>
+                                        <th>Shipping</th>
+                                        <th>Offer %</th>
                                         <th>Discount</th>
                                         <th>Coupon Applied</th>
                                         <th>Final Amount</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -242,10 +257,13 @@
                                             <td><%= order.orderID %></td>
                                             <td><%= new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
                                             <td><%= order.user ? order.user.name : 'Unknown' %></td>
-                                            <td class="text-amber-600 font-semibold">$<%= order.totalAmount ? order.totalAmount.toFixed(2) : '0.00' %></td>
-                                            <td>$<%= order.discountPrice ? order.discountPrice.toFixed(2) : '0.00' %></td>
+                                            <td>₹<%= order.subtotal.toFixed(2) %></td>
+                                            <td>₹<%= order.shipping.toFixed(2) %></td>
+                                            <td><%= order.discountPercentage %> %</td>
+                                             <td>₹<%= order.couponDiscount ? order.couponDiscount.toFixed(2) : '0.00' %></td>
                                             <td><%= order.couponCode || 'None' %></td>
-                                            <td class="text-amber-600 font-semibold">$<%= order.finalAmount ? order.finalAmount.toFixed(2) : '0.00' %></td>
+                                            <td class="text-amber-600 font-semibold">₹<%= order.finalAmount ? order.finalAmount.toFixed(2) : '0.00' %></td>
+                                            <td><%= order.orderStatus %></td>
                                         </tr>
                                     <% }) %>
                                 </tbody>
@@ -257,70 +275,96 @@
                             </p>
                         <% } %>
                     </div>
+<% if (totalPages > 1) { %>
+    <div class="pagination-container mt-8 flex justify-center items-center gap-2">
+        <% function buildQuery(page) { 
+            let query = `?page=${page}`;
+            if (period) query += `&period=${encodeURIComponent(period)}`;
+            if (startDate) query += `&startDate=${encodeURIComponent(startDate)}`;
+            if (endDate) query += `&endDate=${encodeURIComponent(endDate)}`;
+            return query;
+        } %>
 
-                    <!-- Pagination -->
-                    <% if (totalPages > 1) { %>
-                        <div class="pagination-container mt-8 flex justify-center items-center gap-2">
-                            <% if (currentPage > 1) { %>
-                                <a href="?page=<%= currentPage - 1 %>&period=<%= encodeURIComponent(period || '') %>&startDate=<%= encodeURIComponent(startDate || '') %>&endDate=<%= encodeURIComponent(endDate || '') %>" class="btn-primary inline-flex items-center px-4 py-2 bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 rounded-lg">« Previous</a>
-                            <% } %>
-                            <% for (let i = 1; i <= totalPages; i++) { %>
-                                <% if (i === currentPage) { %>
-                                    <span class="current-page bg-amber-500 text-white border-amber-500 px-4 py-2 rounded-lg font-bold"><%= i %></span>
-                                <% } else { %>
-                                    <a href="?page=<%= i %>&period=<%= encodeURIComponent(period || '') %>&startDate=<%= encodeURIComponent(startDate || '') %>&endDate=<%= encodeURIComponent(endDate || '') %>" class="btn-primary inline-flex items-center px-4 py-2 bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 rounded-lg"><%= i %></a>
-                                <% } %>
-                            <% } %>
-                            <% if (currentPage < totalPages) { %>
-                                <a href="?page=<%= currentPage + 1 %>&period=<%= encodeURIComponent(period || '') %>&startDate=<%= encodeURIComponent(startDate || '') %>&endDate=<%= encodeURIComponent(endDate || '') %>" class="btn-primary inline-flex items-center px-4 py-2 bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 rounded-lg">Next »</a>
-                            <% } %>
-                        </div>
-                    <% } %>
+        <% if (currentPage > 1) { %>
+            <a href="<%= buildQuery(currentPage - 1) %>" 
+               class="btn-primary inline-flex items-center px-4 py-2 bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 rounded-lg">« Previous</a>
+        <% } %>
+
+        <% for (let i = 1; i <= totalPages; i++) { %>
+            <% if (i === currentPage) { %>
+                <span class="current-page bg-amber-500 text-white border-amber-500 px-4 py-2 rounded-lg font-bold"><%= i %></span>
+            <% } else { %>
+                <a href="<%= buildQuery(i) %>" 
+                   class="btn-primary inline-flex items-center px-4 py-2 bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 rounded-lg"><%= i %></a>
+            <% } %>
+        <% } %>
+
+        <% if (currentPage < totalPages) { %>
+            <a href="<%= buildQuery(currentPage + 1) %>" 
+               class="btn-primary inline-flex items-center px-4 py-2 bg-gray-50 text-amber-600 border-amber-500 hover:bg-amber-500 hover:text-white hover:border-amber-600 rounded-lg">Next »</a>
+        <% } %>
+    </div>
+<% } %>
+
+
                 </div>
             </div>
         </div>
     </main>
 
-<script>
-    
-
-</script>
 
     <script>
 
-        const today = new Date().toISOString().split('T')[0];
-document.getElementById('startDate').setAttribute('max', today);
-document.getElementById('endDate').setAttribute('max', today);
+document.addEventListener('DOMContentLoaded', () => {
+    const periodSelect = document.getElementById('periodSelect');
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const customDateRange = document.getElementById('customDateRange');
 
-
-        document.addEventListener('DOMContentLoaded', () => {
-  const periodSelect = document.getElementById('periodSelect');
-  toggleCustomDate(periodSelect.value);
-
-  // Reset custom date inputs if period is not custom
-  if (periodSelect.value !== 'custom') {
-    const startInput = document.querySelector('input[name="startDate"]');
-    const endInput = document.querySelector('input[name="endDate"]');
-    if (startInput) startInput.value = '';
-    if (endInput) endInput.value = '';
-  }
-});
-        function toggleCustomDate(period) {
-            const customDateRange = document.getElementById('customDateRange');
-            customDateRange.classList.toggle('hidden', period !== 'custom');
+    function toggleCustomDate(period) {
+        if (period === 'custom') {
+            customDateRange.classList.remove('hidden');
+            startDateInput.setAttribute('required', true);
+            endDateInput.setAttribute('required', true);
+        } else {
+            customDateRange.classList.add('hidden');
+            startDateInput.removeAttribute('required');
+            endDateInput.removeAttribute('required');
+            startDateInput.value = '';
+            endDateInput.value = '';
         }
+    }
+
+
+    toggleCustomDate(periodSelect.value);
+
+    periodSelect.addEventListener('change', () => {
+        toggleCustomDate(periodSelect.value);
+    });
+
+    document.getElementById('filterForm').addEventListener('submit', (e) => {
+        if (periodSelect.value !== 'custom') {
+            startDateInput.value = '';
+            endDateInput.value = '';
+        }
+    });
+});
+
+
 
         function clearFilters() {
             document.getElementById('periodSelect').value = 'daily';
             document.getElementById('customDateRange').classList.add('hidden');
             document.getElementById('filterForm').reset();
-            window.location.href = `/admin/sales-report?page=1&t=${Date.now()}`;
+            window.location.href = `/admin/salesReport?page=1&t=${Date.now()}`;
         }
+
+        
 
         function downloadReport(format) {
             const form = document.getElementById('filterForm');
             const period = form.querySelector('[name="period"]').value;
-            let url = `/admin/sales-report/download?format=${format}&period=${encodeURIComponent(period)}`;
+            let url = `/admin/salesReport/download?format=${format}&period=${encodeURIComponent(period)}`;
             
             if (period === 'custom') {
                 const startDate = form.querySelector('[name="startDate"]').value;

@@ -228,7 +228,6 @@
             }
         });
 
-        // Update Chart based on filter
         function updateChart(filter) {
             let data;
             if (filter === 'yearly') data = yearlyData;
@@ -240,7 +239,7 @@
             salesChart.update();
         }
 
-        // Ledger generation with SweetAlert2
+      
         function generateLedger() {
             Swal.fire({
                 title: 'Generate Ledger',
@@ -253,7 +252,7 @@
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = '/admin/generate-ledger'; // Replace with actual endpoint
+                    window.location.href = '/admin/generate-ledger'; 
                 }
             });
         }
