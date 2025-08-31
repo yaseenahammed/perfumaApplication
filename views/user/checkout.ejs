@@ -440,7 +440,7 @@
             </button>
             <button 
       onclick="closeModal('order-failed-modal', 'order-failed-content')" 
-      class="cancel-btn px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300">
+      class="close-modal-btn px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300">
       <i class="fas fa-times-circle mr-2"></i> Cancel
     </button>
         </div>
@@ -737,7 +737,8 @@ document.getElementById("apply-coupon-btn").textContent = "Apply";
             document.querySelectorAll('.close-modal-btn').forEach(button => {
                 button.addEventListener('click', (event) => {
                     const parentModal = event.target.closest('.fixed');
-                    const parentContent = parentModal.querySelector('div:first-child');
+                   const parentContent = parentModal.firstElementChild;
+
                     closeModal(parentModal, parentContent);
                 });
             });
@@ -978,6 +979,11 @@ confirmPlaceBtn.addEventListener('click', async () => {
             });
 
             const data = await res.json();
+
+            if (!res.ok || !data.success) {
+  Swal.fire("Error", data.message || "Order failed", "error");
+  return;  
+}
             if (data.success) {
                 window.latestOrderId = data.orderId;
                 closeModal(orderFailedModal, orderFailedContent); 

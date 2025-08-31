@@ -8,42 +8,42 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="min-h-screen bg-gray-50">
-    <div class="flex min-h-screen">
+    <div class="flex flex-col md:flex-row min-h-screen">
         <!-- Left Side - Full Image -->
-        <div class="w-1/2 bg-gradient-to-br from-rose-100 to-amber-50 relative overflow-hidden">
+        <div class="w-full md:w-1/2 bg-gradient-to-br from-rose-100 to-amber-50 relative overflow-hidden">
             <div class="absolute inset-0 flex items-center justify-center">
                 <img src="https://t3.ftcdn.net/jpg/08/32/30/12/360_F_832301227_1iQHc794dGkUn4VQLlarNKnV1UvpZSLq.jpg" alt="Perfuma Fragrance" class="w-full h-full object-cover">
             </div>
             <div class="absolute inset-0 bg-black bg-opacity-20"></div>
-            <div class="absolute top-8 left-8">
+            <div class="absolute top-4 left-4 md:top-8 md:left-8">
                 <a href="/" class="text-white hover:text-amber-200 transition duration-200">
-                    <i class="fas fa-home text-xl"></i>
+                    <i class="fas fa-home text-lg md:text-xl"></i>
                 </a>
             </div>
-            <div class="absolute bottom-8 left-8 right-8 text-center">
+            <div class="absolute bottom-8 left-4 right-4 text-center">
                 <div class="flex justify-center space-x-4 mb-4">
-                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
-                        <i class="fas fa-spray-can text-lg text-white"></i>
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-spray-can text-base md:text-lg text-white"></i>
                     </div>
-                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
-                        <i class="fas fa-heart text-lg text-white"></i>
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-heart text-base md:text-lg text-white"></i>
                     </div>
-                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
-                        <i class="fas fa-star text-lg text-white"></i>
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-star text-base md:text-lg text-white"></i>
                     </div>
                 </div>
-                <h3 class="text-white text-xl font-semibold">Premium Fragrances</h3>
-                <p class="text-white/80 text-sm mt-2">Discover your signature scent</p>
+                <h3 class="text-white text-lg md:text-xl font-semibold">Premium Fragrances</h3>
+                <p class="text-white/80 text-xs md:text-sm mt-2">Discover your signature scent</p>
             </div>
         </div>
 
         <!-- Right Side - Login Form -->
-        <div class="w-1/2 flex items-center justify-center p-8">
-            <div class="max-w-md w-full space-y-8">
+        <div class="w-full md:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8">
+            <div class="w-full max-w-md space-y-6">
                 <!-- Header -->
                 <div class="text-center">
-                    <h1 class="text-4xl font-bold text-gray-900 tracking-wide">PERFUMA</h1>
-                    <p class="mt-2 text-gray-600">Sign into your account</p>
+                    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 tracking-wide">PERFUMA</h1>
+                    <p class="mt-2 text-gray-600 text-sm sm:text-base">Sign into your account</p>
                 </div>
 
                 <!-- Server Error Messages -->
@@ -71,7 +71,6 @@
                     </div>
                 </div>
                 <% } %>
-
 
                 <!-- Dynamic Error Message -->
                 <div id="error-message" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -102,8 +101,7 @@
                                 id="email" 
                                 name="email" 
                                 type="email" 
-                              
-
+                                value="sabith@gmail.com"
                                 required 
                                 class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition duration-200"
                                 placeholder="Enter your email"
@@ -124,7 +122,7 @@
                                 name="password" 
                                 type="password" 
                                 required 
-                             
+                                value="123qwe"
                                 class="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition duration-200"
                                 placeholder="Enter your password"
                             >
@@ -190,8 +188,6 @@
                         </p>
                     </div>
                 </form>
-
-                
             </div>
         </div>
     </div>

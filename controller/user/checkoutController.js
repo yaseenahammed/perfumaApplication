@@ -380,7 +380,8 @@ const placeOrder = async (req, res) => {
             return res.status(400).json({ success: false, message: 'No coupon code provided but a coupon is applied in session' });
         }
 
-        const total = subtotal + shipping - finalDiscountPrice;
+       
+        const finalAmount = subtotal + shipping - finalDiscountPrice;
 
         const allowedMethods = ['cod', 'card', 'upi', 'netbanking','wallet'];
         if (!allowedMethods.includes(paymentMethod)) {
@@ -388,19 +389,31 @@ const placeOrder = async (req, res) => {
         }
 
         const method = paymentMethod === 'cod' ? 'cod' : paymentMethod;
+        
+        console.log("DEBUG:", { paymentMethod, finalAmount, type: typeof finalAmount });
+if (paymentMethod && paymentMethod.toLowerCase() === 'cod' && Number(finalAmount) >= 1000) {
+  return res.status(400).json({ success: false, message: 'Orders above ₹1000 are not allowed for COD.' });
+}
 
         const generateOrderID = () => {
             return 'ORD-' + Math.floor(100000 + Math.random() * 900000);
         };
 
-const finalAmount = subtotal + shipping - finalDiscountPrice;
+
 
 if (isNaN(finalAmount)) {
   console.error(' finalAmount is NaN', { subtotal, shipping, finalDiscountPrice });
   return res.status(400).json({ success: false, message: 'Invalid final amount calculation' });
 }
 
-                
+
+
+
+                console.log("Subtotal:", subtotal);
+console.log("Shipping:", shipping);
+console.log("Discount:", finalDiscountPrice);
+console.log("FinalAmount:", finalAmount);
+
 
                    if(paymentMethod==='wallet'){
                     const wallet =await Wallet.findOne({user:userId})
@@ -442,7 +455,7 @@ const orders = new Order({
   finalAmount,
   paymentStatus: "Pending",
   isPaid: false,
-orderStatus: "Processing",
+  orderStatus: "Processing",
 
   date: new Date()
 });
@@ -453,7 +466,7 @@ orderStatus: "Processing",
   user: user._id,
   type: 'Order',
   orderId: orders._id,
-  amount: total,
+  amount: finalAmount,
   status: 'Success',
   description: `Placed order ${orders.orderID}`
 });

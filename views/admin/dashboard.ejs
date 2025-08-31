@@ -1,261 +1,269 @@
-   <%- include("../partials/admin/header") %>
+<%- include("../partials/admin/header") %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Perfuma</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    animation: {
-                        'fade-in': 'fadeIn 0.5s ease-in-out',
-                        'slide-up': 'slideUp 0.6s ease-out',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(30px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        }
-                    }
-                }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Perfuma</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-in-out',
+            'slide-up': 'slideUp 0.6s ease-out',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(30px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
             }
+          }
         }
-    </script>
-    <style>
-        .btn-block, .btn-filter {
-            transition: all 0.3s ease;
-        }
-        .btn-block:hover, .btn-filter:hover {
-            transform: scale(1.05);
-            background: linear-gradient(90deg, #c79f15, #a67b0a);
-        }
-        .card, .table-container {
-            transition: all 0.3s ease;
-        }
-        .card:hover, .table-container:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-        .table-row {
-            transition: all 0.3s ease;
-        }
-        .table-row:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-        .main-wrap {
-            padding-top: 0;
-        }
-    </style>
+      }
+    }
+  </script>
+  <style>
+    .btn-block, .btn-filter {
+      transition: all 0.3s ease;
+    }
+    .btn-block:hover, .btn-filter:hover {
+      transform: scale(1.05);
+      background: linear-gradient(90deg, #c79f15, #a67b0a);
+    }
+    .card, .table-container {
+      transition: all 0.3s ease;
+    }
+    .card:hover, .table-container:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    .table-row {
+      transition: all 0.3s ease;
+    }
+    .table-row:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+  </style>
 </head>
 <body class="bg-gray-50">
- 
 
-    <!-- Main Content -->
-    <main class="main-wrap py-16">
-        <div class="container mx-auto px-4">
-            <div class="max-w-7xl mx-auto">
-                <div class="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
-                    <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center mb-8">
-                        <i class="fas fa-chart-line text-amber-500 mr-3"></i>
-                        Sales Overview
-                    </h2>
+  <main class="main-wrap py-16">
+    <div class="container mx-auto px-4 max-w-7xl">
 
-                    <!-- Chart with Filters -->
-                    <div class="card bg-gray-50 rounded-xl p-6 border border-gray-200 mb-12">
-                        <div class="flex justify-end mb-4">
-                            <button class="btn-filter px-4 py-2 bg-amber-500 text-white font-semibold rounded-lg mr-2 hover:bg-amber-600 transition-all duration-300" onclick="updateChart('yearly')">Yearly</button>
-                            <button class="btn-filter px-4 py-2 bg-amber-500 text-white font-semibold rounded-lg mr-2 hover:bg-amber-600 transition-all duration-300" onclick="updateChart('monthly')">Monthly</button>
-                            <button class="btn-filter px-4 py-2 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition-all duration-300" onclick="updateChart('weekly')">Weekly</button>
-                        </div>
-                        <canvas id="salesChart" class="w-full h-96"></canvas>
-                    </div>
-
-                    <!-- Top 10 Lists -->
-                    <div class="grid grid-cols-1  gap-6 mb-12">
-                        <!-- Top 10 Products -->
-                        <div class="table-container bg-gray-50 rounded-xl p-6 border border-gray-200">
-                            <h3 class="text-xl font-bold text-gray-900 mb-4">Best-Selling Products</h3>
-                            <div class="overflow-x-auto">
-                                <table class="w-full table-auto text-left">
-                                    <thead>
-                                        <tr class="bg-gray-100 text-gray-900">
-                                            <th class="px-6 py-4 font-bold">Product</th>
-                                            <th class="px-6 py-4 font-bold">Sales</th>
-                                            <th class="px-6 py-4 font-bold">Revenue</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                     
-                                             <% (topProducts || []).forEach(product => { %>
-                                            <tr class="table-row bg-gray-50 border-b border-gray-200 hover:bg-gray-100">
-                                                <td class="px-6 py-4"><%= product.name %></td>
-                                                <td class="px-6 py-4"><%= product.sales %></td>
-                                                <td class="px-6 py-4">$<%= product.revenue.toFixed(2) %></td>
-                                            </tr>
-                                        <% }) %>
-                                      
-                                        
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Top 10 Categories -->
-                        <div class="table-container bg-gray-50 rounded-xl p-6 border border-gray-200">
-                            <h3 class="text-xl font-bold text-gray-900 mb-4">Best-Selling Categories</h3>
-                            <div class="overflow-x-auto">
-                                <table class="w-full table-auto text-left">
-                                    <thead>
-                                        <tr class="bg-gray-100 text-gray-900">
-                                            <th class="px-6 py-4 font-bold">Category</th>
-                                            <th class="px-6 py-4 font-bold">Sales</th>
-                                            <th class="px-6 py-4 font-bold">Revenue</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                      
-                                             <% (topCategories || []).forEach(category => { %>
-                                            <tr class="table-row bg-gray-50 border-b border-gray-200 hover:bg-gray-100">
-                                                <td class="px-6 py-4"><%= category.name %></td>
-                                                <td class="px-6 py-4"><%= category.sales %></td>
-                                                <td class="px-6 py-4">$<%= category.revenue.toFixed(2) %></td>
-                                            </tr>
-                                        <% }) %>
-                                
-                                       
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Top 10 Brands -->
-                        <div class="table-container bg-gray-50 rounded-xl p-6 border border-gray-200">
-                            <h3 class="text-xl font-bold text-gray-900 mb-4">Best-Selling Brands</h3>
-                            <div class="overflow-x-auto">
-                                <table class="w-full table-auto text-left">
-                                    <thead>
-                                        <tr class="bg-gray-100 text-gray-900">
-                                            <th class="px-6 py-4 font-bold">Brand</th>
-                                            <th class="px-6 py-4 font-bold">Sales</th>
-                                            <th class="px-6 py-4 font-bold">Revenue</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                      
-                                            <% (topBrands || []).forEach(brand => { %>
-                                            <tr class="table-row bg-gray-50 border-b border-gray-200 hover:bg-gray-100">
-                                                <td class="px-6 py-4"><%= brand.name %></td>
-                                                <td class="px-6 py-4"><%= brand.sales %></td>
-                                                <td class="px-6 py-4">$<%= brand.revenue.toFixed(2) %></td>
-                                            </tr>
-                                        <% }) %>
-
-                                        
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Ledger Book -->
-                    <div class="card bg-gray-50 rounded-xl p-6 border border-gray-200">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4">Ledger Book</h3>
-                        <p class="text-gray-600 mb-4">Generate a detailed transaction ledger for your records.</p>
-                        <button class="btn-block px-6 py-3 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition-all duration-300" onclick="generateLedger()">
-                            <i class="fas fa-file-download mr-2"></i>
-                            Generate Ledger
-                        </button>
-                    </div>
-                </div>
-            </div>
+      <!-- KPI CARDS -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <div class="card bg-white p-6 rounded-xl shadow animate-fade-in">
+          <h6 class="text-gray-600 mb-2">Revenue</h6>
+          <p class="text-2xl font-bold text-gray-900">₹<%= revenue.toFixed(2) %></p>
+          <span class="text-gray-500 text-sm">Total revenue of Perfuma</span>
         </div>
-    </main>
+        <div class="card bg-white p-6 rounded-xl shadow animate-fade-in">
+          <h6 class="text-gray-600 mb-2">Orders</h6>
+          <p class="text-2xl font-bold text-gray-900"><%= total_orders %></p>
+          <span class="text-gray-500 text-sm">Total orders count</span>
+        </div>
+        <div class="card bg-white p-6 rounded-xl shadow animate-fade-in">
+          <h6 class="text-gray-600 mb-2">Products</h6>
+          <p class="text-2xl font-bold text-gray-900"><%= total_products %></p>
+          <span class="text-gray-500 text-sm">In <%= total_categories %> categories</span>
+        </div>
+        <div class="card bg-white p-6 rounded-xl shadow animate-fade-in">
+            <% if(monthly_earnings){%>
+                <h6 class="text-gray-600 mb-2">Monthly Earnings</h6>
+          <p class="text-2xl font-bold text-gray-900">₹<%= monthly_earnings.toFixed(2) %></p>
+          <span class="text-gray-500 text-sm">Based on local time</span>
 
-    <%- include("../partials/admin/footer") %>
+           <% } %>       
+        </div>
+      </div>
 
-    <script>
-        // Sample data for the chart
-        const yearlyData = {
-            labels: ['2020', '2021', '2022', '2023', '2024', '2025'],
-            data: [12000, 19000, 15000, 25000, 22000, 30000]
-        };
-        const monthlyData = {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            data: [2000, 2500, 1800, 2200, 2700, 3000, 3200, 2800, 2600, 2400, 2900, 3100]
-        };
-        const weeklyData = {
-            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-            data: [500, 700, 600, 800]
-        };
+      <!-- SALES CHART -->
+      <div class="card bg-white rounded-xl p-6 border border-gray-200 mb-12 animate-slide-up">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+          <i class="fas fa-chart-line text-amber-500 mr-3"></i> Sales Overview
+        </h2>
+        <div class="flex justify-end mb-4 gap-2">
+          <button class="btn-filter px-4 py-2 bg-amber-500 text-white font-semibold rounded-lg" onclick="updateChart('daily')">Daily</button>
+          <button class="btn-filter px-4 py-2 bg-amber-500 text-white font-semibold rounded-lg" onclick="updateChart('weekly')">Weekly</button>
+          <button class="btn-filter px-4 py-2 bg-amber-500 text-white font-semibold rounded-lg" onclick="updateChart('monthly')">Monthly</button>
+          <button class="btn-filter px-4 py-2 bg-amber-500 text-white font-semibold rounded-lg" onclick="updateChart('yearly')">Yearly</button>
+        </div>
+        <canvas id="salesChart" class="w-full h-96"></canvas>
+      </div>
 
-        // Initialize Chart
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        let salesChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: yearlyData.labels,
-                datasets: [{
-                    label: 'Sales ($)',
-                    data: yearlyData.data,
-                    borderColor: '#f59e0b',
-                    backgroundColor: 'rgba(245, 158, 11, 0.2)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'top' }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: { display: true, text: 'Revenue ($)' }
-                    }
-                }
-            }
-        });
+      <!-- BESTSELLERS WITH TOGGLE -->
+      <div class="card bg-white rounded-xl p-6 border border-gray-200 mb-12">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Top 5 Bestsellers</h3>
+        <div class="flex justify-center gap-4 mb-6">
+          <button id="btn-product" class="btn-filter px-4 py-2 bg-amber-500 text-white rounded-lg">Products</button>
+          <button id="btn-brand" class="btn-filter px-4 py-2 bg-gray-300 text-gray-800 rounded-lg">Brands</button>
+          <button id="btn-category" class="btn-filter px-4 py-2 bg-gray-300 text-gray-800 rounded-lg">Categories</button>
+        </div>
 
-        function updateChart(filter) {
-            let data;
-            if (filter === 'yearly') data = yearlyData;
-            else if (filter === 'monthly') data = monthlyData;
-            else data = weeklyData;
+        <!-- Product Table -->
+        <div id="table-product">
+          <table class="w-full table-auto text-left">
+            <thead>
+  <tr class="bg-gray-100">
+    <th class="px-6 py-4 font-bold">Product</th>
+    <th class="px-6 py-4 font-bold">Sales</th>
+    <th class="px-6 py-4 font-bold">Revenue</th>
+  </tr>
+</thead>
+<tbody>
+  <% (top_products || []).forEach(item => { %>
+    <tr class="table-row bg-gray-50 border-b hover:bg-gray-100">
+      <td class="px-6 py-4"><%= item.name %></td>
+      <td class="px-6 py-4"><%= item.sales %></td>
+      <td class="px-6 py-4">₹<%= item.revenue.toFixed(2) %></td>
+    </tr>
+  <% }) %>
+</tbody>
 
-            salesChart.data.labels = data.labels;
-            salesChart.data.datasets[0].data = data.data;
-            salesChart.update();
+          </table>
+        </div>
+
+        <!-- Brand Table -->
+        <div id="table-brand" class="hidden">
+          <table class="w-full table-auto text-left">
+           <thead>
+  <tr class="bg-gray-100">
+    <th class="px-6 py-4 font-bold">Product</th>
+    <th class="px-6 py-4 font-bold">Sales</th>
+    <th class="px-6 py-4 font-bold">Revenue</th>
+  </tr>
+</thead>
+<tbody>
+  <% (top_brands || []).forEach(item => { %>
+    <tr class="table-row bg-gray-50 border-b hover:bg-gray-100">
+      <td class="px-6 py-4"><%= item.name %></td>
+      <td class="px-6 py-4"><%= item.sales %></td>
+      <td class="px-6 py-4">₹<%= item.revenue.toFixed(2) %></td>
+    </tr>
+  <% }) %>
+</tbody>
+
+          </table>
+        </div>
+
+        <!-- Category Table -->
+        <div id="table-category" class="hidden">
+          <table class="w-full table-auto text-left">
+           <thead>
+  <tr class="bg-gray-100">
+    <th class="px-6 py-4 font-bold">Product</th>
+    <th class="px-6 py-4 font-bold">Sales</th>
+    <th class="px-6 py-4 font-bold">Revenue</th>
+  </tr>
+</thead>
+<tbody>
+  <% (top_categories || []).forEach(item => { %>
+    <tr class="table-row bg-gray-50 border-b hover:bg-gray-100">
+      <td class="px-6 py-4"><%= item.name %></td>
+      <td class="px-6 py-4"><%= item.sales %></td>
+      <td class="px-6 py-4">₹<%= item.revenue.toFixed(2) %></td>
+    </tr>
+  <% }) %>
+</tbody>
+
+          </table>
+        </div>
+      </div>
+
+      <!-- LEDGER BOOK -->
+      <div class="card bg-white rounded-xl p-6 border border-gray-200">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Ledger Book</h3>
+        <p class="text-gray-600 mb-4">Generate a detailed transaction ledger for your records.</p>
+        <button class="btn-block px-6 py-3 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition-all duration-300"
+          onclick="generateLedger()">
+          <i class="fas fa-file-download mr-2"></i>
+          Generate Ledger
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <%- include("../partials/admin/footer") %>
+
+  <script>
+    // Bestseller toggle
+    const btnProduct = document.getElementById('btn-product');
+    const btnBrand = document.getElementById('btn-brand');
+    const btnCategory = document.getElementById('btn-category');
+    const tableProduct = document.getElementById('table-product');
+    const tableBrand = document.getElementById('table-brand');
+    const tableCategory = document.getElementById('table-category');
+
+    function hideAll() {
+      tableProduct.classList.add('hidden');
+      tableBrand.classList.add('hidden');
+      tableCategory.classList.add('hidden');
+      btnProduct.classList.remove('bg-amber-500','text-white');
+      btnBrand.classList.remove('bg-amber-500','text-white');
+      btnCategory.classList.remove('bg-amber-500','text-white');
+      btnProduct.classList.add('bg-gray-300','text-gray-800');
+      btnBrand.classList.add('bg-gray-300','text-gray-800');
+      btnCategory.classList.add('bg-gray-300','text-gray-800');
+    }
+
+    btnProduct.addEventListener('click', () => {
+      hideAll(); tableProduct.classList.remove('hidden');
+      btnProduct.classList.add('bg-amber-500','text-white');
+    });
+    btnBrand.addEventListener('click', () => {
+      hideAll(); tableBrand.classList.remove('hidden');
+      btnBrand.classList.add('bg-amber-500','text-white');
+    });
+    btnCategory.addEventListener('click', () => {
+      hideAll(); tableCategory.classList.remove('hidden');
+      btnCategory.classList.add('bg-amber-500','text-white');
+    });
+
+    // Chart.js
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    let salesChart = new Chart(ctx, {
+      type: 'line',
+      data: { labels: [], datasets: [{ label: 'Sales (₹)', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.2)', fill: true, tension: 0.4 }] },
+      options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Revenue (₹)' } } } }
+    });
+
+    async function updateChart(filter) {
+      const response = await fetch(`/admin/dashboard/${filter}`);
+      const result = await response.json();
+      salesChart.data.labels = result.labels;
+      salesChart.data.datasets[0].data = result.values;
+      salesChart.update();
+    }
+    updateChart('daily'); // default
+
+    // Ledger
+    function generateLedger() {
+      Swal.fire({
+        title: 'Generate Ledger',
+        text: 'Do you want to download the transaction ledger?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, download!',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = '/admin/dashboard/ledger/generate';
         }
-
-      
-        function generateLedger() {
-            Swal.fire({
-                title: 'Generate Ledger',
-                text: 'Do you want to download the transaction ledger?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, download!',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '/admin/generate-ledger'; 
-                }
-            });
-        }
-    </script>
+      });
+    }
+  </script>
 </body>
 </html>

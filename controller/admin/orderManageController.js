@@ -28,6 +28,8 @@ const orderListing = async (req, res) => {
         
         if (filter) query.orderStatus = filter;
 
+        
+
         const orders = await Order.find(query)
             .populate('user items.product')
             .sort({ createdAt: sort === 'desc' ? -1 : 1 })
@@ -38,7 +40,8 @@ const orderListing = async (req, res) => {
         const totalOrders = await Order.countDocuments(query);
         const totalPages = Math.ceil(totalOrders / perPage);
         const currentPage = parseInt(page);
-        
+          
+        const find=await Order.find({orderStatus:{$in:['Delivered','Pending']}})
 
         orders.forEach(order=>{
             order.itemCount=order.items ? order.items.length : 0
@@ -56,7 +59,8 @@ const orderListing = async (req, res) => {
             totalPages,
             search,
             sort,
-            filter
+            filter,
+            find
         });
     } catch (error) {
         console.error('Error in fetching orders from orderListing:', error);

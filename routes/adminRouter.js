@@ -31,6 +31,8 @@ router.get('/pageError', adminController.pageError);
 
 //dashboard
 router.get('/dashboard', adminAuth, dashboardController.loadDashboard);
+router.get('/dashboard/ledger/generate',adminAuth,dashboardController.generateLedger)
+router.get('/dashboard/:filter',adminAuth,dashboardController.filteredSales)
 
 
 // Customer

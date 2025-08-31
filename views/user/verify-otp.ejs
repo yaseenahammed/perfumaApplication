@@ -7,40 +7,85 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @media (max-width: 640px) {
+            .swal2-popup {
+                width: 90% !important;
+                padding: 1rem !important;
+                font-size: 0.875rem !important; /* text-xs */
+            }
+            .swal2-title {
+                font-size: 1.125rem !important; /* text-lg */
+                line-height: 1.5 !important;
+            }
+            .swal2-content {
+                font-size: 0.875rem !important; /* text-xs */
+            }
+            .swal2-icon {
+                font-size: 1rem !important;
+                margin: 0.5rem auto !important;
+            }
+        }
+        @media (min-width: 640px) {
+            .swal2-popup {
+                width: 32rem !important;
+                padding: 1.5rem !important;
+                font-size: 1rem !important; /* text-base */
+            }
+            .swal2-title {
+                font-size: 1.5rem !important; /* text-2xl */
+                line-height: 1.75 !important;
+            }
+            .swal2-content {
+                font-size: 1rem !important; /* text-base */
+            }
+            .swal2-icon {
+                font-size: 1.25rem !important;
+                margin: 1rem auto !important;
+            }
+        }
+        .swal2-popup {
+            background-color: #f0fdf4 !important; /* bg-green-50 */
+            border: 1px solid #bbf7d0 !important; /* border-green-200 */
+        }
+        .swal2-title, .swal2-content {
+            color: #15803d !important; /* text-green-700 */
+        }
+    </style>
 </head>
 <body class="min-h-screen bg-gray-50">
-    <div class="flex min-h-screen">
+    <div class="flex flex-col md:flex-row min-h-screen">
         <!-- Left Side - Full Image -->
-        <div class="w-1/2 bg-gradient-to-br from-rose-100 to-amber-50 relative overflow-hidden">
+        <div class="w-full md:w-1/2 bg-gradient-to-br from-rose-100 to-amber-50 relative overflow-hidden">
             <div class="absolute inset-0 flex items-center justify-center">
-                <img src="https://t3.ftcdn.net/jpg/08/32/30/12/360_F_832301227_1iQHc794dGkUn4VQLlarNKnV1UvpZSLq.jpg" alt="Perfuma Fragrance" class="w-full h-full object-cover">
+                <img src="https://t3.ftcdn.net/jpg/08/32/30/12/360_F_832301227_1iQHc794dGkUn4VQLlarNKnV1UvpZSLq.jpg" alt="Perfuma Fragrance" class="w-full h-full object-cover" loading="lazy">
             </div>
             <div class="absolute inset-0 bg-black bg-opacity-20"></div>
-            <div class="absolute bottom-8 left-8 right-8 text-center">
+            <div class="absolute bottom-8 left-4 right-4 text-center">
                 <div class="flex justify-center space-x-4 mb-4">
-                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
-                        <i class="fas fa-shield-alt text-lg text-white"></i>
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-shield-alt text-base md:text-lg text-white"></i>
                     </div>
-                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
-                        <i class="fas fa-envelope-open text-lg text-white"></i>
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-envelope-open text-base md:text-lg text-white"></i>
                     </div>
-                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
-                        <i class="fas fa-check-circle text-lg text-white"></i>
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-check-circle text-base md:text-lg text-white"></i>
                     </div>
                 </div>
-                <h3 class="text-white text-xl font-semibold">Secure Verification</h3>
-                <p class="text-white/80 text-sm mt-2">Protecting your Perfuma account</p>
+                <h3 class="text-white text-lg md:text-xl font-semibold">Secure Verification</h3>
+                <p class="text-white/80 text-xs md:text-sm mt-2">Protecting your Perfuma account</p>
             </div>
         </div>
 
         <!-- Right Side - OTP Verification Form -->
-        <div class="w-1/2 flex items-center justify-center p-8">
-            <div class="max-w-md w-full space-y-8">
+        <div class="w-full md:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8">
+            <div class="w-full max-w-md space-y-6">
                 <!-- Header -->
                 <div class="text-center">
-                    <h1 class="text-4xl font-bold text-gray-900 tracking-wide">PERFUMA</h1>
-                    <p class="mt-2 text-gray-600">Email Verification</p>
-                    <p class="mt-1 text-sm text-gray-500">Enter the 6-digit code sent to your email</p>
+                    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 tracking-wide">PERFUMA</h1>
+                    <p class="mt-2 text-gray-600 text-sm sm:text-base">Email Verification</p>
+                    <p class="mt-1 text-xs sm:text-sm text-gray-500">Enter the 6-digit code sent to your email</p>
                 </div>
 
                 <!-- OTP Form -->
@@ -59,7 +104,7 @@
                                 required 
                                 maxlength="6" 
                                 pattern="\d*"
-                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition duration-200 text-center text-2xl font-mono tracking-widest"
+                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition duration-200 text-center text-xl sm:text-2xl font-mono tracking-widest"
                                 placeholder="000000"
                                 autocomplete="one-time-code"
                             >
@@ -70,12 +115,12 @@
                     <!-- Timer Display -->
                     <div class="flex items-center justify-center space-x-4">
                         <div class="flex items-center space-x-2">
-                            <div id="otpTimer" class="w-16 h-16 rounded-full border-4 border-amber-200 flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50 relative">
-                                <span id="timerValue" class="text-lg font-bold text-amber-600">60</span>
+                            <div id="otpTimer" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-amber-200 flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50 relative">
+                                <span id="timerValue" class="text-base sm:text-lg font-bold text-amber-600">60</span>
                                 <div class="absolute inset-0 rounded-full border-4 border-transparent border-t-amber-500 animate-spin" style="animation-duration: 60s; animation-timing-function: linear;"></div>
                             </div>
                             <div class="text-sm text-gray-600">
-                                <p class="font-medium">Time remaining</p>
+                                <p class="font-medium text-xs sm:text-sm">Time remaining</p>
                                 <p class="text-xs text-gray-500">Code expires soon</p>
                             </div>
                         </div>
@@ -112,20 +157,20 @@
 
                     <!-- Server Error Message -->
                     <% if (locals.message && message.length > 0) { %>
-                    <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
-                        <div class="flex">
-                            <i class="fas fa-exclamation-circle text-red-400 mr-2 mt-0.5"></i>
-                            <p class="text-sm text-red-700"><%= message %></p>
+                    <div class="p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-circle text-red-400 mr-2 text-base sm:text-lg"></i>
+                            <p class="text-xs sm:text-sm text-red-700"><%= message %></p>
                         </div>
                     </div>
                     <% } %>
 
                     <!-- Help Text -->
                     <div class="text-center space-y-2">
-                        <p class="text-sm text-gray-600">
+                        <p class="text-xs sm:text-sm text-gray-600">
                             Didn't receive the code? Check your spam folder
                         </p>
-                        <p class="text-sm text-gray-500">
+                        <p class="text-xs sm:text-sm text-gray-500">
                             Already verified? 
                             <a href="/login" class="font-medium text-amber-600 hover:text-amber-500 transition duration-200">
                                 Login now
@@ -135,18 +180,18 @@
                 </form>
 
                 <!-- Success Message -->
-                <div id="successMessage" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div class="flex">
-                        <i class="fas fa-check-circle text-green-400 mr-2 mt-0.5"></i>
-                        <p class="text-sm text-green-700">Email verified successfully! Redirecting...</p>
+                <div id="successMessage" class="hidden mt-2 sm:mt-4 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-400 mr-2 text-base sm:text-lg"></i>
+                        <p class="text-xs sm:text-sm text-green-700">Email verified successfully! Redirecting...</p>
                     </div>
                 </div>
 
                 <!-- Error Message -->
-                <div id="errorMessage" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <div class="flex">
-                        <i class="fas fa-exclamation-circle text-red-400 mr-2 mt-0.5"></i>
-                        <p class="text-sm text-red-700" id="errorText"></p>
+                <div id="errorMessage" class="hidden mt-2 sm:mt-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle text-red-400 mr-2 text-base sm:text-lg"></i>
+                        <p class="text-xs sm:text-sm text-red-700" id="errorText"></p>
                     </div>
                 </div>
             </div>
@@ -236,7 +281,12 @@
                             title: "Email Verified Successfully!",
                             text: "Welcome to Perfuma",
                             showConfirmButton: false,
-                            timer: 2000,
+                            timer: 2500,
+                            customClass: {
+                                popup: 'bg-green-50 border border-green-200',
+                                title: 'text-green-700 font-bold',
+                                content: 'text-green-700'
+                            }
                         }).then(() => {
                             window.location.href = response.redirectUrl || '/dashboard';
                         });
@@ -274,8 +324,13 @@
                             icon: "success",
                             title: "New Code Sent!",
                             text: "A new verification code has been sent to your email.",
-                            timer: 2000,
-                            showConfirmButton: false
+                            showConfirmButton: false,
+                            timer: 2500,
+                            customClass: {
+                                popup: 'bg-green-50 border border-green-200',
+                                title: 'text-green-700 font-bold',
+                                content: 'text-green-700'
+                            }
                         });
                         
                         // Reset timer and form
@@ -284,7 +339,14 @@
                         Swal.fire({
                             icon: "error",
                             title: "Error",
-                            text: response.message || "Could not resend OTP."
+                            text: response.message || "Could not resend OTP.",
+                            showConfirmButton: false,
+                            timer: 2500,
+                            customClass: {
+                                popup: 'bg-red-50 border border-red-200',
+                                title: 'text-red-700 font-bold',
+                                content: 'text-red-700'
+                            }
                         });
                         resetResendButton();
                     }
@@ -293,7 +355,14 @@
                     Swal.fire({
                         icon: "error",
                         title: "Server Error",
-                        text: "Please try again later."
+                        text: "Please try again later.",
+                        showConfirmButton: false,
+                        timer: 2500,
+                        customClass: {
+                            popup: 'bg-red-50 border border-red-200',
+                            title: 'text-red-700 font-bold',
+                            content: 'text-red-700'
+                        }
                     });
                     resetResendButton();
                 }

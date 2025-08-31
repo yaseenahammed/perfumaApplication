@@ -30,16 +30,15 @@ const getOrders = async (req, res) => {
     };
 
     const totalOrders = await Order.countDocuments(query);
-    const totalPages = Math.ceil(totalOrders / limit);
+const totalPages = Math.ceil(totalOrders / limit);
 
-    
+const orders = await Order.find(query)
+  .populate('items.product')
+  .sort({ createdAt: -1 })
+  .skip((page - 1) * limit)
+  .limit(limit)
+  .lean();
 
-    const orders = await Order.find(query)
-      .populate('items.product')
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean();
 
     res.render('my-orders', {
       user,
