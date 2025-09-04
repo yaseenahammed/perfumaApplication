@@ -1,5 +1,6 @@
 const Order = require('../../models/orderSchema');
 const User = require('../../models/userSchema');
+const Product=require('../../models/productSchema')
 const Wallet=require('../../models/walletSchema')
 const Transactions=require('../../models/transactionSchema')
 
@@ -41,7 +42,7 @@ const orderListing = async (req, res) => {
         const totalPages = Math.ceil(totalOrders / perPage);
         const currentPage = parseInt(page);
           
-        const find=await Order.find({orderStatus:{$in:['Delivered','Pending']}})
+        
 
         orders.forEach(order=>{
             order.itemCount=order.items ? order.items.length : 0
@@ -60,7 +61,7 @@ const orderListing = async (req, res) => {
             search,
             sort,
             filter,
-            find
+            
         });
     } catch (error) {
         console.error('Error in fetching orders from orderListing:', error);
@@ -75,44 +76,56 @@ const orderListing = async (req, res) => {
         });
     }
 };
-
 const updateStatus = async (req, res) => {
-    try {
-        const { orderId } = req.params;
-        const { status } = req.body;
+  try {
+    const { orderId } = req.params; // this will be like "ORD-984403"
+    const { status } = req.body;
 
-        const allowedStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Out for Delivery', 'Cancelled'];
-        if (!allowedStatuses.includes(status)) {
-            return res.json({ success: false, message: 'Invalid status' });
-        }
-
-        const order = await Order.findOneAndUpdate(
-            { orderID: orderId },
-            { orderStatus: status },
-            { new: true }
-        );
-
-        if (order) {
-          
-            let nextOptions = [];
-            if (order.orderStatus === 'Processing') nextOptions = ['Shipped', 'Cancelled'];
-            else if (order.orderStatus === 'Shipped') nextOptions = ['Out for Delivery', 'Cancelled'];
-            else if (order.orderStatus === 'Out for Delivery') nextOptions = ['Delivered', 'Cancelled'];
-
-            res.json({
-                success: true,
-                status: order.orderStatus,
-                nextOptions
-            });
-        } else {
-            res.json({ success: false, message: 'Order not found' });
-        }
-    } catch (error) {
-        console.error('Error in updateStatus:', error);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    const allowedStatuses = [
+      "Pending",
+      "Processing",
+      "Shipped",
+      "Delivered",
+      "Out for Delivery",
+      "Cancelled",
+    ];
+    if (!allowedStatuses.includes(status)) {
+      return res.json({ success: false, message: "Invalid status" });
     }
-};
 
+    const order = await Order.findOneAndUpdate(
+      { orderID: orderId }, // 👈 match custom orderID
+      {
+        $set: {
+          orderStatus: status,
+          "items.$[].orderStatus": status, // 👈 update every item
+        },
+      },
+      { new: true }
+    );
+
+    if (order) {
+      let nextOptions = [];
+      if (order.orderStatus === "Processing")
+        nextOptions = ["Shipped", "Cancelled"];
+      else if (order.orderStatus === "Shipped")
+        nextOptions = ["Out for Delivery", "Cancelled"];
+      else if (order.orderStatus === "Out for Delivery")
+        nextOptions = ["Delivered", "Cancelled"];
+
+      return res.json({
+        success: true,
+        status: order.orderStatus,
+        nextOptions,
+      });
+    } else {
+      return res.json({ success: false, message: "Order not found" });
+    }
+  } catch (error) {
+    console.error("Error in updateStatus:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
 
 const verifyReturn = async (req, res) => {
     try {
@@ -127,17 +140,29 @@ const verifyReturn = async (req, res) => {
             return res.json({ success: false, message: 'Invalid return request' });
         }
 
-   
+        // Update overall order status
         order.orderStatus = 'Returned';
-          const refundAmount = order.finalAmount;
+
+        const refundAmount = order.finalAmount;
         order.refundAmount += refundAmount;
-order.netAmount = order.finalAmount - order.refundAmount;
+        order.netAmount = order.finalAmount - order.refundAmount;
+
+       
+        for (const item of order.items) {
+            if (item.orderStatus === 'ReturnRequest' || item.orderStatus === 'Delivered') {
+                item.orderStatus = 'Returned'; 
+            }
+
+            await Product.updateOne(
+                { _id: item.product },
+                { $inc: { quantity: item.quantity } }  
+            );
+        }
 
         await order.save();
 
-      
+        // Process wallet refund
         const userId = order.user._id;
-
         await Wallet.findOneAndUpdate(
             { user: userId },
             {
@@ -154,7 +179,7 @@ order.netAmount = order.finalAmount - order.refundAmount;
             { upsert: true }
         );
 
-       
+        // Add to transactions log
         await Transactions.create({
             user: userId,
             type: 'Return',
@@ -171,6 +196,7 @@ order.netAmount = order.finalAmount - order.refundAmount;
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 };
+
 
 
 const verifyReturnItem = async (req, res) => {
@@ -195,6 +221,12 @@ const verifyReturnItem = async (req, res) => {
 
         order.refundAmount += refundAmount;   
         order.netAmount = order.finalAmount - order.refundAmount;
+
+          await Product.updateOne(
+              { _id: item.product },
+              { $inc: { quantity: item.quantity } }
+            );
+
         await order.save();
 
        

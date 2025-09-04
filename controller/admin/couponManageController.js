@@ -81,6 +81,7 @@ const addCoupon=async(req,res)=>{
             minPrice:parseFloat(minPrice),
             expireOn,
             isList: Boolean(req.body.isList),
+            maxUsesPerUser: 3
 
             
         }
@@ -113,8 +114,7 @@ const updateCoupon=async(req,res)=>{
             expireOn,
             isList: Boolean(req.body.isList),
 
-            
-        };
+            };
 
         const coupon=await Coupon.findOneAndUpdate({couponCode},
             updateData,

@@ -23,12 +23,26 @@ const {Schema}=mongoose;
        expireOn: {
             type: String,
             required: true,
-            default:""
+         
         },
         isList:{
             type:Boolean,
             default:true
         },
+         maxUsesPerUser: {
+      type: Number,
+      default: 1, 
+    },
+  
+
+   
+    usedBy: [
+      {
+        userId: { type: Schema.Types.ObjectId, ref: "User" },
+        count: { type: Number, default: 1 },
+      },
+    ],
+
         userId: [{
             type:Schema.Types.ObjectId,
             ref:"User"

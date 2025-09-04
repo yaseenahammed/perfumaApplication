@@ -99,13 +99,9 @@
                                         Search
                                     </button>
                                 </div>
-
                             </div>
                         </form>
-                        
                     </div>
-
-                  
 
                     <% if (orders.length === 0) { %>
                         <div class="text-center py-16">
@@ -141,19 +137,23 @@
                                         </div>
                                         <div class="flex flex-col items-center space-y-4">
                                             <div class="flex items-center text-sm">
-                                               <% 
-   const itemStatuses = order.items.map(i => i.orderStatus);
+                                                <%
+  const itemStatuses = order.items.map(i => i.orderStatus.trim().toLowerCase());
 
-   let displayOrderStatus;
+let displayOrderStatus;
 
-   if (itemStatuses.every(s => s === 'Cancelled')) {
-       displayOrderStatus = 'Cancelled';
-   } else if (itemStatuses.every(s => s === 'Returned')) {
-       displayOrderStatus = 'Returned';
-   
-   }else {
-       displayOrderStatus = order.orderStatus;
-   }
+if (itemStatuses.every(s => s === 'cancelled')) {
+    displayOrderStatus = 'Cancelled';
+} else if (itemStatuses.every(s => s === 'returned')) {
+    displayOrderStatus = 'Returned';
+} else if (itemStatuses.every(s => s === 'delivered')) {
+    displayOrderStatus = 'Delivered';
+} else if (itemStatuses.every(s => s === 'out for delivery')) {
+    displayOrderStatus = 'Out for Delivery';
+} else {
+    displayOrderStatus = order.orderStatus;
+}
+
 
    let orderStatusClass = ['Delivered','Shipped','Processing'].includes(displayOrderStatus)
                           ? 'text-green-600'
@@ -172,55 +172,84 @@
                                                 <p class="text-green-600 text-sm">Return allowed, amount refunded to wallet.</p>
                                             <% } else if (order.orderStatus === 'Delivered' && order.returnRejected) { %>
                                                 <p class="text-red-600 text-sm">Return request rejected.</p>
+                                             <% } else if (order.orderStatus === 'Pending') { %>
+                                                <p class="text-red-600 text-sm">Can not retry after 24 hours</p>
                                             <% } %>
                                             <div class="flex flex-col md:flex-row gap-2">
     <a href="/userOrder-details/<%= order.orderID %>" 
        class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 transform hover:scale-105">
        View Details
     </a>
-  <% if (!order.couponCode) { %>  
+<%
+const allProcessingOrShipped = order.items.length > 0 &&
+    itemStatuses.every(s => s === 'processing' || s === 'shipped');
 
-    <% if (displayOrderStatus === 'Processing' || displayOrderStatus === 'Shipped') { %>
-        <button onclick="showCancelModal('<%= order.orderID %>')" 
-                class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 transform hover:scale-105">
-            Cancel Order
-        </button>
-    <% } %>
+const allDelivered = order.items.length > 0 &&
+    itemStatuses.every(s => s === 'delivered');
 
-  <% if (order.items.every(i => i.orderStatus ==='Delivered' || order.orderStatus==='Delivered' && i.orderStatus!=='ReturnRequest' && i.orderStatus!=='Cancelled' && i.orderStatus!=='Return Rejected')) { %>
-  <button onclick="showReturnModal('<%= order.orderID %>')" 
-          class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 transform hover:scale-105">
-      Return Order
-  </button>
+
+%>
+
+
+<!-- Cancel Button -->
+<% if (allProcessingOrShipped && order.orderStatus !== 'Delivered' && displayOrderStatus !== 'Cancelled' && order.orderStatus !== 'Pending' && order.orderStatus !== 'Out for Delivery') { %>
+    <button onclick="showCancelModal('<%= order.orderID %>')" 
+            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 transform hover:scale-105">
+        Cancel Order
+    </button>
 <% } %>
+
+<!-- Return Button -->
+ <pre><%= JSON.stringify(itemStatuses) %></pre>
+
+<% if (itemStatuses.length > 0 && itemStatuses.every(s => s === 'delivered')) { %>
+    <button onclick="showReturnModal('<%= order.orderID %>')" 
+            class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 transform hover:scale-105">
+        Return Order
+    </button>
 <% } %>
 
-</div>
 
+
+
+
+
+                                                <%
+  const orderDate = new Date(order.createdAt);
+  const now = new Date();
+  const hoursSinceOrder = (now - orderDate) / (1000 *60 * 60);
+  const canRetry = order.orderStatus === 'Pending' && hoursSinceOrder <= 24;
+%>
+
+<% if (order.orderStatus === 'Pending') { %>
+  <% if (canRetry) { %>
+    <button 
+      onclick="retryOrder('<%= order._id %>')" 
+      class="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-lg hover:from-amber-600 hover:to-yellow-600 transition duration-300 transform hover:scale-105">
+      Retry Payment
+    </button>
+  <% } else { %>
+    <button 
+      disabled 
+      title="Cannot retry after 24 hours"
+      class="px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed">
+      Retry Payment
+    </button>
+  <% } %>
+<% } %>
+
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             <% }); %>
                         </div>
                         <div class="mt-8 pt-6 border-t border-gray-200">
-                           
-                            
-                            
                             <a href="/shop" class="inline-flex items-center text-amber-600 hover:text-amber-700 font-semibold transition duration-200">
                                 <i class="fas fa-arrow-left mr-2"></i>
                                 Continue Shopping
                             </a>
-                        </div><br>
-                        <div>
-                          <button>
-                                <a href="/wallet" class="wallet-balance-btn w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center justify-center">
-                              <i class="fas fa-wallet mr-2"></i>>
-                               
-                                check Wallet
-                            </a>
-                            </button>
                         </div>
-                        
                     <% } %>
                 </div>
 
@@ -273,7 +302,24 @@
         </div>
     </div>
 
+    <div id="order-successful-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden animate-fade-in"> <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center animate-slide-up transform scale-95 opacity-0" id="order-successful-content"> <div class="w-32 h-32 mx-auto mb-6"> <img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" alt="Success Tick" class="w-20 h-20 mx-auto mb-6"> </div> <h2 class="text-3xl font-bold text-green-600 mb-4">Order Placed Successfully!</h2> <p class="text-gray-700 text-lg mb-8">Thank you for your purchase. Your order has been confirmed and will be processed shortly.</p> <div class="flex flex-col sm:flex-row justify-center gap-4"> <button class="view-order-details-btn px-8 py-4 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition duration-300"> <i class="fas fa-clipboard-list mr-2"></i> View Order Details </button> <button class="continue-shopping-btn px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300"> <i class="fas fa-shopping-bag mr-2"></i> Continue Shopping </button> </div> </div> </div> <div id="order-failed-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden animate-fade-in"> <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center animate-slide-up transform scale-95 opacity-0" id="order-failed-content"> <div class="w-32 h-32 mx-auto mb-6"> <img src="https://cdn-icons-png.flaticon.com/512/463/463612.png" alt="Failure Cross" class="w-20 h-20 mx-auto mb-6"> </div> <h2 class="text-3xl font-bold text-red-600 mb-4">Payment Failed</h2> <p class="text-gray-700 text-lg mb-8">Oops! Something went wrong while processing your payment. Please try again or use a different method.</p> <div class="flex flex-col sm:flex-row justify-center gap-4"> <button onclick="closeModal(order-failed-modal, order-failed-content)" class="close-modal-btn px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300"> <i class="fas fa-times-circle mr-2"></i> Cancel </button> </div> </div> </div> -->
+
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
+          const viewOrderDetailsBtn = document.querySelector('.view-order-details-btn');
+            const continueShoppingBtn = document.querySelector('.continue-shopping-btn');
+
+        function openModal(modalId, contentId) {
+    const modal = document.getElementById(modalId);
+    const content = document.getElementById(contentId);
+    if (modal && content) {
+        modal.classList.remove('hidden');   // show modal
+        content.classList.add('animate-slide-up');
+        content.classList.remove('opacity-0', 'scale-95');
+    }
+}
+
         let currentReturnOrderID = null;
 
         function showCancelModal(orderID) {
@@ -362,6 +408,90 @@
             const searchTerm = document.getElementById('searchOrder').value;
             window.location.href = `/my-orders?search=${encodeURIComponent(searchTerm)}`;
         }
+
+
+        
+    window.retryOrder = async function(orderId) {
+        if (!orderId) {
+            Swal.fire('Error', 'No order found to retry!', 'error');
+            return;
+        }
+
+        try {
+            // 1️⃣ Request a new Razorpay order from the backend
+            const response = await fetch('/retry-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId })
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                Swal.fire('Error', result.message || 'Failed to initiate retry payment.', 'error');
+                return;
+            }
+
+            // 2️⃣ Configure Razorpay options
+            const options = {
+                key: result.key,
+                amount: result.amount,
+                currency: result.currency,
+                order_id: result.razorpayOrderId,
+                name: 'Perfuma',
+                description: 'Retry Order Payment',
+                handler: async function(paymentResponse) {
+                    try {
+                        // 3️⃣ Verify the payment on the server
+                        const verifyResponse = await fetch('/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                orderId,
+                                razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                                razorpay_order_id: paymentResponse.razorpay_order_id,
+                                razorpay_signature: paymentResponse.razorpay_signature
+                            })
+                        });
+
+                        const verifyResult = await verifyResponse.json();
+
+                        if (verifyResult.success) {
+                           openModal('order-successful-modal', 'order-successful-content');
+
+                        } else {
+                            openModal('order-failed-modal', 'order-failed-content');
+                        }
+                    } catch (err) {
+                        console.error('Error verifying retry payment:', err);
+                        Swal.fire('Error', 'An error occurred during payment verification.', 'error');
+                    }
+                },
+                theme: { color: '#6366f1' }
+            };
+
+            // 4️⃣ Open Razorpay payment modal
+            const rzp = new Razorpay(options);
+            rzp.open();
+
+        } catch (error) {
+            console.error('Retry order error:', error);
+            Swal.fire('Error', 'Failed to retry payment.', 'error');
+        }
+    };
+
+
+viewOrderDetailsBtn.addEventListener('click', () => {
+
+        window.location.href = `/order-details/${window.latestOrderId}`;
+
+});
+
+continueShoppingBtn.addEventListener('click', () => {
+    window.location.href = '/shop';
+});
+
+        
     </script>
 
     <%- include("../../views/partials/user/footer") %>

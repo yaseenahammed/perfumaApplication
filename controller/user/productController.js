@@ -41,6 +41,8 @@ const productDetails = async (req, res) => {
       return res.redirect('/shop');
     }
 
+    
+
  
     const { finalPrice, bestOffer } = await getBestPrice(product);
     product.finalPrice = finalPrice;
@@ -130,10 +132,18 @@ const addToCart = async (req, res) => {
     ) {
       return res.status(400).json({ error: 'Product cannot be added to cart' });
     }
+if (quantity < 1) {
+  return res.status(400).json({ error: 'Quantity must be at least 1' });
+}
 
-    if (quantity < 1 || quantity > product.quantity || quantity > MAX_ALLOWED_QUANTITY) {
-      return res.status(400).json({ error: 'Invalid quantity selected ' });
-    }
+if (quantity > product.quantity) {
+  return res.status(400).json({ error: 'Quantity exceeds available stock' });
+}
+
+if (quantity > MAX_ALLOWED_QUANTITY) {
+  return res.status(400).json({ error: `Maximum ${MAX_ALLOWED_QUANTITY} quantity allowed per product` });
+}
+
 
     const price = product.salePrice || product.regularPrice;
     const totalPrice = price * quantity;

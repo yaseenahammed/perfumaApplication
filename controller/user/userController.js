@@ -177,6 +177,7 @@ if (referredBy) {
       minPrice: 1000,
       expireOn: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       isList: true,
+      maxUsesPerUser: 1,
       userId: [referrer._id],
     });
 

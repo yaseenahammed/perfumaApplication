@@ -285,17 +285,19 @@ const cancelItem=async(req,res)=>{
     order.refundAmount=(order.refundAmount || 0) + refundAmount;
     order.netAmount = order.finalAmount - order.refundAmount;
 
+//     if (order.items.every(i => i.orderStatus === 'Cancelled')) {
+//     order.orderStatus = 'Cancelled';
+// } else if (order.items.some(i => i.orderStatus === 'ReturnRequest')) {
+//     order.orderStatus = 'ReturnRequest';
+// } else if (order.items.every(i => i.orderStatus === 'Delivered')) {
+//     order.orderStatus = 'Delivered';
+// } else {
+//     order.orderStatus = 'Processing'; 
+// }
+
     await order.save();
 
-if (order.items.every(i => i.orderStatus === 'Cancelled')) {
-    order.orderStatus = 'Cancelled';
-} else if (order.items.some(i => i.orderStatus === 'ReturnRequest')) {
-    order.orderStatus = 'ReturnRequest';
-} else if (order.items.every(i => i.orderStatus === 'Delivered')) {
-    order.orderStatus = 'Delivered';
-} else {
-    order.orderStatus = 'Processing'; 
-}
+
     res.json({ success: true, message: 'Item cancelled successfully' });
 
   } catch (error) {
@@ -327,6 +329,12 @@ const returnOrder = async (req, res) => {
 
         order.orderStatus = 'ReturnRequest';
         order.returnReason = reason;
+
+         order.items.forEach((item) => {
+      if (item.orderStatus === "Delivered") {
+        item.orderStatus = "ReturnRequest";
+      }
+    });
 
         
         await order.save();

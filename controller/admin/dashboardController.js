@@ -4,8 +4,13 @@ const PDFDocument = require("pdfkit");
 const User=require('../../models/userSchema.js')
 const Category=require('../../models/categorySchema.js')
 
+const { getBestPrice } = require('../../helpers/offerHelper');
+
+
 async function fetchTopProducts(limit = 10) {
-  return Order.aggregate([
+
+  const rawData = await Order.aggregate([
+    { $match: { orderStatus: "Delivered" } },   
     { $unwind: "$items" },
     {
       $group: {
@@ -24,17 +29,30 @@ async function fetchTopProducts(limit = 10) {
       }
     },
     { $unwind: "$product" }
-  ]).then(data =>
-    data.map(p => ({
-      name: p.product.name,
-      sales: p.totalSold,
-     
-    }))
+  ]);
+
+
+  const enrichedData = await Promise.all(
+    rawData.map(async (p) => {
+      const { finalPrice } = await getBestPrice(p.product);
+      return {
+        name: p.product.name,
+        sales: p.totalSold,
+        revenue: p.totalSold * finalPrice 
+      };
+    })
   );
+
+  return enrichedData;
 }
 
+
+
+
 async function fetchTopBrands(limit = 10) {
-  return Order.aggregate([
+
+  const rawData = await Order.aggregate([
+    { $match: { orderStatus: "Delivered" } },
     { $unwind: "$items" },
     {
       $lookup: {
@@ -58,23 +76,40 @@ async function fetchTopBrands(limit = 10) {
       $group: {
         _id: "$brand._id",
         name: { $first: "$brand.name" },
-        totalSold: { $sum: "$items.quantity" },
-        grossRevenue: { $sum: { $multiply: ["$items.quantity", "$product.salePrice"] } }
+        products: { $push: { product: "$product", quantity: "$items.quantity" } },
+        totalSold: { $sum: "$items.quantity" }
       }
     },
     { $sort: { totalSold: -1 } },
     { $limit: limit }
-  ]).then(data =>
-    data.map(b => ({
-      name: b.name,
-      sales: b.totalSold,
-      revenue: b.grossRevenue
-    }))
+  ]);
+
+
+  const enrichedData = await Promise.all(
+    rawData.map(async (b) => {
+      let revenue = 0;
+      for (const item of b.products) {
+        const { finalPrice } = await getBestPrice(item.product);
+        revenue += item.quantity * finalPrice;
+      }
+
+      return {
+        name: b.name,
+        sales: b.totalSold,
+        revenue
+      };
+    })
   );
+
+  return enrichedData;
 }
 
+
+
 async function fetchTopCategories(limit = 10) {
-  return Order.aggregate([
+  
+  const rawData = await Order.aggregate([
+    { $match: { orderStatus: "Delivered" } },
     { $unwind: "$items" },
     {
       $lookup: {
@@ -98,19 +133,33 @@ async function fetchTopCategories(limit = 10) {
       $group: {
         _id: "$category._id",
         name: { $first: "$category.name" },
-        totalSold: { $sum: "$items.quantity" },
-        grossRevenue: { $sum: { $multiply: ["$items.quantity", "$product.salePrice"] } }
+        products: { $push: { product: "$product", quantity: "$items.quantity" } },
+        totalSold: { $sum: "$items.quantity" }
       }
     },
     { $sort: { totalSold: -1 } },
     { $limit: limit }
-  ]).then(data =>
-    data.map(c => ({
-      name: c.name,
-      sales: c.totalSold,
-      revenue: c.grossRevenue
-    }))
+  ]);
+
+  
+  const enrichedData = await Promise.all(
+    rawData.map(async (c) => {
+      let revenue = 0;
+
+      for (const item of c.products) {
+        const { finalPrice } = await getBestPrice(item.product);
+        revenue += item.quantity * finalPrice;
+      }
+
+      return {
+        name: c.name,
+        sales: c.totalSold,
+        revenue
+      };
+    })
   );
+
+  return enrichedData;
 }
 
 
@@ -134,7 +183,196 @@ async function getMonthlyEarnings() {
   ]);
 
   return result.length > 0 ? result[0].total : 0;
+ 
 }
+
+
+
+const getYearlySales = async () => {
+  const currentYear = new Date().getFullYear();
+  const startYear = currentYear - 4; 
+  const startDate = new Date(`${startYear}-01-01T00:00:00Z`);
+
+  const sales = await Order.aggregate([
+    {
+      $match: {
+        orderStatus: "Delivered",
+        createdAt: { $gte: startDate }
+      }
+    },
+    {
+      $group: {
+        _id: { year: { $year: "$createdAt" } },
+        totalSales: { $sum: "$finalAmount" }
+      }
+    },
+    { $sort: { "_id.year": -1 } }, 
+    { $limit: 5 }
+  ]);
+
+
+  const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
+  const labels = years.map(year => `${year}`);
+  const values = years.map(year => {
+    const sale = sales.find(s => s._id.year === year);
+    return sale ? sale.totalSales : 0;
+  });
+
+  return { labels, values };
+};
+
+const getMonthlySales = async () => {
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setMonth(endDate.getMonth() - 4); 
+  startDate.setDate(1); 
+  startDate.setHours(0, 0, 0, 0);
+
+  const sales = await Order.aggregate([
+    {
+      $match: {
+        orderStatus: "Delivered",
+        createdAt: { $gte: startDate, $lte: endDate }
+      }
+    },
+    {
+      $group: {
+        _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+        totalSales: { $sum: "$finalAmount" }
+      }
+    },
+    { $sort: { "_id.year": -1, "_id.month": -1 } },
+    { $limit: 5 }
+  ]);
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = Array.from({ length: 5 }, (_, i) => {
+    const d = new Date();
+    d.setMonth(endDate.getMonth() - i);
+    return { month: d.getMonth() + 1, year: d.getFullYear() };
+  });
+  const labels = months.map(m => `${monthNames[m.month - 1]} ${m.year}`);
+  const values = months.map(m => {
+    const sale = sales.find(s => s._id.month === m.month && s._id.year === m.year);
+    return sale ? sale.totalSales : 0;
+  });
+
+  return { labels, values };
+};
+
+
+const getWeeklySales = async () => {
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(endDate.getDate() - 28); 
+
+  const sales = await Order.aggregate([
+    {
+      $match: {
+        orderStatus: "Delivered",
+        createdAt: { $gte: startDate, $lte: endDate }
+      }
+    },
+    {
+      $group: {
+        _id: {
+          year: { $year: "$createdAt" },
+          week: { $isoWeek: "$createdAt" }
+        },
+        totalSales: { $sum: "$finalAmount" }
+      }
+    },
+    { $sort: { "_id.year": -1, "_id.week": -1 } },
+    { $limit: 5 }
+  ]);
+
+  const weeks = Array.from({ length: 5 }, (_, i) => {
+    const d = new Date();
+    d.setDate(endDate.getDate() - i * 7);
+    return { week: d.getWeek(), year: d.getFullYear() };
+  });
+  const labels = weeks.map(w => `Week ${w.week} - ${w.year}`);
+  const values = weeks.map(w => {
+    const sale = sales.find(s => s._id.week === w.week && s._id.year === w.year);
+    return sale ? sale.totalSales : 0;
+  });
+
+  return { labels, values };
+};
+
+
+Date.prototype.getWeek = function() {
+  const date = new Date(this.getTime());
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+  const week1 = new Date(date.getFullYear(), 0, 4);
+  return Math.round(((date - week1) / 86400000 + 1) / 7);
+};
+
+const getDailySales = async () => {
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(endDate.getDate() - 4);
+
+  const sales = await Order.aggregate([
+    {
+      $match: {
+        orderStatus: "Delivered",
+        createdAt: { $gte: startDate, $lte: endDate }
+      }
+    },
+    {
+      $group: {
+        _id: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+          day: { $dayOfMonth: "$createdAt" }
+        },
+        totalSales: { $sum: "$finalAmount" }
+      }
+    },
+    { $sort: { "_id.year": -1, "_id.month": -1, "_id.day": -1 } },
+    { $limit: 5 }
+  ]);
+
+  const dates = Array.from({ length: 5 }, (_, i) => {
+    const d = new Date();
+    d.setDate(endDate.getDate() - i);
+    return d;
+  });
+  const labels = dates.map(d => `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`);
+  const values = dates.map(d => {
+    const sale = sales.find(s =>
+      s._id.day === d.getDate() &&
+      s._id.month === d.getMonth() + 1 &&
+      s._id.year === d.getFullYear()
+    );
+    return sale ? sale.totalSales : 0;
+  });
+
+  return { labels, values };
+};
+
+
+
+const filteredSales = async (req, res) => {
+
+  
+  const { filter } = req.params;
+  let data = { labels: [], values: [] };
+
+  if (filter === "yearly") {
+    data = await getYearlySales();
+  } else if (filter === "monthly") {
+    data = await getMonthlySales();
+  } else if (filter === "weekly") {
+    data = await getWeeklySales();
+  } else if (filter === "daily") {
+    data = await getDailySales();
+  }
+
+  res.json(data);
+};
 
 
 const loadDashboard = async (req, res) => {
@@ -156,6 +394,10 @@ const loadDashboard = async (req, res) => {
       { $group: { _id: null, total: { $sum: "$finalAmount" } } }
     ]);
 
+  
+    const womenOrders = await Order.find({ category: { $in: ['women'] } });
+
+    console.log(womenOrders)
 
     res.render("dashboard", {
       revenue: revenue[0] ? revenue[0].total : 0,
@@ -165,7 +407,8 @@ const loadDashboard = async (req, res) => {
       total_products,
       total_categories,
       total_orders,
-      monthly_earnings:monthlyEarnings
+      monthly_earnings:monthlyEarnings,
+      
     });
   } catch (err) {
     console.error("Error loading dashboard:", err);
@@ -181,21 +424,21 @@ function drawTable(doc, title, headers, rows, startY) {
   let startX = 50;
   let y = startY;
 
-  // Title
+
   doc.fontSize(14).text(title, startX, y, { underline: true });
   y += 20;
 
-  // Headers
+
   doc.fontSize(12).text(headers[0], startX, y);
   doc.text(headers[1], startX + 200, y);
   doc.text(headers[2], startX + 350, y);
   y += 15;
 
-  // Divider
+
   doc.moveTo(startX, y).lineTo(550, y).stroke();
   y += 10;
 
-  // Rows
+
   rows.forEach((r, i) => {
     doc.text(`${i + 1}. ${r.name}`, startX, y);
     doc.text(r.sales, startX + 200, y);
@@ -203,7 +446,7 @@ function drawTable(doc, title, headers, rows, startY) {
     y += 20;
   });
 
-  return y + 20; // return next starting y
+  return y + 20; 
 }
 
 const generateLedger = async (req, res) => {
@@ -217,7 +460,7 @@ const generateLedger = async (req, res) => {
     res.setHeader("Content-Disposition", "attachment; filename=ledger.pdf");
     doc.pipe(res);
 
-    doc.fontSize(20).text("Perfuma Sales Ledger", { align: "center" });
+    doc.fontSize(20).text("Sales of Perfuma", { align: "center" });
     doc.moveDown(2);
 
     let y = 100;
@@ -231,111 +474,6 @@ const generateLedger = async (req, res) => {
     res.status(500).send("Error generating ledger");
   }
 };
-
-// 📌 Yearly Sales
-const getYearlySales = async () => {
-  const sales = await Order.aggregate([
-    { $match: { orderStatus: "Delivered" } },
-    {
-      $group: {
-        _id: { year: { $year: "$createdAt" } },
-        totalSales: { $sum: "$finalAmount" }
-      }
-    },
-    { $sort: { "_id.year": 1 } } // sort by year
-  ]);
-
-  return {
-    labels: sales.map(s => `${s._id.year}`),
-    values: sales.map(s => s.totalSales)
-  };
-};
-
-// 📌 Monthly Sales
-const getMonthlySales = async () => {
-  const sales = await Order.aggregate([
-    { $match: { orderStatus: "Delivered" } },
-    {
-      $group: {
-        _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
-        totalSales: { $sum: "$finalAmount" }
-      }
-    },
-    { $sort: { "_id.year": 1, "_id.month": 1 } } // sort by year + month
-  ]);
-
-  // Month names
-  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
-  return {
-    labels: sales.map(s => `${monthNames[s._id.month - 1]} ${s._id.year}`),
-    values: sales.map(s => s.totalSales)
-  };
-};
-
-// 📌 Weekly Sales
-const getWeeklySales = async () => {
-  const sales = await Order.aggregate([
-    { $match: { orderStatus: "Delivered" } },
-    {
-      $group: {
-        _id: {
-          year: { $year: "$createdAt" },
-          week: { $week: "$createdAt" }
-        },
-        totalSales: { $sum: "$finalAmount" }
-      }
-    },
-    { $sort: { "_id.year": 1, "_id.week": 1 } } // sort by year + week
-  ]);
-
-  return {
-    labels: sales.map(s => `Week ${s._id.week} - ${s._id.year}`),
-    values: sales.map(s => s.totalSales)
-  };
-};
-
-// 📌 Daily Sales
-const getDailySales = async () => {
-  const sales = await Order.aggregate([
-    { $match: { orderStatus: "Delivered" } },
-    {
-      $group: {
-        _id: {
-          year: { $year: "$createdAt" },
-          month: { $month: "$createdAt" },
-          day: { $dayOfMonth: "$createdAt" }
-        },
-        totalSales: { $sum: "$finalAmount" }
-      }
-    },
-    { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } }
-  ]);
-
-  return {
-    labels: sales.map(s => `${s._id.day}/${s._id.month}/${s._id.year}`),
-    values: sales.map(s => s.totalSales)
-  };
-};
-
-
-const filteredSales = async (req, res) => {
-  const { filter } = req.params;
-  let data = { labels: [], values: [] };
-
-  if (filter === "yearly") {
-    data = await getYearlySales();
-  } else if (filter === "monthly") {
-    data = await getMonthlySales();
-  } else if (filter === "weekly") {
-    data = await getWeeklySales();
-  } else if (filter === "daily") {
-    data = await getDailySales();
-  }
-
-  res.json(data);
-};
-
 
 
 

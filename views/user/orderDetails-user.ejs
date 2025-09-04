@@ -146,22 +146,24 @@
                                                         </span>
                                                     </div>
                                                     <div class="flex flex-col md:flex-row gap-2">
-                                                        <% if(order && !order.couponCode) { %>
-                                                            <% if(order.orderStatus === 'Processing' && !finalItemStates.includes(item.orderStatus)) { %>
-                                                                <button onclick="showItemCancelModal('<%= order._id %>', '<%= item.product._id %>')"
-                                                                    class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 transform hover:scale-105 font-semibold">
-                                                                    Cancel
-                                                                </button>
-                                                            <% } %>
+                                                        <!-- <% if(order) { %> -->
+                                                            <% if ((order.orderStatus === 'Processing' || order.orderStatus === 'Shipped') && !finalItemStates.includes(item.orderStatus)) { %>
+    <button onclick="showItemCancelModal('<%= order._id %>', '<%= item.product._id %>')"
+        class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 transform hover:scale-105 font-semibold">
+        Cancel
+    </button>
+<% } %>
+
                                                             <% if(order.orderStatus === 'Delivered' && !finalItemStates.includes(item.orderStatus)) { %>
                                                                 <button onclick="showItemReturnModal('<%= order._id %>', '<%= item.product._id %>')"
                                                                     class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 transform hover:scale-105 font-semibold">
                                                                     Return
                                                                 </button>
                                                             <% } %>
-                                                        <% } %>
+                                                        <!-- <% } %> -->
                                                     </div>
                                                 </div>
+
                                             </div>
                                         </div>
                                     <% }); %>
@@ -218,6 +220,7 @@
                                       <span class="text-sm font-normal text-gray-600">Payment Method:</span>
                                      <span class="text-sm font-semibold text-gray-900"><%= order ? order.paymentMethod || 'N/A' : 'N/A' %></span>
                                     </div>
+                                    
                                     <div class="border-t border-gray-200 pt-4">
                                         <div class="flex justify-between items-center">
                                             <span class="text-xl font-bold text-gray-900">Order Total:</span>

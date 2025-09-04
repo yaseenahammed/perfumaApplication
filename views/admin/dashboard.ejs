@@ -78,14 +78,16 @@
           <span class="text-gray-500 text-sm">In <%= total_categories %> categories</span>
         </div>
         <div class="card bg-white p-6 rounded-xl shadow animate-fade-in">
-            <% if(monthly_earnings){%>
+           
                 <h6 class="text-gray-600 mb-2">Monthly Earnings</h6>
           <p class="text-2xl font-bold text-gray-900">₹<%= monthly_earnings.toFixed(2) %></p>
           <span class="text-gray-500 text-sm">Based on local time</span>
 
-           <% } %>       
+         
         </div>
       </div>
+
+  
 
       <!-- SALES CHART -->
       <div class="card bg-white rounded-xl p-6 border border-gray-200 mb-12 animate-slide-up">
@@ -230,22 +232,57 @@
       btnCategory.classList.add('bg-amber-500','text-white');
     });
 
-    // Chart.js
-    const ctx = document.getElementById('salesChart').getContext('2d');
-    let salesChart = new Chart(ctx, {
-      type: 'line',
-      data: { labels: [], datasets: [{ label: 'Sales (₹)', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.2)', fill: true, tension: 0.4 }] },
-      options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Revenue (₹)' } } } }
-    });
-
-    async function updateChart(filter) {
-      const response = await fetch(`/admin/dashboard/${filter}`);
-      const result = await response.json();
-      salesChart.data.labels = result.labels;
-      salesChart.data.datasets[0].data = result.values;
-      salesChart.update();
+const ctx = document.getElementById('salesChart').getContext('2d');
+let salesChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Sales (₹)',
+      data: [],
+      backgroundColor: 'rgba(245, 158, 11, 0.7)',
+      borderColor: '#f59e0b',
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return `₹${context.parsed.y.toFixed(2)}`; 
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: { display: true, text: 'Revenue (₹)' }
+      },
+      x: {
+        title: { display: true, text: 'Period' } 
+      }
     }
-    updateChart('daily'); // default
+  }
+});
+
+async function updateChart(filter) {
+  try {
+    const response = await fetch(`/admin/dashboard/${filter}`);
+    if (!response.ok) throw new Error('Network response was not ok');
+    const result = await response.json();
+    salesChart.data.labels = result.labels;
+    salesChart.data.datasets[0].data = result.values;
+    salesChart.update();
+  } catch (error) {
+    console.error('Error updating chart:', error);
+  }
+}
+updateChart('daily'); 
+
 
     // Ledger
     function generateLedger() {

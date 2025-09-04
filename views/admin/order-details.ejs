@@ -148,7 +148,7 @@
   </p>
 </div>
 
-                                        <% if (item.orderStatus === 'ReturnRequest' && item.orderStatus !== 'Returned' && !item.returnRejectReason) { %>
+                                        <% if (order.orderStatus !=='ReturnRequest' && order.orderStatus !=='Returned' && item.orderStatus === 'ReturnRequest' && item.orderStatus !== 'Returned' && !item.returnRejectReason) { %>
                                             <div class="ml-auto">
                                                 <button
                                                     onclick="showItemReturnModal(
