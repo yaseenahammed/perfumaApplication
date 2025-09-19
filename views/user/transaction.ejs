@@ -50,32 +50,33 @@
                         Filter Transactions
                     </h2>
                     <form method="get" action="/wallet/transactions" class="mb-8 flex flex-wrap gap-4">
-                       <% const today = new Date().toISOString().split("T")[0]; %>
+  <% const today = new Date().toISOString().split("T")[0]; %>
 
-<input type="date" name="startDate" 
-       value="<%= filters.startDate || '' %>" 
-       max="<%= today %>"
-       class="border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+  <input type="date" name="startDate" id="startDate"
+         value="<%= filters.startDate || '' %>" 
+         max="<%= today %>"
+         class="border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
 
-<input type="date" name="endDate" 
-       value="<%= filters.endDate || '' %>" 
-       max="<%= today %>"
-       class="border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+  <input type="date" name="endDate" id="endDate"
+         value="<%= filters.endDate || '' %>" 
+         max="<%= today %>"
+         class="border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
 
-                        <select name="status" class="border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
-                            <option value="">All Status</option>
-                            <option value="Success" <%= filters.status === 'Success' ? 'selected' : '' %>>Success</option>
-                            <option value="Pending" <%= filters.status === 'Pending' ? 'selected' : '' %>>Pending</option>
-                        </select>
-                        <button type="submit" class="bg-amber-500 text-white px-6 py-3 rounded-lg hover:bg-amber-600 transition duration-200">
-                            <i class="fas fa-filter mr-2"></i> Filter
-                        </button>
-                        <a href="/wallet/transactions" 
-   class="bg-gray-400 text-white px-6 py-3 rounded-lg hover:bg-gray-500 transition duration-200">
+  <select name="status" class="border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+    <option value="">All Status</option>
+    <option value="Success" <%= filters.status === 'Success' ? 'selected' : '' %>>Success</option>
+    <option value="Pending" <%= filters.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+  </select>
+
+  <button type="submit" class="bg-amber-500 text-white px-6 py-3 rounded-lg hover:bg-amber-600 transition duration-200">
+    <i class="fas fa-filter mr-2"></i> Filter
+  </button>
+  <a href="/wallet/transactions" 
+     class="bg-gray-400 text-white px-6 py-3 rounded-lg hover:bg-gray-500 transition duration-200">
     <i class="fas fa-times mr-2"></i> Clear
-</a>
+  </a>
+</form>
 
-                    </form>
 
                     <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                         <i class="fas fa-list text-amber-500 mr-3"></i>
@@ -127,5 +128,20 @@
     </main>
 
     <%- include("../../views/partials/user/footer") %>
+
+    <script>
+  const startDateInput = document.getElementById('startDate');
+  const endDateInput = document.getElementById('endDate');
+
+  startDateInput.addEventListener('change', () => {
+    // Set the minimum selectable date for endDate as the startDate
+    endDateInput.min = startDateInput.value;
+
+    // If endDate is earlier than startDate, clear it
+    if (endDateInput.value && endDateInput.value < startDateInput.value) {
+      endDateInput.value = '';
+    }
+  });
+</script>
 </body>
 </html>

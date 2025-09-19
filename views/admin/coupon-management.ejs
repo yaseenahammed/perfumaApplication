@@ -297,6 +297,60 @@
             document.getElementById('couponModal').style.display = 'block';
         }
 
+        function openCouponModal({ 
+    mode = 'create', // 'create' or 'edit'
+    couponCode = '', 
+    discountPrice = '', 
+    minPrice = '', 
+    expireOn = '', 
+    isList = true 
+} = {}) {
+    // Set modal title
+    document.getElementById('modalTitle').textContent = mode === 'edit' ? 'Edit Coupon' : 'Create New Coupon';
+
+    // Set form action
+    document.getElementById('couponForm').action = mode === 'edit' 
+        ? `/admin/coupon/update/${couponCode}` 
+        : '/admin/coupon/create';
+
+    // Fill form fields
+    document.getElementById('couponCode').value = couponCode;
+    document.getElementById('discountPrice').value = discountPrice;
+    document.getElementById('minPrice').value = minPrice;
+    document.getElementById('expireOn').value = expireOn;
+    document.getElementById('isList').value = isList ? 'true' : 'false';
+
+    // Disable coupon code field if editing
+    document.getElementById('couponCode').disabled = mode === 'edit';
+
+    // Update save button text
+    document.getElementById('saveButton').textContent = mode === 'edit' ? 'Update' : 'Create';
+
+    // Show modal
+    document.getElementById('couponModal').style.display = 'block';
+}
+
+// Old helper for create
+function showCreateCouponModal() {
+    openCouponModal(); // defaults to 'create' mode
+}
+
+// Old helper for edit
+function showEditCouponModal(couponCode, discountPrice, minPrice, expireOn, isList) {
+    openCouponModal({
+        mode: 'edit',
+        couponCode,
+        discountPrice,
+        minPrice,
+        expireOn,
+        isList
+    });
+}
+
+function closeCouponModal() {
+    document.getElementById('couponModal').style.display = 'none';
+}
+
         function closeCouponModal() {
             document.getElementById('couponModal').style.display = 'none';
         }
