@@ -12,6 +12,7 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const { getBestPrice } = require('../../helpers/offerHelper');
 const { validateCoupon } = require('../../helpers/couponHelper');
+const logger = require('../../helpers/logger');
 
 const SHIPPING_FEE = 50;
 
@@ -64,7 +65,7 @@ const getCheckout = async (req, res) => {
     }
 
       const orderId = req.query.orderId || null;
-    
+      let order = null;
 
     if (orderId && mongoose.isValidObjectId(orderId)) {
      
@@ -122,7 +123,7 @@ const getCheckout = async (req, res) => {
         expireOn: { $gte: new Date().toISOString().split('T')[0] }
       }).lean();
     } catch (couponError) {
-      console.error('Error fetching coupons:', couponError);
+      logger.error('Error fetching coupons:', couponError);
       eligibleCoupons = [];
     }
 
@@ -138,10 +139,10 @@ const getCheckout = async (req, res) => {
       req.session.selectedAddressId = selectedAddress?._id.toString();
     }
 
-const order = await Order.findOne({ user: userId, paymentStatus: 'Pending' });
+ order = await Order.findOne({ user: userId, paymentStatus: 'Pending' });
 
     res.render('checkout', {
-      title: 'Checkout',
+      title: 'checkout',
       user,
       cartItems: validCartItems,
       userAddresses: addresses,
@@ -157,7 +158,7 @@ const order = await Order.findOne({ user: userId, paymentStatus: 'Pending' });
       order
     });
   } catch (error) {
-    console.error('Error in checkout:', error);
+    logger.error('Error in checkout:', error);
     req.flash('error', 'Could not load checkout page. Please try again.');
     res.redirect('/pageNotFound');
   }
@@ -178,7 +179,7 @@ const selectAddress = async (req, res) => {
         req.session.selectedAddressId = addressId;
         res.json({ success: true, message: 'Address selected' });
     } catch (error) {
-        console.error('Error selecting address:', error);
+        logger.error('Error selecting address:', error);
         res.status(500).json({ success: false, message: 'Failed to select address' });
     }
 };
@@ -217,7 +218,7 @@ const addAddress = async (req, res) => {
         req.session.selectedAddressId = userAddress.addresses[userAddress.addresses.length - 1]._id.toString();
         res.redirect('/checkout');
     } catch (error) {
-        console.error("Error in addAddress:", error);
+        logger.error("Error in addAddress:", error);
         res.status(500).send("Internal Server Error");
     }
 };
@@ -259,7 +260,7 @@ const editAddress = async (req, res) => {
         req.session.selectedAddressId = addressId;
         res.redirect('/checkout');
     } catch (error) {
-        console.error("Error in editAddress:", error);
+        logger.error("Error in editAddress:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
@@ -300,7 +301,7 @@ const orderConfirm = async (req, res) => {
       totalPages
     });
   } catch (error) {
-    console.error('error in order details page', error);
+    logger.error('error in order details page', error);
     res.redirect('/pageNotFound');
   }
 };
@@ -401,7 +402,7 @@ if (method === 'cod' && finalAmount >= 1000) {
 
 
 if (isNaN(finalAmount)) {
-  console.error(' finalAmount is NaN', { subtotal, shipping, finalDiscountPrice });
+  logger.error(' finalAmount is NaN', { subtotal, shipping, finalDiscountPrice });
   return res.status(400).json({ success: false, message: 'Invalid final amount calculation' });
 }
 
@@ -494,7 +495,7 @@ const orders = new Order({
 
         res.status(200).json({ success: true, orderId: orders._id });
     } catch (error) {
-        console.error('Error placing order:', error.stack);
+        logger.error('Error placing order:', error.stack);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
@@ -606,6 +607,15 @@ const method = validMethods.includes(paymentMethod) ? paymentMethod : null;
 
     await newOrder.save();
 
+    await Transactions.create({
+  user: userId,
+  type: "Order",
+  orderId: newOrder._id,
+  amount: newOrder.finalAmount,
+  status: "Pending",
+  description: `Order ${newOrder.orderID} created, awaiting payment`
+});
+
     res.json({
       success: true,
       razorpayOrderId: razorpayOrder.id,
@@ -616,7 +626,7 @@ const method = validMethods.includes(paymentMethod) ? paymentMethod : null;
     });
 
   } catch (error) {
-    console.error("Razorpay order creation error:", error);
+    logger.error("Razorpay order creation error:", error);
     res.status(500).json({ success: false, message: "Razorpay order creation failed" });
   }
 };
@@ -666,7 +676,7 @@ const retryPayment = async (req, res) => {
             orderId: order._id.toString(),
         });
     } catch (error) {
-        console.error('Retry payment error:', error);
+        logger.error('Retry payment error:', error);
         res.status(500).json({ success: false, message: 'Retry payment failed' });
     }
 };
@@ -740,7 +750,7 @@ const verifyPayment = async (req, res) => {
 
     res.json({ success: true, message: "Payment verified successfully" });
   } catch (error) {
-    console.error("Payment verification error:", error);
+    logger.error("Payment verification error:", error);
     res.status(500).json({ success: false, message: "Payment verification failed" });
   }
 };
@@ -769,7 +779,7 @@ req.session.discountPrice = result.finalDiscountPrice;
 res.json({ success: true, discountPrice: result.finalDiscountPrice });
 
   } catch (error) {
-    console.error("Error applying coupon:", error);
+    logger.error("Error applying coupon:", error);
     res.status(500).json({ success: false, message: "Failed to apply coupon." });
   }
 };
@@ -786,7 +796,7 @@ const removeCoupon = async (req, res) => {
 
     res.json({ success: true, message: 'Coupon removed successfully.' });
   } catch (error) {
-    console.error('Error removing coupon:', error);
+    logger.error('Error removing coupon:', error);
     res.status(500).json({ success: false, message: 'Failed to remove coupon.' });
   }
 };

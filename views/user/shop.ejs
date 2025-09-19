@@ -4,6 +4,18 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
+ .swal2-popup {
+    background: #fff0f5;  /* Light lavender */
+    color: #333;
+    font-family: 'Arial, sans-serif';
+}
+
+.custom-swal-perfume-icon {
+    font-size: 30px !important;  /* Smaller icon size */
+    color: #ff69b4;              /* Pinkish */
+}
+
+
   .main-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -119,13 +131,13 @@
     gap: 20px;
   }
   .product-grid {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
     width: calc(100% - 270px);
-  }
-  .product-card {
-    width: calc(33.333% - 20px);
+}
+
+.product-card {
     border: 1px solid #e0e0e0;
     padding: 15px;
     border-radius: 10px;
@@ -134,7 +146,9 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s;
     position: relative;
-  }
+    height: auto;
+}
+
   .product-card:hover {
     transform: translateY(-5px);
   }
@@ -241,7 +255,7 @@
     border-radius: 5px;
   }
   .pagination .active {
-    background-color: #007bff;
+    background-color: orange;
     color: #fff;
   }
   .price-filter {
@@ -446,20 +460,20 @@
         <a href="/shop?page=<%= currentPage + 1 %>&sort=<%= sort || 'default' %>&<%= categoryId.map(id => `category=${id}`).join('&') %>&<%= brandId.map(id => `brand=${id}`).join('&') %>&price=<%= priceRange || '' %>&query=<%= encodeURIComponent(searchQuery || '') %>">Next</a>
       <% } %>
     </div>
+
+    
   </section>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  
-document.addEventListener('DOMContentLoaded', () => {
+ document.addEventListener('DOMContentLoaded', () => {
   const addToCartBtns = document.querySelectorAll('.button-add-to-cart');
 
   addToCartBtns.forEach(btn => {
     btn.addEventListener('click', async () => {
       const productId = btn.getAttribute('data-product-id');
-      const maxStock = parseInt(btn.getAttribute('data-max-stock'));
       const qtyInput = btn.closest('.product-card')?.querySelector('.qty-input');
       const quantity = qtyInput ? parseInt(qtyInput.value) : 1;
 
@@ -476,30 +490,57 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await response.json();
 
         if (data.success) {
+          // ✅ Remove wishlist button active class safely
+          const wishlistBtn = btn.closest('.product-card')?.querySelector('.button-wishlist');
+          if (wishlistBtn) {
+            wishlistBtn.classList.remove('active');
+            // Optional: show toast for removal
+            Swal.fire({
+              iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+              title: 'Removed from Wishlist!',
+              showConfirmButton: false,
+              timer: 1500,
+              toast: true,
+              position: 'top-end',
+              width: '300px'
+            });
+          }
+
           Swal.fire({
-  icon: 'success',
-  title: 'Product added to cart',
-  text: 'Added to Cart',
-  showConfirmButton: false,
-  timer: 1500
-});
+            title: 'Perfume Added!',
+            text: 'Your perfume is now in the cart 🌸',
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            showConfirmButton: false,
+            timer: 1800,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+          });
 
         } else {
           Swal.fire({
-  icon: 'error',
-  title: data.error || 'Failed to add cart',
-  text: 'Failed Adding to Cart',
-  showConfirmButton: true,
-  timer: 1500
-});
+            title: data.error || 'Failed to add cart',
+            text: 'Failed Adding to Cart',
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            showConfirmButton: false,
+            timer: 1500,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+          });
         }
 
       } catch (error) {
         Swal.fire({
-          icon: 'error',
+          icon: 'warning',
           title: 'An error occurred. Please try again.',
+          showConfirmButton: false,
           timer: 1500,
+          toast: true,
+          position: 'top-end',
+          width: '300px'
         });
+
       } finally {
         btn.classList.remove('loading');
       }
@@ -508,12 +549,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-
 function toggleWishlist(productId, buttonElement) {
-  const isInWishlist = buttonElement.classList.contains('active');
-  const url = `/wishlist/${isInWishlist ? 'remove' : 'add'}/${productId}`;
-
-  fetch(url, {
+  fetch(`/wishlist/${buttonElement.classList.contains('active') ? 'remove' : 'add'}/${productId}`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -521,25 +558,51 @@ function toggleWishlist(productId, buttonElement) {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      // Toggle only the clicked button
-      buttonElement.classList.toggle('active');
+      // Set class explicitly based on action
+      if (buttonElement.classList.contains('active')) {
+        buttonElement.classList.remove('active');
+        showWishlistToast('Removed from Wishlist!');
+      } else {
+        buttonElement.classList.add('active');
+        showWishlistToast('Added to Wishlist!');
+      }
     } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: data.error || 'Could not update wishlist',
-      });
+      showWishlistError(data.error || 'Could not update wishlist');
     }
   })
   .catch(err => {
-    console.error('Error:', err);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'Something went wrong, confirm you are logged in',
-    });
+    console.error(err);
+    showWishlistError('Something went wrong, confirm you are logged in');
   });
 }
+
+// Helper functions for cleaner code
+function showWishlistToast(title) {
+  Swal.fire({
+    iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+    text: 'Your perfume is now in the wishlist 🌸',
+    title,
+    showConfirmButton: false,
+    timer: 1500,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+}
+
+function showWishlistError(text) {
+  Swal.fire({
+    icon: 'warning',
+    title: 'Error',
+    text,
+    showConfirmButton: false,
+    timer: 1500,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+}
+
 
 
   function updateFilters() {

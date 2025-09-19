@@ -135,12 +135,12 @@
                                                     <td class="p-4 text-gray-900"><%= address.state || '' %></td>
                                                     <td class="p-4 text-gray-900"><%= address.zip || '' %></td>
                                                     <td class="p-4 text-gray-900"><%= address.country || '' %></td>
-                                                    <td class="p-4">
-                                                        <button class="btn-primary inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 mr-2" data-bs-toggle="modal" data-bs-target="#editAddressModal" data-address-id="<%= index %>" data-phone="<%= address.phone || '' %>"
+                                                    <td class="p-4 flex-col space-y-2">
+                                                        <button class="btn-primary inline-flex items-center px-8 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 mr-2" data-bs-toggle="modal" data-bs-target="#editAddressModal" data-address-id="<%= index %>" data-phone="<%= address.phone || '' %>"
                                                              data-street="<%= address.street || '' %>" data-city="<%= address.city || '' %>" data-state="<%= address.state || '' %>" data-zip="<%= address.zip || '' %>" data-country="<%= address.country || '' %>">
                                                             <i class="fas fa-edit mr-2"></i>
                                                             Edit
-                                                        </button>
+                                                        </button><br><br>
                                                         <form class="delete-address-form" action="/delete-address/<%= index %>" method="POST" style="display: inline;">
                                                             <button type="submit" class="btn-cancel inline-flex items-center px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-300">
                                                                 <i class="fas fa-trash mr-2"></i>
@@ -199,14 +199,14 @@
                            
                             <input type="text" name="zip" class="form-control" id="zip" pattern="\d{6}" required title="Pincode must be 6 digits">
                         </div>
-                        <div class="mb-3">
+         <div class="mb-3">
   <label for="phone" class="form-label text-gray-900">Phone</label>
   <div class="flex">
     <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-500 text-sm">
       +91
     </span>
     <input type="text" name="phone" class="form-control flex-1 min-w-0 px-3 py-2 rounded-r-md border border-gray-300"
-           id="phone" pattern="\d{10}" maxlength="10"
+           id="phone"  pattern="[6-9]\d{9}" maxlength="10"
            required title="Phone must be 10 digits"
            placeholder="Enter 10-digit number">
   </div>
@@ -266,7 +266,7 @@
       +91
     </span>
     <input type="text" name="phone" class="form-control flex-1 min-w-0 px-3 py-2 rounded-r-md border border-gray-300"
-           id="editPhone" pattern="\d{10}" maxlength="10"
+           id="editPhone"  pattern="[6-9]\d{9}" maxlength="10"
            required title="Phone must be 10 digits"
            placeholder="Enter 10-digit number">
   </div>
@@ -285,6 +285,7 @@
 
     <%- include("../partials/user/footer") %>
     
+<script src="/js/addressHelper.js"></script>
 
 <script>
 function setupAddressAutocomplete({ inputId, suggestionId, cityId, stateId, countryId, pincodeId, phoneId }) {
@@ -313,6 +314,14 @@ function setupAddressAutocomplete({ inputId, suggestionId, cityId, stateId, coun
 
       data.features.forEach(item => {
         const props = item.properties;
+
+       
+   const countryName = (props.country || "").toLowerCase();
+
+if (!(countryName.includes("india") || countryName === "in")) {
+  return; 
+}
+
 
         const fullAddress = [
           props.name,
@@ -371,17 +380,20 @@ async function validateAddress(lat, lon, { cityId, stateId, countryId, pincodeId
     }
 
  
-    if (phoneId && document.getElementById(phoneId)) {
-      const phoneInput = document.getElementById(phoneId);
-      phoneInput.addEventListener("input", () => {
-        const phonePattern = /^[0-9]{10}$/;
-        if (!phonePattern.test(phoneInput.value)) {
-          phoneInput.setCustomValidity("Enter a valid 10-digit phone number");
-        } else {
-          phoneInput.setCustomValidity("");
-        }
-      });
+if (phoneId && document.getElementById(phoneId)) {
+  const phoneInput = document.getElementById(phoneId);
+  phoneInput.addEventListener("input", () => {
+    // Starts with 6–9, exactly 10 digits, not all same
+    const phonePattern = /^(?:[6-9])(?!\1{9})\d{9}$/;
+
+    if (!phonePattern.test(phoneInput.value)) {
+      phoneInput.setCustomValidity("Enter a valid 10-digit Indian phone number (must start with 6–9)");
+    } else {
+      phoneInput.setCustomValidity("");
     }
+  });
+}
+
   } catch (err) {
     console.error("Error validating address:", err);
   }
@@ -396,7 +408,8 @@ function validateAddressForm(form) {
   const zip = form.zip.value.trim();
   const country = form.country.value.trim();
 
-  const phoneRegex = /^(?!.*(\d)\1{9})(?!.*[^\d])\d{10}$/;
+  const phoneRegex = /^(?:[6-9])(?!\1{9})\d{9}$/;
+
   const zipRegex = /^(?!.*(\d)\1{5})(?!.*[^\d])\d{6}$/;
 
   if (!phoneRegex.test(phone)) {

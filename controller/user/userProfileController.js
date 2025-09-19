@@ -4,7 +4,7 @@ const Order=require('../../models/orderSchema')
 const Address = require('../../models/addresSchema');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
-
+const logger = require('../../helpers/logger');
 
 
 const transporter = nodemailer.createTransport({
@@ -25,14 +25,32 @@ const userProfile=async(req,res)=>{
    
     const addressDoc=await Address.findOne({userId})
     const defaultAddress=addressDoc?.addresses[0]
+
+    const deliveredOrders=await Order.find({
+      user:userId,
+      orderStatus:'Delivered'
+    })
+    const totalSpent=deliveredOrders.reduce((sum,order)=>sum+order.finalAmount,0)
+
+    let memberStatus = 'Standard';
+if (totalSpent >= 5000 && totalSpent <15000) {
+  memberStatus = 'Gold';
+}else if(totalSpent >=15000){
+  memberStatus='Platinum'
+}
+
+
       res.render('user-profile',{
+        title:'profile',
         user,
         orders,
-        defaultAddress
+        defaultAddress,
+        totalSpent,
+        memberStatus
       })
     
   } catch (error) {
-    console.error('an error occured in userProfile rendering')
+    logger.info('an error occured in userProfile rendering')
   }
 }
 
@@ -43,13 +61,13 @@ const getEditProfile=async(req,res)=>{
 
         
         res.render('edit-profile',{
-           
+           title:'editProfile',
            user,
            message:''
            
         })
     } catch (error) {
-        console.error('error occured in getEditProfile:',error)
+        logger.info('error occured in getEditProfile:',error)
     }
 }
 
@@ -66,12 +84,10 @@ const updateProfile = async (req, res) => {
     }
 
     await user.save();
-    console.log("image:",req.file)
-
-    console.log('Updated profile:', user);
+    logger.info("image:",req.file)
     res.redirect('/userProfile');
   } catch (error) {
-    console.error('Error updating profile:', error);
+    logger.info('Error updating profile:', error);
     res.status(500).send('Server error');
   }
 };
@@ -89,13 +105,13 @@ const userAddress = async (req, res) => {
     const addressData = await Address.findOne({ userId: req.session.userId });
     
 
-    res.render('user-address',
-       { 
+    res.render('user-address',{ 
+      title:'address',
         user ,
         addresses: addressData ? addressData.addresses : []
       }); 
   } catch (error) {
-    console.error('Error in user-address page:', error);
+    logger.info('Error in user-address page:', error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -136,7 +152,7 @@ if (!isValidZip.test(zip) || zip.length !== 6) {
     await userAddress.save();
     res.redirect('/user-address');
   } catch (error) {
-    console.error("Error in addAddress:", error);
+    logger.info("Error in addAddress:", error);
     res.status(500).send("Internal Server Error");
   }
 };
@@ -178,7 +194,7 @@ if (!isValidZip.test(zip) || zip.length !== 6) {
     
     res.redirect('/user-address');
   } catch (error) {
-    console.error("Error in editAddress:", error);
+    logger.info("Error in editAddress:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -203,7 +219,7 @@ const deleteAddress = async (req, res) => {
    
     res.redirect('/user-address');
   } catch (error) {
-    console.error("Error in deleteAddress:", error);
+    logger.info("Error in deleteAddress:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -254,7 +270,7 @@ const sendEmailOtp = async (req, res) => {
       expires: Date.now() + 10 * 60 * 1000, 
     };
 
-    console.log(`OTP for ${type} email:`, otp);
+    logger.info(`OTP for ${type} email:`, otp);
 
     const mailOptions = {
       from: process.env.NODEMAILER_EMAIL,
@@ -266,7 +282,7 @@ const sendEmailOtp = async (req, res) => {
     await transporter.sendMail(mailOptions);
     res.status(200).json({ message: `OTP sent to ${email}` });
   } catch (error) {
-    console.error("Error in sendEmailOtp:", error);
+    logger.info("Error in sendEmailOtp:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -292,7 +308,7 @@ const verifyEmailOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    console.log(`Verifying OTP for ${type} email:`, otp);
+    logger.info(`Verifying OTP for ${type} email:`, otp);
 
     if (type === 'current') {
      
@@ -309,7 +325,7 @@ const verifyEmailOtp = async (req, res) => {
 
     res.status(200).json({ message: "Email updated successfully" });
   } catch (error) {
-    console.error("Error in verifyEmailOtp:", error);
+    logger.info("Error in verifyEmailOtp:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -339,7 +355,7 @@ const changePassword = async (req, res) => {
     
     return res.status(200).json({ success: true, message: "Password changed successfully" });
   } catch (error) {
-    console.error("Error in changePassword:", error);
+    logger.info("Error in changePassword:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

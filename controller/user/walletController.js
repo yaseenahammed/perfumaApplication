@@ -3,7 +3,7 @@ const User=require('../../models/userSchema')
 const Transactions=require('../../models/transactionSchema')
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
-
+const logger = require('../../helpers/logger');
 
 const getWallet = async (req, res) => {
   try {
@@ -26,13 +26,14 @@ const getWallet = async (req, res) => {
     const totalWithdrawn = totalWithdrawnResult.length > 0 ? totalWithdrawnResult[0].total : 0;
 
     res.render('wallet', {
+      title:'wallet',
       wallet: wallet || { balance: 0 },
       user,
       totalWithdrawn,
       transactions: previewTransactions
     });
   } catch (error) {
-    console.error('Error in getting wallet:', error);
+    logger.error('Error in getting wallet:', error);
     res.status(500).render('error', { message: 'Something went wrong while fetching wallet data.' });
   }
 };
@@ -63,7 +64,7 @@ const createWalletOrder=async(req,res)=>{
         const order=await razorpay.orders.create(options)
         res.json({success:true,orderId:order.id,amount:order.amount,currency:order.currency,key:process.env.RAZORPAY_KEY_ID})
     } catch (error) {
-        console.error('error in adding money to wallet',error)
+        logger.error('error in adding money to wallet',error)
         return res.status(500).json({ success:false, message:'Could not create order' })
     }
 }
@@ -129,7 +130,7 @@ const verifyWalletOrder = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error('Wallet payment verification error:', error);
+    logger.error('Wallet payment verification error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -193,7 +194,7 @@ const filterTransaction = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching transactions:', error);
+    logger.error('Error fetching transactions:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -201,7 +202,7 @@ const filterTransaction = async (req, res) => {
 
 const getAllTransactions = async (req, res) => {
   try {
-    const userId = req.session.userId;
+    const userId = req.user
     if (!userId) return res.status(401).send({ message: 'Please log in' });
 
     let { page = 1, limit = 10, startDate, endDate, type, status } = req.query;
@@ -234,6 +235,7 @@ const getAllTransactions = async (req, res) => {
       .lean();
 
     res.render('transaction', {
+      title:'transaction',
       transactions,
       currentPage: page,
       totalPages: Math.ceil(total / limit),
@@ -242,7 +244,7 @@ const getAllTransactions = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching transactions:', error);
+    logger.error('Error fetching transactions:', error);
     res.status(500).render('error', { message: 'Error fetching transactions.' });
   }
 };

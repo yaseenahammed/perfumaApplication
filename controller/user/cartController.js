@@ -4,6 +4,7 @@ const Product = require('../../models/productSchema');
 const User = require('../../models/userSchema');
 const mongoose = require('mongoose');
 const { getBestPrice } = require('../../helpers/offerHelper');
+const logger = require('../../helpers/logger');
 
 const MAX_ALLOWED_QUANTITY = 5;
 const SHIPPING_FEE = 50;
@@ -42,6 +43,8 @@ const getCart = async (req, res) => {
       return res.status(401).json({ success: false, message: 'User not logged in' });
     }
 
+
+
     const cart = await Cart.findOne({ user: userId })
       .populate({
         path: 'items.product',
@@ -54,6 +57,7 @@ const getCart = async (req, res) => {
 
     if (!cart || !cart.items.length) {
       return res.render('cart', {
+        title:'cart',
         user,
         cartItems: [],
         subtotal: 0,
@@ -82,6 +86,7 @@ const getCart = async (req, res) => {
     const summary = await calculateSummary(validCartItems);
 
     res.render('cart', {
+      title:'cart',
       user,
       cartItems: allCartItems,
       subtotal: summary.subtotal,
@@ -89,10 +94,12 @@ const getCart = async (req, res) => {
       total: summary.total,
       cartItemCount: cart.items.length,
       disableCheckout,
-      validItems: validCartItems
+      validItems: validCartItems,
+      MAX_ALLOWED_QUANTITY
+      
     });
   } catch (error) {
-    console.error('Error loading cart:', error);
+    logger.error('Error loading cart:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -100,7 +107,7 @@ const getCart = async (req, res) => {
 const incrementQuantity = async (req, res) => {
   try {
     const { productId } = req.body;
-    console.log('Increment req.body:', req.body);
+
     if (!mongoose.isValidObjectId(productId)) {
       return res.status(400).json({ success: false, message: 'Invalid product ID' });
     }
@@ -135,13 +142,22 @@ const incrementQuantity = async (req, res) => {
       return res.status(400).json({ success: false, message: 'This item is unavailable' });
     }
 
-    if (cartItem.quantity >= cartItem.product.quantity) {
-      return res.status(400).json({ success: false, message: 'No more stock available' });
-    }
+if (cartItem.quantity >= cartItem.product.quantity) {
+  return res.status(400).json({
+    success: false,
+    stock: true,               // ← flag for stock limit
+    message: `Only ${cartItem.product.quantity} in stock`
+  });
+}
 
-    if (cartItem.quantity >= MAX_ALLOWED_QUANTITY) {
-      return res.status(400).json({ success: false, message: 'Maximum quantity reached' });
-    }
+if (cartItem.quantity >= MAX_ALLOWED_QUANTITY) {
+  return res.status(400).json({
+    success: false,
+    allowed: true,             // ← flag for max allowed
+    message: `You cannot add more than ${MAX_ALLOWED_QUANTITY} of this item`
+  });
+}
+
 
     cartItem.quantity += 1;
     await cart.save();
@@ -165,10 +181,11 @@ const incrementQuantity = async (req, res) => {
       total: parseFloat((subtotal + SHIPPING_FEE).toFixed(2)),
       shipping: SHIPPING_FEE,
       cartItemCount: cart.items.length,
-      disableCheckout
+      disableCheckout,
+  
     });
   } catch (error) {
-    console.error('Increment Error:', error);
+    logger.error('Increment Error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -176,7 +193,7 @@ const incrementQuantity = async (req, res) => {
 const decrementQuantity = async (req, res) => {
   try {
     const { productId } = req.body;
-    console.log('Decrement req.body:', req.body); 
+  
     if (!mongoose.isValidObjectId(productId)) {
       return res.status(400).json({ success: false, message: 'Invalid product ID' });
     }
@@ -237,10 +254,11 @@ const decrementQuantity = async (req, res) => {
       total: parseFloat((subtotal + SHIPPING_FEE).toFixed(2)),
       shipping: SHIPPING_FEE,
       cartItemCount: cart.items.length,
-      disableCheckout
+      disableCheckout,
+    
     });
   } catch (error) {
-    console.error('Decrement Error:', error);
+    logger.error('Decrement Error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -249,7 +267,7 @@ const removeFromCart = async (req, res) => {
   try {
     const userId = req.session.userId;
     const { productId } = req.body; 
-    console.log('Remove req.body:', req.body); 
+ 
     if (!userId || !mongoose.isValidObjectId(userId)) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
@@ -303,7 +321,7 @@ const removeFromCart = async (req, res) => {
       disableCheckout: hasUnavailableItems || cartItemCount === 0
     });
   } catch (error) {
-    console.error('Error in removeFromCart:', error);
+    logger.error('Error in removeFromCart:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

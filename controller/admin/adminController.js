@@ -1,5 +1,6 @@
 const User = require('../../models/userSchema');
 const bcrypt = require('bcrypt');
+const logger = require('../../helpers/logger');
 
 const pageError=async(req,res)=>{
   res.render('admin-error')
@@ -22,7 +23,7 @@ const loadLogin = async (req, res) => {
        message
       });
   } catch (error) {
-    console.error("An error occurred in loadLogin:", error);
+    logger.error("An error occurred in loadLogin:", error);
     res.render('admin-Error');
   }
 };
@@ -49,7 +50,7 @@ const login = async (req, res) => {
       return res.redirect('/admin/login');
     }
   } catch (error) {
-    console.log("Login error:", error);
+    logger.info("Login error:", error);
     res.redirect('/admin/pageError');
   }
 };
@@ -62,7 +63,7 @@ const logout=async(req,res)=>{
   try {
     req.session.destroy(err=>{
       if(err){
-        console.log("an error occured in login",err)
+        logger.info("an error occured in login",err)
         res.redirect('/admin/pageError')
       }else{
         res.redirect('/admin/login')
@@ -71,7 +72,7 @@ const logout=async(req,res)=>{
     })
     
   } catch (error) {
-    console.error('something went wrong in logout session',error)
+    logger.error('something went wrong in logout session',error)
     res.redirect('/admin/pageError')
     
   }

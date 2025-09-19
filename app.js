@@ -6,10 +6,12 @@ const db=require('./config/db')
 const flash = require('connect-flash');
 const userRouter=require('./routes/userRouter')
 const adminRouter=require('./routes/adminRouter')
+const {router,cartMiddleware}=require('./middlewares/auth')
 const session=require('express-session')
 const User=require('./models/userSchema')
 const passport=require('./config/passport')
 const nocache=require('nocache')
+const logger = require('./helpers/logger');
 
 
 
@@ -69,8 +71,8 @@ app.use((req, res, next) => {
 
 
 
-
-
+app.use('/', router);
+app.use(cartMiddleware)
 
 app.use('/',userRouter);
 app.use('/admin',adminRouter)
@@ -78,8 +80,9 @@ app.use('/admin',adminRouter)
 
 
 
+
 app.listen(process.env.PORT,()=>{
-    console.log('server running')
+    logger.info('server running')
 })
 
 module.exports=app;

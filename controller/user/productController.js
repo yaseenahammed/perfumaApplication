@@ -6,6 +6,7 @@ const Cart = require('../../models/cartSchema');
 const Wishlist = require('../../models/wishlistSchema');
 const { getBestPrice } = require('../../helpers/offerHelper');
 const Brand = require('../../models/brandSchema');
+const logger = require('../../helpers/logger');
 
 const productDetails = async (req, res) => {
   try {
@@ -36,7 +37,7 @@ const productDetails = async (req, res) => {
       .populate('brand')
       .lean();
 
-    if (!product || product.isBlocked|| product.brand.isBlocked) {
+    if (!product || product.isBlocked|| product.brand.isBlocked || !product.category.isListed) {
       req.flash('error', 'Product not found');
       return res.redirect('/shop');
     }
@@ -75,6 +76,7 @@ const productDetails = async (req, res) => {
 
     
     res.render('product-details', {
+      title:'productDetails',
       product,
       similarProducts,
       user: userData,
@@ -88,7 +90,7 @@ const productDetails = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error in productDetails:', error.stack);
+    logger.error('Error in productDetails:', error.stack);
     req.flash('error', 'Unable to load product details');
     res.redirect('/shop');
   }
@@ -177,7 +179,7 @@ if (quantity > MAX_ALLOWED_QUANTITY) {
 
     res.json({ success: true, message: 'Product added to cart' });
   } catch (error) {
-    console.error('Error in addToCart:', error.stack);
+    logger.error('Error in addToCart:', error.stack);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

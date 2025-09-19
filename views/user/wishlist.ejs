@@ -68,6 +68,7 @@
                                
                             </h2>
                             <% if (wishlistItems && wishlistItems.length > 0) { %>
+                            
                                 <div class="space-y-6">
                                     <% wishlistItems.forEach(item => { %>
                                         <div class="wishlist-item border-2 border-gray-200 rounded-xl p-6 relative flex items-center gap-4">
@@ -126,6 +127,7 @@
                         const data = await response.json();
                         if (data.success) {
                             button.closest('.wishlist-item').remove();
+                       
                             if (document.querySelectorAll('.wishlist-item').length === 0) {
                                
                             }
@@ -153,6 +155,7 @@
                         if (data.success) {
                             Swal.fire('Success', 'Item added to cart!', 'success').then(() => {
                                 button.closest('.wishlist-item').remove();
+                               
                                 if (document.querySelectorAll('.wishlist-item').length === 0) {
                                     window.location.reload(); 
                                 }
@@ -176,7 +179,9 @@
                     });
                     const data = await response.json();
                     if (data.success) {
-                        window.location.reload(); 
+                        document.querySelectorAll('.wishlist-item').forEach(item => item.remove());
+                        
+                          clearWishlistBtn.style.display = 'none';
                     } else {
                         Swal.fire('Error', data.message || 'Failed to clear wishlist', 'error');
                     }

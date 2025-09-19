@@ -10,9 +10,25 @@
     
 
     
-    <!-- Custom CSS -->
+
     <style>
-        /* Product Image Gallery */
+    
+/* SweetAlert2 popup styling */
+.swal2-popup {
+  background: #fff0f5 !important; 
+  color: #333 !important;
+  font-family: 'Arial, sans-serif' !important;
+  border-radius: 12px !important; 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Custom perfume icon */
+.custom-swal-perfume-icon {
+  font-size: 30px !important;  
+  color: #ff69b4 !important;   
+}
+
+
         .detail-gallery {
             position: relative;
             max-width: 500px;
@@ -402,7 +418,7 @@
                                             <i class="fas fa-star"></i>
                                             <i class="fas fa-star"></i>
                                         </div>
-                                        <span class="text-gray-500 text-sm">(25 reviews)</span>
+                                        <span class="text-gray-500 text-sm">(reviews)</span>
                                     </div>
                                 </div>
 
@@ -433,7 +449,7 @@
                                         </li>
                                         <li class="flex items-center text-gray-700">
                                             <i class="fas fa-undo text-amber-500 mr-3"></i>
-                                            30 Day Return Policy
+                                            10 Day Return Policy
                                         </li>
                                         <li class="flex items-center text-gray-700">
                                             <i class="fas fa-money-bill-wave text-amber-500 mr-3"></i>
@@ -653,7 +669,7 @@
 const qtyDown = document.querySelector('.detail-qty .qty-down');
 const qtyUp = document.querySelector('.detail-qty .qty-up');
 const qtyVal = document.getElementById('quantity');
-const maxStock = parseInt(document.querySelector('#addToCartBtn')?.getAttribute('data-max-stock')) || 0;
+const maxStock = document.getElementById('addToCartBtn')?.getAttribute('data-max-stock')
 
 const MAX_ALLOWED_QUANTITY = 5;
 
@@ -667,19 +683,36 @@ qtyUp.addEventListener('click', (e) => {
     e.preventDefault();
     let value = parseInt(qtyVal.textContent);
 
-    if (value >= MAX_ALLOWED_QUANTITY) {
-        Swal.fire({
-            icon: 'warning',
-            title: `Maximum ${MAX_ALLOWED_QUANTITY} allowed`,
-            text: 'You cannot add more than 5 of this item.',
-            timer: 2000
-        });
-        return;
-    }
+  if (value >= MAX_ALLOWED_QUANTITY) {
+  Swal.fire({
+    iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+    title: `Maximum ${MAX_ALLOWED_QUANTITY} allowed`,
+    text: 'You cannot add more than 5 of this item.',
+    showConfirmButton: false,
+    timer: 2000,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+  return;
+}
 
-    if (value < maxStock && value < MAX_ALLOWED_QUANTITY) {
-        qtyVal.textContent = value + 1;
-    }
+if (value >= maxStock) {
+    Swal.fire({
+      iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+      title: `Only ${maxStock} in stock`,
+      text: `You cannot add more than the available stock.`,
+      showConfirmButton: false,
+      timer: 2000,
+      toast: true,
+      position: 'top-end',
+      width: '300px'
+    });
+    return;
+  }
+
+         qtyVal.textContent = value + 1;
+    
 });
 
 
@@ -714,29 +747,44 @@ if (response.status === 401) {
 const data = await response.json();
 
 if (data.success) {
-  Swal.fire({
-    icon: 'success',
-    title: 'Added to cart',
-    text: data.message || 'Your product has been successfully added to your cart.',
-    showConfirmButton: false,
-    timer: 1500
-  });
+Swal.fire({
+  iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+  title: 'Added to Cart',
+  text: 'Perfume add to cart 🌸',
+  showConfirmButton: false,
+  timer: 1500,
+  toast: true,
+  position: 'top-end',
+  width: '300px'
+});
+
 } else {
   Swal.fire({
     icon: 'warning',
     title: 'Oops!',
     text: data.error || 'Failed to add to cart',
-    timer: 2000
+    showConfirmButton: false,
+    timer: 2000,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
   });
 }
 
 
-    } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'An error occurred. Please try again.',
-        timer: 1500
-      });
+
+   } catch (error) {
+  Swal.fire({
+    icon: 'error',
+    title: 'An error occurred. Please try again.',
+    showConfirmButton: false,
+    timer: 1500,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+
+
     } finally {
       addToCartBtn.classList.remove('loading');
     }
@@ -761,29 +809,44 @@ if (data.success) {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      element.classList.toggle('active');
-      Swal.fire({
-        icon: 'success',
-        title: isInWishlist ? 'Removed from Wishlist' : 'Added to Wishlist',
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: data.error || 'Could not update wishlist',
-      });
-    }
+  element.classList.toggle('active');
+  Swal.fire({
+    iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+    title: isInWishlist ? 'Removed from Wishlist!' : 'Added to Wishlist!',
+    showConfirmButton: false,
+    timer: 1500,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+} else {
+  Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: data.error || 'Could not update wishlist',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+}
+
   })
   .catch(err => {
-    console.error('Error:', err);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'Something went wrong',
-    });
+  console.error('Error:', err);
+  Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'Something went wrong, please try again',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
   });
+});
+
 }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>

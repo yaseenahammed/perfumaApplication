@@ -1,4 +1,5 @@
 const Category = require('../../models/categorySchema');
+const logger = require('../../helpers/logger');
 
 
 
@@ -38,7 +39,7 @@ const categoryInfo = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Category fetch error:", error);
+        logger.error("Category fetch error:", error);
         res.redirect('/admin/pageError');
     }
 };
@@ -70,7 +71,7 @@ const addCategory = async (req, res) => {
           categoryIndex:nextIndex,
         });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         return res.status(500).json({ error: "Internal server error" });
     }
 };
@@ -97,7 +98,7 @@ const addOffer = async (req, res) => {
 
     return res.json({ message: "Offer added successfully", offer:category.offer }); 
   } catch (error) {
-    console.error("Error adding offer:", error);
+    logger.error("Error adding offer:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -120,7 +121,7 @@ const removeOffer = async (req, res) => {
 
         return res.json({ message: "Offer removed successfully" });
     } catch (error) {
-        console.error("Error removing offer:", error);
+        logger.error("Error removing offer:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
 };
@@ -137,7 +138,7 @@ const listCategory = async (req, res) => {
 
     res.json({ message: `Category successfully ${isListed ? 'listed' : 'unlisted'}.` });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).json({ error: 'Something went wrong.' });
   }
 };
@@ -187,7 +188,7 @@ const editCategory = async (req, res) => {
     }
 
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -6,7 +6,7 @@ const Coupon=require('../../models/couponSchema')
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-
+const logger = require('../../helpers/logger');
 
 
 function generateReferralToken() {
@@ -64,9 +64,14 @@ const loadHome = async (req, res) => {
       : [];
 
    
-    res.render('home', { user, title: 'Home Page', menPerfumes, womenPerfumes });
+    res.render('home', { 
+      user,
+       title: 'home',
+       menPerfumes,
+      womenPerfumes
+     });
   } catch (error) {
-    console.error('Error in loadHome:', error.stack);
+    logger.error('Error in loadHome:', error.stack);
     res.redirect('/pageNotFound');
   }
 };
@@ -84,7 +89,7 @@ const loadSignup = async (req, res) => {
       
 
   } catch (error) {
-    console.error('Error in loadSignup:', error.stack);
+    logger.error('Error in loadSignup:', error.stack);
     res.redirect('/pageNotFound');
   }
 };
@@ -116,6 +121,7 @@ const signup = async (req, res) => {
       otpExpires,
       referredBy:referredBy || null
     };
+    logger.info('your otp is',otp)
     console.log('your otp is',otp)
     await transporter.sendMail({
       to: email,
@@ -125,7 +131,7 @@ const signup = async (req, res) => {
 
     res.redirect('/verify-otp');
   } catch (err) {
-    console.error('Signup error:', err);
+    logger.error('Signup error:', err);
     res.render('signup', {
       title: 'Sign Up',
       message: 'Something went wrong. Please try again.',
@@ -203,7 +209,7 @@ await newUser.save();
 
     res.json({ success: true, redirectUrl: '/' });
   } catch (err) {
-    console.error('OTP verification error:', err);
+    logger.error('OTP verification error:', err);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
@@ -232,12 +238,12 @@ const resendOtp=async(req,res)=>{
       text:`New OTP is ${newOtp}.Valid for 10 minutes`
     })
 
-    console.log('Resend OTP to:', tempUser.email);
-    console.log('New otp is:',newOtp)
+    logger.info('Resend OTP to:', tempUser.email);
+    logger.info('New otp is:',newOtp)
     return res.json({success:true,message:'OTP resent succesfully'})
 
   } catch (error) {
-    console.error('error in resendOtp',otp)
+    logger.error('error in resendOtp',error)
     return res.json({
       success:false,
       message:'server error,try again'
@@ -253,7 +259,7 @@ const pageNotFound = async (req, res) => {
   try {
     res.status(404).render('page-404', { title: 'Page Not Found' });
   } catch (error) {
-    console.error('Error in pageNotFound:', error.stack);
+    logger.error('Error in pageNotFound:', error.stack);
     res.status(500).send('Server Error');
   }
 };
@@ -270,7 +276,7 @@ const loadLogin = async (req, res) => {
     }
    
   } catch (error) {
-    console.error('Error in loadLogin:', error.stack);
+    logger.error('Error in loadLogin:', error.stack);
     res.redirect('/pageNotFound');
   }
 };
@@ -279,7 +285,7 @@ const loadLogin = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log('Login request body:', { email });
+    logger.info('Login request body:', { email });
 
   
     if (!email || !password) {
@@ -290,7 +296,7 @@ const login = async (req, res) => {
     }
 
     const user = await User.findOne({ isAdmin: false, email }).lean();
-    console.log('User found:', user ? user.email : 'None'); 
+    logger.info('User found:', user ? user.email : 'None'); 
 
     if (!user) {
       return res.json({
@@ -323,7 +329,7 @@ const login = async (req, res) => {
 
 
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Password match:', isMatch); 
+    logger.info('Password match:', isMatch); 
 
     if (!isMatch) {
       return res.json({
@@ -334,14 +340,14 @@ const login = async (req, res) => {
 
    
     req.session.userId = user._id;
-    console.log('Session userId set:', req.session.userId); 
+    logger.info('Session userId set:', req.session.userId); 
 
     return res.json({
       success: true,
       redirectUrl: '/'
     });
   } catch (error) {
-    console.error('Error in login controller:', error.stack);
+    logger.error('Error in login controller:', error.stack);
     return res.json({
       success: false,
       message: 'Something went wrong. Please try again.'
@@ -353,14 +359,14 @@ const logout = async (req, res) => {
   try {
     req.session.destroy((err) => {
       if (err) {
-        console.error('Error in logout:', err.stack);
+        logger.error('Error in logout:', err.stack);
         return res.redirect('/pageNotFound');
       }
       res.clearCookie('connect.sid');
       res.redirect('/login');
     });
   } catch (error) {
-    console.error('Error in logout:', error.stack);
+    logger.error('Error in logout:', error.stack);
     res.redirect('/pageNotFound');
   }
 };

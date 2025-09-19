@@ -60,11 +60,11 @@
                         Discover our exclusive collection of premium fragrances that define elegance and sophistication. Each scent tells a unique story.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="#products" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
+                        <a href="/shop" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
                             <i class="fas fa-shopping-bag mr-2"></i>
                             Shop Now
                         </a>
-                        <a href="#explore" class="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-gray-900 transition duration-300">
+                        <a href="#explore" class="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-orange-500 hover:text-gray-900 transition duration-300">
                             <i class="fas fa-search mr-2"></i>
                             Explore Collection
                         </a>
@@ -139,10 +139,10 @@
                                 <a href="/productDetails?id=<%= menPerfumes[i]._id %>" class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition duration-300">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="/addToWishlist?id=<%= menPerfumes[i]._id %>" class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition duration-300">
+                                <a href="/wishlist?id=<%= menPerfumes[i]._id %>" class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition duration-300">
                                     <i class="fas fa-heart"></i>
                                 </a>
-                                <a href="/addToCart?id=<%= menPerfumes[i]._id %>" class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition duration-300">
+                                <a href="/cart?id=<%= menPerfumes[i]._id %>" class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition duration-300">
                                     <i class="fas fa-shopping-cart"></i>
                                 </a>
                             </div>
@@ -160,7 +160,7 @@
                             </div>
                         </div>
                         <div class="text-center">
-                            <span class="text-2xl font-bold text-gray-900">$<%= menPerfumes[i].salePrice.toFixed(2) %></span>
+                            <span class="text-2xl font-bold text-gray-900">₹<%= menPerfumes[i].salePrice.toFixed(2) %></span>
                         </div>
                     </div>
                 </div>
@@ -187,10 +187,10 @@
                                 <a href="/productDetails?id=<%= womenPerfumes[i]._id %>" class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition duration-300">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="/addToWishlist?id=<%= womenPerfumes[i]._id %>" class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition duration-300">
+                                <a href="/wishlist?id=<%= womenPerfumes[i]._id %>" class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition duration-300">
                                     <i class="fas fa-heart"></i>
                                 </a>
-                                <a href="/addToCart?id=<%= womenPerfumes[i]._id %>" class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition duration-300">
+                                <a href="/cart?id=<%= womenPerfumes[i]._id %>" class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition duration-300">
                                     <i class="fas fa-shopping-cart"></i>
                                 </a>
                             </div>
@@ -208,7 +208,7 @@
                             </div>
                         </div>
                         <div class="text-center">
-                            <span class="text-2xl font-bold text-gray-900">$<%= womenPerfumes[i].salePrice.toFixed(2) %></span>
+                            <span class="text-2xl font-bold text-gray-900">₹<%= womenPerfumes[i].salePrice.toFixed(2) %></span>
                         </div>
                     </div>
                 </div>
@@ -313,11 +313,11 @@
                 <div class="space-y-8">
                     <div>
                         <h3 class="text-xl font-semibold text-white mb-4">Contact Info</h3>
-                        <div class="space-y-3 text-gray-300">
-                            <p><i class="fas fa-map-marker-alt w-5"></i> Sunny Isles Beach, FL 33160, United States</p>
-                            <p><i class="fas fa-phone w-5"></i> 010-020-0340</p>
-                            <p><i class="fas fa-envelope w-5"></i> info@perfuma.com</p>
-                            <p><i class="fas fa-clock w-5"></i> 07:30 AM - 9:30 PM Daily</p>
+                        <div class="space-y-3 text-white-800">
+                            <p class="text-white"><i class="text-white fas fa-map-marker-alt w-5"></i>Perfuma Fragrance,Kerala</p>
+                            <p class="text-white"><i class="fas fa-phone w-5"></i> 9847127901</p>
+                            <p class="text-white"><i class="fas fa-envelope w-5"></i> info@perfuma.com</p>
+                            <p class="text-white"><i class="fas fa-clock w-5"></i> 07:30 AM - 9:30 PM Daily</p>
                         </div>
                     </div>
                     

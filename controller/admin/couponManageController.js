@@ -1,4 +1,5 @@
 const Coupon=require('../../models/couponSchema')
+const logger = require('../../helpers/logger');
 
 
 
@@ -40,7 +41,7 @@ const getCoupon=async(req,res)=>{
 
         })
     } catch (error) {
-         console.error('error in fetching coupons',error)
+         logger.error('error in fetching coupons',error)
     }
 }
 
@@ -89,7 +90,7 @@ const addCoupon=async(req,res)=>{
         const coupon=await Coupon.create(couponData)
         res.json({success:true,coupon})
     } catch (error) {
-        console.error('error in creating coupon',error)
+        logger.error('error in creating coupon',error)
         
     }
 }
@@ -127,7 +128,7 @@ const updateCoupon=async(req,res)=>{
       
         res.json({ success: true, coupon });
     } catch (error) {
-        console.error('Error updating coupon:', error);
+        logger.error('Error updating coupon:', error);
         
     }
 }
@@ -144,7 +145,7 @@ const deleteCoupon = async (req, res) => {
 
     return res.json({ success: true, message: 'Coupon deleted successfully' });
   } catch (error) {
-    console.error('Error in deleting coupon:', error);
+    logger.error('Error in deleting coupon:', error);
     return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };

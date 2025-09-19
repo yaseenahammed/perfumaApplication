@@ -1,15 +1,13 @@
 <!DOCTYPE HTML>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <title>Perfuma</title>
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta property="og:title" content="">
-    <meta property="og:type" content="">
-    <meta property="og:url" content="">
-    <meta property="og:image" content="">
+
     <link rel="shortcut icon" type="image/x-icon" href="#">
     <link href="/admin-assets/css/main.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.15.6/dist/sweetalert2.min.css">
@@ -17,8 +15,9 @@
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <style>
         body {
             background-color: #ffffff;
@@ -27,8 +26,21 @@
             font-family: 'Roboto', sans-serif;
             overflow-x: hidden;
         }
+
+        .screen-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .screen-overlay.active {
+            display: block;
+        }
+
         .navbar-aside {
-            background: linear-gradient(to right, #111827, #1f2937, #111827); 
+            background: #1f2937; /* Dark background */
             width: 250px;
             padding: 20px;
             height: 100vh;
@@ -40,11 +52,17 @@
             z-index: 1001;
             border-radius: 0 15px 0 0;
         }
+
+        .navbar-aside.active {
+            transform: translateX(0);
+        }
+
         .menu-aside {
             list-style: none;
             padding: 0;
             margin: 0;
         }
+
         .menu-item a.menu-link {
             display: flex;
             align-items: center;
@@ -57,11 +75,13 @@
             transition: all 0.3s ease;
             margin-bottom: 8px;
         }
+
         .menu-item a.menu-link:hover,
         .menu-item a.menu-link.active {
             background-color: #374151;
             color: #ffffff;
         }
+
         .main-wrap {
             margin-left: 250px;
             padding: 15px;
@@ -70,8 +90,9 @@
             box-sizing: border-box;
             width: calc(100% - 250px);
         }
+
         .main-header.navbar {
-            background: linear-gradient(to right, #111827, #1f2937, #111827); /* dark gradient */
+            background: linear-gradient(to right, #111827, #1f2937, #111827);
             padding: 12px 20px;
             margin-left: -22px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -82,12 +103,14 @@
             top: -5px;
             border-radius: 10px;
         }
+
         .col-nav {
             display: flex;
             align-items: center;
             justify-content: flex-end;
             width: 100%;
         }
+
         .dropdown-toggle img {
             width: 40px;
             height: 40px;
@@ -96,22 +119,27 @@
             border: 2px solid #ffffff;
             transition: transform 0.3s ease;
         }
+
         .dropdown-toggle:hover img {
             transform: scale(1.1);
         }
+
         .dropdown-menu {
             background-color: #1f2937;
             border: 1px solid #374151;
             border-radius: 8px;
         }
+
         .dropdown-item {
             color: #e5e7eb;
             padding: 8px 16px;
         }
+
         .dropdown-item:hover {
             background-color: #374151;
             color: #ffffff;
         }
+
         .brand-wrap {
             display: flex;
             align-items: center;
@@ -119,15 +147,19 @@
             background: rgba(107, 114, 128, 0.3);
             border-radius: 10px;
         }
+
         .brand-wrap img {
             filter: brightness(0) invert(1);
             height: 40px;
             transition: transform 0.3s ease;
         }
+
         .brand-wrap:hover img {
             transform: scale(1.05);
         }
-        .btn-aside-minimize, .btn-mobile {
+
+        .btn-aside-minimize,
+        .btn-mobile {
             background: none;
             border: none;
             color: #ffffff;
@@ -135,99 +167,63 @@
             cursor: pointer;
             transition: color 0.3s ease;
         }
-        .btn-aside-minimize:hover, .btn-mobile:hover {
+
+        .btn-aside-minimize:hover,
+        .btn-mobile:hover {
             color: #e5e7eb;
         }
-        .screen-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-        }
+
         @media (max-width: 768px) {
             .navbar-aside {
                 transform: translateX(-250px);
             }
+
+            .navbar-aside.active {
+                transform: translateX(0);
+            }
+
             .main-wrap {
                 margin-left: 0;
                 padding: 10px;
                 width: 100%;
             }
+
             .main-header.navbar {
                 margin-left: 0;
                 top: 0;
                 padding: 10px;
                 border-radius: 0;
             }
-            .navbar-aside.active {
-                transform: translateX(0);
-            }
+
             .screen-overlay.active {
                 display: block;
             }
         }
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: #0a1f2a;
-            }
-            .navbar-aside {
-                background: linear-gradient(to right, #111827, #1f2937, #111827);
-            }
-            .menu-item a.menu-link {
-                background-color: #1f2937;
-                color: #d1d5db;
-            }
-            .menu-item a.menu-link:hover,
-            .menu-item a.menu-link.active {
-                background-color: #374151;
-                color: #ffffff;
-            }
-            .main-header.navbar {
-                background: linear-gradient(to right, #111827, #1f2937, #111827);
-            }
-            .dropdown-menu {
-                background-color: #1f2937;
-            }
-            .dropdown-item {
-                color: #d1d5db;
-            }
-            .brand-wrap {
-                background: rgba(31, 41, 55, 0.3);
-            }
-            .brand-wrap img {
-                filter: brightness(0) invert(0.9);
-            }
-        }
-
-
-
     </style>
 </head>
+
 <body>
-    <div class="screen-overlay" onclick="document.getElementById('offcanvas_aside').classList.toggle('active'); this.classList.toggle('active');"></div>
+
+    <div class="screen-overlay" onclick="toggleSidebar(false)"></div>
+
     <aside class="navbar-aside" id="offcanvas_aside">
         <div class="aside-top">
             <div class="hidden sm:block">
-                        <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-violet-700 bg-clip-text text-transparent tracking-wide">
-                            PERFUMA
-                        </h1>
-                        <p class="text-xs text-gray-500 -mt-1">Premium Fragrances</p>
-                    </div>
-           
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-violet-700 bg-clip-text text-transparent tracking-wide">
+                    PERFUMA
+                </h1>
+                <p class="text-xs text-gray-500 -mt-1">Premium Fragrances</p>
+            </div>
+
             <div>
-                <button class="btn btn-icon btn-aside-minimize" onclick="document.getElementById('offcanvas_aside').classList.toggle('active'); document.querySelector('.screen-overlay').classList.toggle('active');">
+                <button class="btn btn-icon btn-aside-minimize" onclick="toggleSidebar(false)">
                     <i class="text-muted material-icons md-menu_open"></i>
                 </button>
             </div>
         </div>
-        
+
         <nav>
             <ul class="menu-aside">
-                
                 <li class="menu-item"><a class="menu-link" href="/admin/dashboard"><i class="material-icons">home</i><span class="text">Dashboard</span></a></li>
                 <li class="menu-item"><a class="menu-link" href="/admin/users"><i class="material-icons">person</i><span class="text">Customers</span></a></li>
                 <li class="menu-item"><a class="menu-link" href="/admin/category"><i class="material-icons">category</i><span class="text">Category</span></a></li>
@@ -236,19 +232,21 @@
                 <li class="menu-item"><a class="menu-link" href="/admin/order"><i class="material-icons">shopping_cart</i><span class="text">Orders</span></a></li>
                 <li class="menu-item"><a class="menu-link" href="/admin/coupon"><i class="material-icons">class</i><span class="text">Coupon</span></a></li>
                 <li class="menu-item"><a class="menu-link" href="/admin/salesReport"><i class="material-icons">photo</i><span class="text">SalesReport</span></a></li>
-
             </ul>
         </nav>
     </aside>
+
     <main class="main-wrap">
         <header class="main-header navbar">
             <div class="col-search"></div>
             <div class="col-nav">
-                <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"> <i class="material-icons md-apps"></i> </button>
-                
+                <button class="btn btn-icon btn-mobile me-auto d-lg-none" onclick="toggleSidebar(true)">
+                    <i class="material-icons md-apps"></i>
+                </button>
+
                 <ul class="nav">
                     <li class="dropdown nav-item">
-                        <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount" aria-expanded="false"> 
+                        <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount" aria-expanded="false">
                             <img class="img-xs rounded-circle" src="/admin-assets/images/am.jpg" alt="User">
                         </a>
                         <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
@@ -259,7 +257,24 @@
                 </ul>
             </div>
         </header>
-        <!-- Content will be injected here via EJS include -->
+        <!-- Content injected here via EJS include -->
     </main>
+
+    <script>
+        function toggleSidebar(open) {
+            const aside = document.getElementById('offcanvas_aside');
+            const overlay = document.querySelector('.screen-overlay');
+            aside.classList.toggle('active', open);
+            overlay.classList.toggle('active', open);
+        }
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                toggleSidebar(false);
+            }
+        });
+    </script>
+
 </body>
+
 </html>

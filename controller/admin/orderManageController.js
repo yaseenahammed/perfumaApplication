@@ -3,6 +3,9 @@ const User = require('../../models/userSchema');
 const Product=require('../../models/productSchema')
 const Wallet=require('../../models/walletSchema')
 const Transactions=require('../../models/transactionSchema')
+const logger = require('../../helpers/logger');
+
+
 
 const orderListing = async (req, res) => {
     try {
@@ -10,6 +13,7 @@ const orderListing = async (req, res) => {
         const perPage = 10;
         const query = {};
 
+        
        
         if (search) {
             if (!/^[a-zA-Z0-9-]*$/.test(search)) {
@@ -30,6 +34,7 @@ const orderListing = async (req, res) => {
         if (filter) query.orderStatus = filter;
 
         
+
 
         const orders = await Order.find(query)
             .populate('user items.product')
@@ -52,7 +57,7 @@ const orderListing = async (req, res) => {
         })
 
 
-        
+
 
         res.render('order-management', {
             orders,
@@ -64,7 +69,7 @@ const orderListing = async (req, res) => {
             
         });
     } catch (error) {
-        console.error('Error in fetching orders from orderListing:', error);
+        logger.error('Error in fetching orders from orderListing:', error);
         res.status(500).render('order-management', {
             orders: [],
             currentPage: 1,
@@ -76,9 +81,12 @@ const orderListing = async (req, res) => {
         });
     }
 };
+
+
+
 const updateStatus = async (req, res) => {
   try {
-    const { orderId } = req.params; // this will be like "ORD-984403"
+    const { orderId } = req.params; 
     const { status } = req.body;
 
     const allowedStatuses = [
@@ -93,16 +101,22 @@ const updateStatus = async (req, res) => {
       return res.json({ success: false, message: "Invalid status" });
     }
 
-    const order = await Order.findOneAndUpdate(
-      { orderID: orderId }, // 👈 match custom orderID
-      {
-        $set: {
-          orderStatus: status,
-          "items.$[].orderStatus": status, // 👈 update every item
-        },
-      },
-      { new: true }
-    );
+      const order = await Order.findOne({ orderID: orderId });
+
+    if (!order) {
+      return res.json({ success: false, message: "Order not found" });
+    }
+
+  order.orderStatus = status;
+
+  
+    order.items.forEach((item) => {
+      if (!item.cancelled) {
+        item.orderStatus = status;
+      }
+    });
+
+    await order.save();
 
     if (order) {
       let nextOptions = [];
@@ -122,7 +136,7 @@ const updateStatus = async (req, res) => {
       return res.json({ success: false, message: "Order not found" });
     }
   } catch (error) {
-    console.error("Error in updateStatus:", error);
+    logger.error("Error in updateStatus:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
@@ -140,8 +154,9 @@ const verifyReturn = async (req, res) => {
             return res.json({ success: false, message: 'Invalid return request' });
         }
 
-        // Update overall order status
+  
         order.orderStatus = 'Returned';
+
 
         const refundAmount = order.finalAmount;
         order.refundAmount += refundAmount;
@@ -161,7 +176,7 @@ const verifyReturn = async (req, res) => {
 
         await order.save();
 
-        // Process wallet refund
+      
         const userId = order.user._id;
         await Wallet.findOneAndUpdate(
             { user: userId },
@@ -179,7 +194,7 @@ const verifyReturn = async (req, res) => {
             { upsert: true }
         );
 
-        // Add to transactions log
+     
         await Transactions.create({
             user: userId,
             type: 'Return',
@@ -192,7 +207,7 @@ const verifyReturn = async (req, res) => {
         res.json({ success: true, message: 'Return verified and refund processed' });
 
     } catch (error) {
-        console.error('Error in verifyReturn:', error);
+        logger.error('Error in verifyReturn:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 };
@@ -201,7 +216,7 @@ const verifyReturn = async (req, res) => {
 
 const verifyReturnItem = async (req, res) => {
     try {
-        console.log('Reached item return');
+       
         const { orderID, itemID } = req.params;
 
         const order = await Order.findOne({ orderID })
@@ -217,10 +232,23 @@ const verifyReturnItem = async (req, res) => {
 
    
         item.orderStatus = 'Returned';
-         const refundAmount = item.price * item.quantity;
 
-        order.refundAmount += refundAmount;   
-        order.netAmount = order.finalAmount - order.refundAmount;
+        if (order.items.every(i => i.orderStatus === 'Returned')) {
+  order.orderStatus = 'Returned';
+}
+
+
+         const itemPriceTotal = item.price * item.quantity;
+const itemDiscount = (itemPriceTotal / order.totalAmount) * order.discountPrice;
+
+
+const refundAmount = parseFloat(
+    (itemPriceTotal - itemDiscount).toFixed(2)
+);
+
+order.refundAmount += refundAmount;
+order.netAmount = order.finalAmount - order.refundAmount;
+
 
           await Product.updateOne(
               { _id: item.product },
@@ -260,7 +288,7 @@ const verifyReturnItem = async (req, res) => {
         res.json({ success: true, message: 'Item return verified and refund processed' });
 
     } catch (error) {
-        console.error('Error in verifyReturnItem:', error);
+        logger.error('Error in verifyReturnItem:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 };
@@ -285,20 +313,27 @@ const rejectReturn = async (req, res) => {
 
         
         order.orderStatus = 'Return Rejected'; 
+
+        order.items.forEach(item=>{
+            item.orderStatus='Return Rejected'
+            item.returned = false;
+            item.returnRejectReason = reason || 'No reason provided';
+        })
+        
         order.returnRejected = true;
         order.rejectReturnReason=reason || 'No reason Provided'
         await order.save();
 
         res.json({ success: true, message: 'Return request rejected.' });
     } catch (error) {
-        console.error('Error in rejectReturn:', error);
+        logger.error('Error in rejectReturn:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 };
 
 const rejectReturnItem = async (req, res) => {
     try {
-        console.log('reached item reject');
+        logger.info('reached item reject');
         const { orderID, itemID } = req.params;
         const { reason } = req.body;
 
@@ -319,7 +354,7 @@ const rejectReturnItem = async (req, res) => {
 
         res.json({ success: true, message: 'Item return request rejected.' });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 };
@@ -337,7 +372,7 @@ const orderDetails = async (req, res) => {
             res.status(404).send('Order not found');
         }
     } catch (error) {
-        console.error('Error in orderDetails', error);
+        logger.error('Error in orderDetails', error);
         res.status(500).send('Internal Server Error');
     }
 };

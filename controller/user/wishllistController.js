@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const Wishlist = require('../../models/wishlistSchema');
 const Product = require('../../models/productSchema');
 const Cart=require('../../models/cartSchema.js')
+const {getBestPrice}=require('../../helpers/offerHelper.js')
+const logger = require('../../helpers/logger');
 
 const getWishlist = async (req, res) => {
   try {
@@ -12,27 +14,36 @@ const getWishlist = async (req, res) => {
       return res.status(401).send( { message: 'Please log in to view your wishlist' });
     }
 
-    const wishlist = await Wishlist.find({ user:user._id }).populate('product');
-    const wishlistItems = wishlist.map(item => ({
-      _id: item._id,
-    product: {
-  _id: item.product._id,
-  name: item.product.name,
-  salePrice: item.product.salePrice,
-  productImages: item.product.productImages,
-}
 
-    }));
+
+    const wishlist = await Wishlist.find({ user:user._id }).populate('product');
+
+    const wishlistItems=await Promise.all(
+      wishlist.map(async(item)=>{
+        const {finalPrice}=await getBestPrice(item.product)
+        return {
+          _id:item._id,
+          product:{
+            _id:item.product._id,
+            name:item.product.name,
+            productImages:item.product.productImages,
+            salePrice:finalPrice
+          }
+        }
+      })
+    )
+ 
 
    
 
     res.render('wishlist', {
+      title:'wishlist',
      user,
       wishlistItems,
    
     });
   } catch (error) {
-    console.error('Error fetching wishlist:', error);
+    logger.error('Error fetching wishlist:', error);
     res.status(500).send({ message: 'Failed to load wishlist' });
   }
 };
@@ -77,7 +88,7 @@ const addToWishlist = async (req, res) => {
  
 
   } catch (err) {
-    console.error('Error adding to wishlist:', err);
+    logger.error('Error adding to wishlist:', err);
     if (err.name === 'CastError') {
       return res.status(400).json({ success: false, error: 'Invalid product ID' });
     }
@@ -109,7 +120,7 @@ const removeFromWishlist = async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    console.error('Error removing wishlist item:', err);
+    logger.error('Error removing wishlist item:', err);
     if (err.name === 'CastError') {
       return res.status(400).json({ success: false, error: 'Invalid product ID' });
     }
@@ -127,7 +138,7 @@ const clearWishlist = async (req, res) => {
     await Wishlist.deleteMany({ user:userId });
     res.json({ success: true });
   } catch (err) {
-    console.error('Error clearing wishlist:', err);
+    logger.error('Error clearing wishlist:', err);
     res.status(500).json({ success: false, error: 'Failed to clear wishlist' });
   }
 };

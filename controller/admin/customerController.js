@@ -1,5 +1,5 @@
 const User=require('../../models/userSchema')
-
+const logger = require('../../helpers/logger');
 
 
 const customerInfo=async(req,res)=>{
@@ -49,7 +49,7 @@ const customerInfo=async(req,res)=>{
    
 
   } catch (error) {
-    console.error('Error in customer info page ',error)
+    logger.error('Error in customer info page ',error)
     res.redirect('/admin/pageError')
     
   }
@@ -73,7 +73,7 @@ const blockCustomer=async(req,res)=>{
     res.redirect('/admin/users')
   } catch (error) {
 
-    console.error('error in block customer',error)
+    logger.error('error in block customer',error)
     res.status(500).send('internal server error')
     
   }
@@ -87,7 +87,7 @@ const unblockCustomer = async (req, res) => {
     await User.findByIdAndUpdate(userId,{$set:{ isBlocked: false }} );
     res.redirect('/admin/users');
   } catch (error) {
-    console.error("Error unblocking user:", error);
+    logger.error("Error unblocking user:", error);
     res.status(500).send("Internal Server Error");
   }
 };

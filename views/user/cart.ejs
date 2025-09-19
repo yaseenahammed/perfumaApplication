@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
+
         tailwind.config = {
             theme: {
                 extend: {
@@ -56,6 +57,20 @@
         .blocked-item {
             opacity: 0.5;
         }
+
+        .swal2-popup {
+  background: #fff0f5 !important;  /* Light lavender background */
+  color: #333 !important;
+  font-family: 'Arial, sans-serif' !important;
+  border-radius: 12px !important;  /* Rounded corners for a softer look */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Custom perfume icon */
+.custom-swal-perfume-icon {
+  font-size: 30px !important;  /* Smaller size */
+  color: #ff69b4 !important;   /* Pinkish */
+}
     </style>
 </head>
 
@@ -78,9 +93,11 @@
             <div class="max-w-7xl mx-auto">
                 <div class="grid lg:grid-cols-3 gap-8">
                     <!-- CART ITEMS -->
+              
                     <div class="lg:col-span-2">
                         <div class="bg-white rounded-2xl shadow-xl p-8 animate-fade-in">
                             <div class="flex items-center justify-between mb-8">
+                            
                                 <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center">
                                     <i class="fas fa-shopping-cart text-amber-500 mr-3"></i>
                                     Shopping Cart
@@ -147,17 +164,19 @@
                                                         <button 
                                                             class="btn-decrement w-10 h-10 bg-gray-100 hover:bg-amber-500 hover:text-white text-gray-600 border-none cursor-pointer font-semibold transition-all duration-200 flex items-center justify-center"
                                                             data-id="<%= item.product._id %>" 
+                                                            data-max="<%= item.product.quantity %>"
                                                             <%= (item.quantity <= 1 || isBlockedItem) ? 'disabled' : '' %>>
                                                             <i class="fas fa-minus"></i>
                                                         </button>
                                                         <!-- Quantity -->
-                                                        <span class="w-12 h-10 flex items-center justify-center font-semibold text-gray-900 bg-white quantity p-2 px-3">
+                                                        <span  class="w-12 h-10 flex items-center justify-center font-semibold text-gray-900 bg-white quantity p-2 px-3">
                                                             <%= item.quantity %>
                                                         </span>
                                                         <!-- Increment -->
                                                         <button 
                                                             class="btn-increment w-10 h-10 bg-gray-100 hover:bg-amber-500 hover:text-white text-gray-600 border-none cursor-pointer font-semibold transition-all duration-300 flex items-center justify-center"
                                                             data-id="<%= item.product._id %>" 
+                                                            data-max="<%= item.product.quantity %>"
                                                             <%= (item.quantity >= item.product.quantity || isBlockedItem) ? 'disabled' : '' %>>
                                                             <i class="fas fa-plus"></i>
                                                         </button>
@@ -243,167 +262,211 @@
         <%- include("../../views/partials/user/footer")%>
 
         <script src="/js/cart.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const incrementButtons = document.querySelectorAll('.btn-increment');
-                const decrementButtons = document.querySelectorAll('.btn-decrement');
-                const removeButtons = document.querySelectorAll('.btn-remove');
-                const checkoutButton = document.querySelector('.btn-checkout');
+       <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const incrementButtons = document.querySelectorAll('.btn-increment');
+    const decrementButtons = document.querySelectorAll('.btn-decrement');
+    const removeButtons = document.querySelectorAll('.btn-remove');
+    const checkoutButton = document.querySelector('.btn-checkout');
 
-                const updateCartUI = (data, productId = null, isRemove = false) => {
-                    const { updatedQuantity, productQuantity, subtotal, shipping, total, cartItemCount, disableCheckout } = data;
+    const MAX_ALLOWED_QUANTITY = 5;
 
-               
-                    const itemCountElement = document.getElementById('cart-item-count');
-                    const summaryItemCountElement = document.getElementById('summary-item-count');
-                    itemCountElement.textContent = `${cartItemCount} Items`;
-                    summaryItemCountElement.textContent = cartItemCount;
+    const updateCartUI = (data, productId = null, isRemove = false) => {
+        const { updatedQuantity, productQuantity, subtotal, shipping, total, cartItemCount, disableCheckout } = data;
 
-               
-                    const cartItemsContainer = document.getElementById('cart-items');
-                    if (cartItemCount === 0) {
-                        cartItemsContainer.innerHTML = `
-                            <div class="text-center py-16">
-                                <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <i class="fas fa-shopping-cart text-gray-400 text-3xl"></i>
-                                </div>
-                                <h3 class="text-2xl font-semibold text-gray-900 mb-4">Your cart is empty</h3>
-                                <p class="text-gray-600 mb-8">Looks like you haven't added any items to your cart yet.</p>
-                                <a href="/shop" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
-                                    <i class="fas fa-shopping-bag mr-2"></i>
-                                    Continue Shopping
-                                </a>
-                            </div>
-                        `;
-                        checkoutButton.disabled = true;
-                    } else if (isRemove) {
-                        const itemElement = document.querySelector(`.cart-item-card[data-id="${productId}"]`);
-                        if (itemElement) {
-                            itemElement.style.opacity = '0';
-                            setTimeout(() => itemElement.remove(), 300);
+        const itemCountElement = document.getElementById('cart-item-count');
+        const summaryItemCountElement = document.getElementById('summary-item-count');
+        itemCountElement.textContent = `${cartItemCount} Items`;
+        summaryItemCountElement.textContent = cartItemCount;
+
+        const cartItemsContainer = document.getElementById('cart-items');
+        if (cartItemCount === 0) {
+            cartItemsContainer.innerHTML = `
+                <div class="text-center py-16">
+                    <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-shopping-cart text-gray-400 text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-gray-900 mb-4">Your cart is empty</h3>
+                    <p class="text-gray-600 mb-8">Looks like you haven't added any items to your cart yet.</p>
+                    <a href="/shop" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
+                        <i class="fas fa-shopping-bag mr-2"></i>
+                        Continue Shopping
+                    </a>
+                </div>
+            `;
+            checkoutButton.disabled = true;
+        } else if (isRemove) {
+            const itemElement = document.querySelector(`.cart-item-card[data-id="${productId}"]`);
+            if (itemElement) {
+                itemElement.style.opacity = '0';
+                setTimeout(() => itemElement.remove(), 300);
+            }
+        } else {
+            const itemElement = document.querySelector(`.cart-item-card[data-id="${productId}"]`);
+            if (itemElement) {
+                const quantityElement = itemElement.querySelector('.quantity');
+                const decrementButton = itemElement.querySelector('.btn-decrement');
+                const incrementButton = itemElement.querySelector('.btn-increment');
+                quantityElement.textContent = updatedQuantity;
+                decrementButton.disabled = updatedQuantity <= 1;
+                incrementButton.disabled = productQuantity ? updatedQuantity >= productQuantity : false;
+            }
+        }
+
+        document.getElementById('subtotal').textContent = `₹${subtotal.toFixed(2)}`;
+        document.getElementById('shipping').textContent = `₹${parseFloat(shipping).toFixed(2)}`;
+        document.getElementById('total').textContent = `₹${total.toFixed(2)}`;
+        checkoutButton.disabled = disableCheckout || total === 0;
+    };
+
+
+
+document.querySelectorAll('.btn-increment').forEach(button => {
+    button.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const btn = e.target.closest('button'); // ensures correct button
+        const productId = btn.getAttribute('data-id');
+        const maxStock = parseInt(btn.getAttribute('data-max')); // stock from data-max
+
+        const itemElement = btn.closest('.cart-item-card');
+        const quantityEl = itemElement.querySelector('.quantity'); // relative selector
+        let currentQty = parseInt(quantityEl.textContent.trim());
+
+        // Max allowed quantity check
+        if (currentQty >= MAX_ALLOWED_QUANTITY) {
+            Swal.fire({
+                iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+                title: `Maximum ${MAX_ALLOWED_QUANTITY} allowed`,
+                text: `You cannot add more than ${MAX_ALLOWED_QUANTITY} of this item.`,
+                showConfirmButton: false,
+                timer: 2000,
+                toast: true,
+                position: 'top-end',
+                width: '300px'
+            });
+            return;
+        }
+
+        // Max stock check
+        if (currentQty >= maxStock) {
+            Swal.fire({
+                iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+                title: `Only ${maxStock} in stock`,
+                text: `You cannot add more than the available stock.`,
+                showConfirmButton: false,
+                timer: 2000,
+                toast: true,
+                position: 'top-end',
+                width: '300px'
+            });
+            return;
+        }
+
+        // Call backend only if checks pass
+        try {
+            const response = await fetch(`/cart/add/${productId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId })
+            });
+            const result = await response.json();
+            if (result.success) updateCartUI(result, productId);
+        } catch (err) {
+            console.error('Increment error:', err);
+        }
+    });
+});
+
+
+    // ===== Decrement Button =====
+    decrementButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const productId = button.getAttribute('data-id');
+            const itemElement = button.closest('.cart-item-card');
+            const quantityEl = itemElement.querySelector('.quantity');
+            let currentQty = parseInt(quantityEl.textContent);
+
+            if (currentQty <= 1) {
+                Swal.fire({
+                    iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+                    title: `Minimum quantity reached`,
+                    text: `You cannot go below 1.`,
+                    showConfirmButton: false,
+                    timer: 2000,
+                    toast: true,
+                    position: 'top-end',
+                    width: '300px'
+                });
+                return;
+            }
+
+            // Call backend
+            try {
+                const response = await fetch(`/cart/decrement/${productId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId })
+                });
+                const result = await response.json();
+                if (result.success) updateCartUI(result, productId);
+            } catch (err) {
+                console.error('Decrement error:', err);
+            }
+        });
+    });
+
+    // ===== Remove Button =====
+    removeButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const productId = button.getAttribute('data-id');
+            Swal.fire({
+                title: 'Remove this item?',
+                text: 'This perfume will be removed from your cart.',
+                iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, remove it!',
+                cancelButtonText: 'Cancel'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`/cart/remove/${productId}`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ productId })
+                        });
+                        const res = await response.json();
+                        if (res.success) {
+                            updateCartUI(res, productId, true);
+                            Swal.fire({
+                                iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+                                title: 'Removed!',
+                                text: 'Your item has been removed from cart.',
+                                showConfirmButton: false,
+                                timer: 2000,
+                                toast: true,
+                                position: 'top-end',
+                                width: '300px'
+                            });
                         }
-                    } else {
-                        const itemElement = document.querySelector(`.cart-item-card[data-id="${productId}"]`);
-                        if (itemElement) {
-                            const quantityElement = itemElement.querySelector('.quantity');
-                            const decrementButton = itemElement.querySelector('.btn-decrement');
-                            const incrementButton = itemElement.querySelector('.btn-increment');
-                            quantityElement.textContent = updatedQuantity;
-                            decrementButton.disabled = updatedQuantity <= 1;
-                            incrementButton.disabled = productQuantity ? updatedQuantity >= productQuantity : false;
-                            itemElement.style.opacity = '1';
-                            itemElement.style.display = 'block';
-                        } else {
-                            console.warn(`Item element not found for productId: ${productId}`);
-                        }
+                    } catch (err) {
+                        console.error('Remove error:', err);
                     }
-
-                    document.getElementById('subtotal').textContent = `₹${subtotal.toFixed(2)}`;
-                    document.getElementById('shipping').textContent = `₹${parseFloat(shipping).toFixed(2)}`;
-                    document.getElementById('total').textContent = `₹${total.toFixed(2)}`;
-
-                
-                    checkoutButton.disabled = disableCheckout || total === 0;
-                };
-
-                incrementButtons.forEach(button => {
-                    button.addEventListener('click', async (e) => {
-                        const productId = e.target.closest('button').getAttribute('data-id');
-                        try {
-                            const response = await fetch(`/cart/add/${productId}`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ productId })
-                            });
-                            const result = await response.json();
-                            if (result.success) {
-                                updateCartUI(result, productId);
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Oops...',
-                                    text: result.message || 'Failed to update quantity',
-                                });
-                            }
-                        } catch (error) {
-                            console.error('Error incrementing quantity:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'An error occurred',
-                            });
-                        }
-                    });
-                });
-
-                decrementButtons.forEach(button => {
-                    button.addEventListener('click', async (e) => {
-                        const productId = e.target.closest('button').getAttribute('data-id');
-                        try {
-                            const response = await fetch(`/cart/decrement/${productId}`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ productId })
-                            });
-                            const result = await response.json();
-                            if (result.success) {
-                                updateCartUI(result, productId);
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Oops...',
-                                    text: result.message || 'Failed to update quantity',
-                                });
-                            }
-                        } catch (error) {
-                            console.error('Error decrementing quantity:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'An error occurred',
-                            });
-                        }
-                    });
-                });
-
-                removeButtons.forEach(button => {
-                    button.addEventListener('click', async (e) => {
-                        const productId = e.target.closest('button').getAttribute('data-id');
-                        try {
-                            const response = await fetch(`/cart/remove/${productId}`, {
-                                method: 'DELETE', 
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ productId })
-                            });
-                            const result = await response.json();
-                            if (result.success) {
-                                updateCartUI(result, productId, true);
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Oops...',
-                                    text: result.message || 'Failed to remove item',
-                                });
-                            }
-                        } catch (error) {
-                            console.error('Error removing item:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'An error occurred',
-                            });
-                        }
-                    });
-                });
-
-                if (checkoutButton) {
-                    checkoutButton.addEventListener('click', (e) => {
-                        if (!checkoutButton.disabled) {
-                            window.location.href = '/checkout';
-                        }
-                    });
                 }
             });
-        </script>
+        });
+    });
+
+    // ===== Checkout Button =====
+    if (checkoutButton) {
+        checkoutButton.addEventListener('click', (e) => {
+            if (!checkoutButton.disabled) window.location.href = '/checkout';
+        });
+    }
+});
+</script>
+
     </body>
 </html>

@@ -823,10 +823,10 @@ function runModifiers(modifiers, data, ends) {
 
   modifiersToRun.forEach(function (modifier) {
     if (modifier['function']) {
-      // eslint-disable-line dot-notation
+       
       console.warn('`modifier.function` is deprecated, use `modifier.fn`!');
     }
-    var fn = modifier['function'] || modifier.fn; // eslint-disable-line dot-notation
+    var fn = modifier['function'] || modifier.fn;  
     if (modifier.enabled && isFunction(fn)) {
       // Add properties to offsets to make them a complete clientRect object
       // we do this before each modifier to make sure the previous one doesn't

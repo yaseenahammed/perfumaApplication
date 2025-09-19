@@ -26,7 +26,9 @@ const orderSchema = new Schema({
           'Cancelled',
           'ReturnRequest',
           'Returned',
-          'Return Rejected'
+          'Return Rejected',
+          'Out for Delivery'
+
         ],
         default: 'Processing'
       },
@@ -69,7 +71,8 @@ const orderSchema = new Schema({
       'Cancelled',
       'ReturnRequest',
       'Returned',
-      'Return Rejected'
+      'Return Rejected',
+      'Out for Delivery'
     ],
     default: 'Processing'
   },

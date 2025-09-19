@@ -4,6 +4,7 @@ const Brand = require('../../models/brandSchema');
 const User = require('../../models/userSchema');
 const Wishlist=require('../../models/wishlistSchema')
 const { getBestPrice } = require('../../helpers/offerHelper');
+const logger = require('../../helpers/logger');
 
 const loadShop = async (req, res) => {
   try {
@@ -108,6 +109,7 @@ const loadShop = async (req, res) => {
 
 
     res.render('shop', {
+      title:'shop',
       user,
       products: paginatedProducts,
       categories,
@@ -119,11 +121,11 @@ const loadShop = async (req, res) => {
       brandId,
       priceRange,
       searchQuery,
-      wishlistItems
+      wishlistItems,
     });
 
   } catch (error) {
-    console.error('Error in loadShop:', error.stack);
+    logger.error('Error in loadShop:', error.stack);
     res.redirect('/pageNotFound');
   }
 };
@@ -230,7 +232,7 @@ const searchProducts = async (req, res) => {
       wishlistItems
     });
   } catch (error) {
-    console.error('Error in searchProducts:', error.stack);
+    logger.error('Error in searchProducts:', error.stack);
     res.redirect('/pageNotFound');
   }
 };

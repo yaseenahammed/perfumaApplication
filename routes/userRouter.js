@@ -10,7 +10,6 @@ const orderController=require('../controller/user/orderController')
 const wishlistController=require('../controller/user/wishllistController')
 const shopController=require('../controller/user/shopController')
 const walletController=require('../controller/user/walletController')
-const passport = require('../config/passport');
 const uploads = require('../helpers/multer');
 const nocache=require('nocache')
 const { userAuth,isLogin,setUser} = require('../middlewares/auth');
@@ -28,33 +27,6 @@ router.post('/verify-otp', userController.verifyOtp);
 router.post('/resend-OTP', userController.resendOtp);
 router.get('/pageNotFound', userController.pageNotFound);
 
-// Google Auth
-router.get(
-  '/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
-
-
-router.get('/auth/google/callback', (req, res, next) => {
-  passport.authenticate('google', (err, user, info) => {
-    if (err) {
-      console.error('Google Auth Error:', err);
-      return next(err);
-    }
-
-    if (!user) {
-     
-      const errorMessage = info && info.message ? info.message : 'Google login failed';
-      return res.redirect('/login?error=' + encodeURIComponent(errorMessage));
-    }
-
-    req.logIn(user, (err) => {
-      if (err) return next(err);
-      req.session.userId = user._id;
-      return res.redirect('/');
-    });
-  })(req, res, next);
-});
 
 
 // Login/Logout

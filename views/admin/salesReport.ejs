@@ -139,35 +139,35 @@
                                     class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
                                     onchange="toggleCustomDate(this.value)"
                                 >
-                                    <option value="daily" <%= period === 'daily' ? 'selected' : '' %>>Daily</option>
-                                    <option value="weekly" <%= period === 'weekly' ? 'selected' : '' %>>Weekly</option>
-                                    <option value="yearly" <%= period === 'yearly' ? 'selected' : '' %>>Yearly</option>
+                                    <option value="daily" <%= period === 'daily' ? 'selected' : '' %>>Today</option>
+                                    <option value="weekly" <%= period === 'weekly' ? 'selected' : '' %>>Last Week</option>
+                                    <option value="yearly" <%= period === 'yearly' ? 'selected' : '' %>>Last Year</option>
                                     <option value="custom" <%= period === 'custom' ? 'selected' : '' %>>Custom Range</option>
                                 </select>
                             </div>
                             <div id="customDateRange" class="w-full max-w-md <%= period !== 'custom' ? 'hidden' : '' %>">
-                                <div class="flex gap-2">
-                                    <input 
-  type="date" 
-  id="startDate"
-  name="startDate" 
-  value="<%= startDate || '' %>"
-  max="<%= new Date().toISOString().split('T')[0] %>"
-  class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
-  <%= period === 'custom' ? 'required' : '' %>
->
-<input 
-  type="date" 
-  id="endDate"
-  name="endDate" 
-  value="<%= endDate || '' %>"
-  max="<%= new Date().toISOString().split('T')[0] %>"
-  class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
-  <%= period === 'custom' ? 'required' : '' %>
->
+    <div class="flex gap-2">
+        <input 
+            type="date" 
+            id="startDate"
+            name="startDate" 
+            value="<%= startDate || '' %>"
+            max="<%= new Date().toISOString().split('T')[0] %>"
+            class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+            <%= period === 'custom' ? 'required' : '' %>
+        >
 
-                                </div>
-                            </div>
+        <input 
+            type="date" 
+            id="endDate"
+            name="endDate" 
+            value="<%= endDate || '' %>"
+            max="<%= new Date().toISOString().split('T')[0] %>"
+            class="w-full border border-gray-200 rounded-lg py-2 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+            <%= period === 'custom' ? 'required' : '' %>
+        >
+    </div>
+</div>
                             <div class="flex gap-2">
                                 <button 
                                     type="submit" 
@@ -212,6 +212,7 @@
                                 <div class="summary-card bg-gray-50 rounded-xl p-6 border border-gray-200 text-center">
     <i class="fas fa-rupee-sign text-amber-500 text-3xl mb-4"></i> 
     <h3 class="text-lg font-semibold text-gray-900">Total Order Amount</h3>
+    <p>(Net revenue)</p>
     <p class="text-xl font-bold text-amber-600 currency">
    <%= summary.totalAmount ? summary.totalAmount.toFixed(2) : '0.00' %>
 </p>
@@ -243,8 +244,8 @@
                                         <th>Date</th>
                                         <th>Customer</th>
                                         <th>Subtotal</th>
-                                        <th>Shipping</th>
                                         <th>Offer %</th>
+                                        <th>Shipping</th>
                                         <th>Discount</th>
                                         <th>Coupon Applied</th>
                                         <th>Final Amount</th>
@@ -258,9 +259,10 @@
                                             <td><%= new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
                                             <td><%= order.user ? order.user.name : 'Unknown' %></td>
                                             <td>₹<%= order.subtotal.toFixed(2) %></td>
-                                            <td>₹<%= order.shipping.toFixed(2) %></td>
                                             <td><%= order.discountPercentage %> %</td>
+                                            <td>₹<%= order.shipping.toFixed(2) %></td>
                                              <td>₹<%= order.couponDiscount ? order.couponDiscount.toFixed(2) : '0.00' %></td>
+                                             
                                             <td><%= order.couponCode || 'None' %></td>
                                             <td class="text-amber-600 font-semibold">₹<%= order.finalAmount ? order.finalAmount.toFixed(2) : '0.00' %></td>
                                             <td><%= order.orderStatus %></td>
@@ -341,6 +343,26 @@ document.addEventListener('DOMContentLoaded', () => {
     periodSelect.addEventListener('change', () => {
         toggleCustomDate(periodSelect.value);
     });
+
+       startDateInput.addEventListener('change', () => {
+    if (startDateInput.value) {
+        endDateInput.min = startDateInput.value;
+
+        // Only set endDate if startDate is valid and endDate is empty or invalid
+        const isValidStartDate = /^\d{4}-\d{2}-\d{2}$/.test(startDateInput.value);
+
+        if (isValidStartDate) {
+            if (!endDateInput.value || endDateInput.value < startDateInput.value) {
+                endDateInput.value = startDateInput.value;
+            }
+        } else {
+            endDateInput.min = '';  // Clear min if startDate is invalid
+        }
+    } else {
+        endDateInput.min = '';
+    }
+});
+
 
     document.getElementById('filterForm').addEventListener('submit', (e) => {
         if (periodSelect.value !== 'custom') {

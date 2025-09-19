@@ -1,6 +1,7 @@
 const Product = require('../../models/productSchema');
 const Category = require('../../models/categorySchema');
 const Brand = require('../../models/brandSchema');
+const logger = require('../../helpers/logger');
 const path = require('path');
 const fs = require('fs');
 const fsPromises = require('fs/promises');
@@ -50,7 +51,11 @@ const getAllproducts = async (req, res) => {
       error: req.flash('error')
     };
     
- 
+
+
+
+
+
 
     res.render("products", {
       productData,
@@ -65,7 +70,7 @@ const getAllproducts = async (req, res) => {
       
     });
   } catch (error) {
-    console.error("Error in getAllproducts:", error);
+    logger.error("Error in getAllproducts:", error);
     res.redirect("/admin/pageError");
   }
 };
@@ -88,7 +93,7 @@ const getEditProduct = async (req, res) => {
       error: ' '
     });
   } catch (error) {
-    console.error('Error in getEditProduct:', error);
+    logger.error('Error in getEditProduct:', error);
     res.redirect('/admin/pageError');
   }
 };
@@ -165,7 +170,7 @@ const postEditProduct = async (req, res) => {
 
     res.redirect('/admin/products');
   } catch (error) {
-    console.error('Error in postEditProduct:', error);
+    logger.error('Error in postEditProduct:', error);
     res.redirect('/admin/pageError');
   }
 };
@@ -202,7 +207,7 @@ const getAddProduct = async (req, res) => {
       search,
     });
   } catch (error) {
-    console.error('Error in getProducts:', error);
+    logger.error('Error in getProducts:', error);
     res.redirect('/admin/pageError');
   }
 };
@@ -267,7 +272,7 @@ const addProduct = async (req, res) => {
  
     return res.json({ success: 'Product added successfully' });
   } catch (error) {
-    console.error('Error in addProduct:', error);
+    logger.error('Error in addProduct:', error);
     res.redirect('/admin/products');
   }
 };
@@ -288,7 +293,7 @@ const removeProductImage = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error('Error in removeProductImage:', error);
+    logger.error('Error in removeProductImage:', error);
     res.status(500).json({ error: 'Failed to remove image' });
   }
 };
@@ -326,7 +331,7 @@ const addOffer = async (req, res) => {
        });
 
   } catch (error) {
-    console.error('Add offer error:', error);
+    logger.error('Add offer error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };;
@@ -347,7 +352,7 @@ const removeOffer = async (req, res) => {
 
     return res.status(200).json({ success: true, offer: 0 ,salePrice:product.salePrice });
   } catch (error) {
-    console.error('Remove offer error:', error);
+    logger.error('Remove offer error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -372,7 +377,7 @@ const blockProduct = async (req, res) => {
     });
     res.status(200).json({ success: true, message: 'Product blocked successfully' });
   } catch (error) {
-    console.error('Error in blockProduct:', error);
+    logger.error('Error in blockProduct:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -396,7 +401,7 @@ const unblockProduct = async (req, res) => {
     });
     res.status(200).json({ success: true, message: 'Product unblocked successfully' });
   } catch (error) {
-    console.error('Error in unblockProduct:', error);
+    logger.error('Error in unblockProduct:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

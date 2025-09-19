@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const User = require('../../models/userSchema');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+const logger = require('../../helpers/logger');
 
 function generateOtp() {
   const digits = '1234567890';
@@ -34,10 +35,10 @@ const sendVerificationEmail = async (email, otp) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully:', info.messageId);
+    logger.info('Email sent successfully:', info.messageId);
     return { success: true };
   } catch (error) {
-    console.error('Error sending email:', {
+    logger.error('Error sending email:', {
       message: error.message,
       code: error.code,
       stack: error.stack,
@@ -50,7 +51,7 @@ const getForgotPassword = async (req, res) => {
   try {
     res.render('forgot-password', { user: null, message: '' });
   } catch (error) {
-    console.error('Error in getForgotPassword:', error);
+    logger.error('Error in getForgotPassword:', error);
     res.redirect('/pageNotFound');
   }
 };
@@ -69,17 +70,17 @@ const forgotEmailValid = async (req, res) => {
 req.session.userOtp = otp;
 req.session.otpCreatedAt = Date.now();
 
-        console.log('Session set in forgotEmailValid:', req.session); 
+        logger.info('Session set in forgotEmailValid:', req.session); 
 
         req.session.save(err => {
           if (err) {
-            console.error('Session save error in forgotEmailValid:', err);
+            logger.error('Session save error in forgotEmailValid:', err);
             return res.status(500).json({ success: false, message: 'Session error' });
           }
-          console.log('Session saved in forgotEmailValid:', req.session);
+          logger.info('Session saved in forgotEmailValid:', req.session);
           res.render('forgotPass-otp', { user: null, message: '' });
         });
-        console.log('OTP:', otp, 'for email:', email);
+        logger.info('OTP:', otp, 'for email:', email);
       } else {
         res.json({ success: false, message: 'Failed to send OTP. Please try again' });
       }
@@ -90,7 +91,7 @@ req.session.otpCreatedAt = Date.now();
       });
     }
   } catch (error) {
-    console.error('Error in forgotEmailValid:', error);
+    logger.error('Error in forgotEmailValid:', error);
     res.redirect('/pageNotFound');
   }
 };
@@ -100,9 +101,9 @@ const verifyForgotPassOtp = async (req, res) => {
  
 
     const enterOtp = req.body.otp;
-    console.log('Received OTP:', enterOtp, typeof enterOtp);
-    console.log('Session OTP:', req.session.userOtp, typeof req.session.userOtp);
-    console.log('Session before verification:', req.session);
+    logger.info('Received OTP:', enterOtp, typeof enterOtp);
+    logger.info('Session OTP:', req.session.userOtp, typeof req.session.userOtp);
+    logger.info('Session before verification:', req.session);
 
     if (!req.session.userOtp || !req.session.userEmail || !req.session.otpCreatedAt) {
       return res.json({ success: false, message: 'Session expired or invalid' });
@@ -123,17 +124,17 @@ const verifyForgotPassOtp = async (req, res) => {
       delete req.session.otpCreatedAt;
       req.session.save(err => {
         if (err) {
-          console.error('Session save error in verifyForgotPassOtp:', err);
+          logger.error('Session save error in verifyForgotPassOtp:', err);
           return res.status(500).json({ success: false, message: 'Session error' });
         }
-        console.log('Session saved in verifyForgotPassOtp:', req.session);
+        logger.info('Session saved in verifyForgotPassOtp:', req.session);
         res.json({ success: true, redirectUrl: '/reset-password' });
       });
     } else {
       res.json({ success: false, message: 'Invalid OTP' });
     }
   } catch (error) {
-    console.error('Error in verifyForgotPassOtp:', error);
+    logger.error('Error in verifyForgotPassOtp:', error);
     res.status(500).json({ success: false, message: 'An error occurred' });
   }
 };
@@ -148,7 +149,7 @@ const getResetPassPage = async (req, res) => {
     }
     res.render('reset-password', { user: null, message: '' });
   } catch (error) {
-    console.error('Error rendering reset-password:', error);
+    logger.error('Error rendering reset-password:', error);
     res.redirect('/pageNotFound');
   }
 };
@@ -191,13 +192,13 @@ const resetPassword = async (req, res) => {
     delete req.session.otpVerified;
     delete req.session.userEmail;
     req.session.save(err => {
-      if (err) console.error('Session save error in resetPassword:', err);
+      if (err) logger.error('Session save error in resetPassword:', err);
     });
 
    
     res.json({ success: true, redirectUrl: '/login' });
   } catch (error) {
-    console.error('Error in resetPassword:', error);
+    logger.error('Error in resetPassword:', error);
     res.status(500).json({ success: false, message: 'An error occurred while resetting the password' });
   }
 };
@@ -208,7 +209,7 @@ const resendOtp = async (req, res) => {
 
     const email = req.session.userEmail;
     if (!email) {
-      console.log('No userEmail in session');
+      logger.info('No userEmail in session');
       return res.render('forgot-password', {
         user: null,
         message: 'Session expired. Please enter your email again.',
@@ -229,10 +230,10 @@ const resendOtp = async (req, res) => {
     if (emailResult.success) {
       req.session.userOtp = otp;
       req.session.otpCreatedAt = Date.now();
-      console.log('New OTP generated in resendOtp:', otp);
+      logger.info('New OTP generated in resendOtp:', otp);
       req.session.save(err => {
         if (err) {
-          console.error('Session save error in resendOtp:', err);
+          logger.error('Session save error in resendOtp:', err);
           return res.status(500).json({ success: false, message: 'Session error' });
         }
         res.json({ success: true, message: 'New OTP sent to your email' });
@@ -241,7 +242,7 @@ const resendOtp = async (req, res) => {
       res.json({ success: false, message: `Failed to send OTP: ${emailResult.message || 'Please try again.'}` });
     }
   } catch (error) {
-    console.error('Error in resendOtp:', error);
+    logger.error('Error in resendOtp:', error);
     res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
   }
 };

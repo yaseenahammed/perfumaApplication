@@ -174,6 +174,7 @@ if (itemStatuses.every(s => s === 'cancelled')) {
                                                 <p class="text-red-600 text-sm">Return request rejected.</p>
                                              <% } else if (order.orderStatus === 'Pending') { %>
                                                 <p class="text-red-600 text-sm">Can not retry after 24 hours</p>
+
                                             <% } %>
                                             <div class="flex flex-col md:flex-row gap-2">
     <a href="/userOrder-details/<%= order.orderID %>" 
@@ -191,7 +192,7 @@ const allDelivered = order.items.length > 0 &&
 %>
 
 
-<!-- Cancel Button -->
+
 <% if (allProcessingOrShipped && order.orderStatus !== 'Delivered' && displayOrderStatus !== 'Cancelled' && order.orderStatus !== 'Pending' && order.orderStatus !== 'Out for Delivery') { %>
     <button onclick="showCancelModal('<%= order.orderID %>')" 
             class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 transform hover:scale-105">
@@ -199,15 +200,21 @@ const allDelivered = order.items.length > 0 &&
     </button>
 <% } %>
 
-<!-- Return Button -->
- <pre><%= JSON.stringify(itemStatuses) %></pre>
+ <!-- <pre><%= JSON.stringify(itemStatuses) %></pre> -->
+
+
 
 <% if (itemStatuses.length > 0 && itemStatuses.every(s => s === 'delivered')) { %>
-    <button onclick="showReturnModal('<%= order.orderID %>')" 
-            class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 transform hover:scale-105">
+    <button 
+        onclick="showReturnModal('<%= order.orderID %>')" 
+        class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300 transform hover:scale-105 " 
+     
+    >
         Return Order
     </button>
+  
 <% } %>
+
 
 
 
@@ -302,7 +309,7 @@ const allDelivered = order.items.length > 0 &&
         </div>
     </div>
 
-    <div id="order-successful-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden animate-fade-in"> <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center animate-slide-up transform scale-95 opacity-0" id="order-successful-content"> <div class="w-32 h-32 mx-auto mb-6"> <img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" alt="Success Tick" class="w-20 h-20 mx-auto mb-6"> </div> <h2 class="text-3xl font-bold text-green-600 mb-4">Order Placed Successfully!</h2> <p class="text-gray-700 text-lg mb-8">Thank you for your purchase. Your order has been confirmed and will be processed shortly.</p> <div class="flex flex-col sm:flex-row justify-center gap-4"> <button class="view-order-details-btn px-8 py-4 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition duration-300"> <i class="fas fa-clipboard-list mr-2"></i> View Order Details </button> <button class="continue-shopping-btn px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300"> <i class="fas fa-shopping-bag mr-2"></i> Continue Shopping </button> </div> </div> </div> <div id="order-failed-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden animate-fade-in"> <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center animate-slide-up transform scale-95 opacity-0" id="order-failed-content"> <div class="w-32 h-32 mx-auto mb-6"> <img src="https://cdn-icons-png.flaticon.com/512/463/463612.png" alt="Failure Cross" class="w-20 h-20 mx-auto mb-6"> </div> <h2 class="text-3xl font-bold text-red-600 mb-4">Payment Failed</h2> <p class="text-gray-700 text-lg mb-8">Oops! Something went wrong while processing your payment. Please try again or use a different method.</p> <div class="flex flex-col sm:flex-row justify-center gap-4"> <button onclick="closeModal(order-failed-modal, order-failed-content)" class="close-modal-btn px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300"> <i class="fas fa-times-circle mr-2"></i> Cancel </button> </div> </div> </div> -->
+    <div id="order-successful-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden animate-fade-in"> <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center animate-slide-up transform scale-95 opacity-0" id="order-successful-content"> <div class="w-32 h-32 mx-auto mb-6"> <img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" alt="Success Tick" class="w-20 h-20 mx-auto mb-6"> </div> <h2 class="text-3xl font-bold text-green-600 mb-4">Order Placed Successfully!</h2> <p class="text-gray-700 text-lg mb-8">Thank you for your purchase. Your order has been confirmed and will be processed shortly.</p> <div class="flex flex-col sm:flex-row justify-center gap-4"> <button class="view-order-details-btn px-8 py-4 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600 transition duration-300"> <i class="fas fa-clipboard-list mr-2"></i> View Order Details </button> <button class="continue-shopping-btn px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300"> <i class="fas fa-shopping-bag mr-2"></i> Continue Shopping </button> </div> </div> </div> <div id="order-failed-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden animate-fade-in"> <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center animate-slide-up transform scale-95 opacity-0" id="order-failed-content"> <div class="w-32 h-32 mx-auto mb-6"> <img src="https://cdn-icons-png.flaticon.com/512/463/463612.png" alt="Failure Cross" class="w-20 h-20 mx-auto mb-6"> </div> <h2 class="text-3xl font-bold text-red-600 mb-4">Payment Failed</h2> <p class="text-gray-700 text-lg mb-8">Oops! Something went wrong while processing your payment. Please try again or use a different method.</p> <div class="flex flex-col sm:flex-row justify-center gap-4"> <button onclick="closeModal(order-failed-modal, order-failed-content)" class="close-modal-btn px-8 py-4 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition duration-300"> <i class="fas fa-times-circle mr-2"></i> Cancel </button> </div> </div> </div>
 
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>

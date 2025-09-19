@@ -135,45 +135,45 @@
 
                     <!-- Search, Sort, Filter Section -->
                     <header class="text-center mb-8">
-                        <form action="/admin/order" method="get" class="d-inline">
-                            <div class="flex justify-center">
-                                <div class="relative w-full max-w-md">
-                                    <input 
-                                        id="searchOrder"
-                                        type="text" 
-                                        class="w-full border border-gray-200 rounded-full py-3 px-6 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
-                                        placeholder="Search By Order ID.." 
-                                        name="search"
-                                    >
-                                    <button 
-                                        class="btn-block absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full hover:from-amber-600 hover:to-orange-600 transition-all duration-300"
-                                        type="submit"
-                                    >
-                                        Search
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                        <div class="text-center mb-6">
-                            <div class="flex justify-center flex-wrap gap-4">
-                                <select id="sortOrder" class="border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-40" onchange="searchOrders()">
-                                    <option value="desc">Newest First</option>
-                                    <option value="asc">Oldest First</option>
-                                </select>
-                                <select id="filterStatus" class="border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-48" onchange="searchOrders()">
-                                    <option value="">All Statuses</option>
-                                    <option value="Processing">Processing</option>
-                                    <option value="Shipped">Shipped</option>
-                                    <option value="Out for Delivery">Out for Delivery</option>
-                                    <option value="Delivered">Delivered</option>
-                                    <option value="Cancelled">Cancelled</option>
-                                    <option value="ReturnRequest">Return Request</option>
-                                    <option value="Returned">Returned</option>
-                                </select>
-                                <button id="clearSearch" class="btn-block px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full sm:w-auto" onclick="clearSearch()">Clear</button>
-                            </div>
-                        </div>
-                    </header>
+  <form action="/admin/order" method="get" class="flex flex-col items-center gap-6">
+    <div class="relative w-full max-w-md">
+      <input 
+        id="searchOrder"
+        type="text" 
+        class="w-full border border-gray-200 rounded-full py-3 px-6 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
+        placeholder="Search By Order ID.." 
+        name="search"
+      >
+      <button 
+        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full hover:from-amber-600 hover:to-orange-600 transition-all duration-300"
+        type="submit"
+      >
+        Search
+      </button>
+    </div>
+
+    <div class="flex flex-wrap justify-center items-center gap-4">
+      <select id="sortOrder" class="border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-40" onchange="searchOrders()">
+        <option value="desc">Newest First</option>
+        <option value="asc">Oldest First</option>
+      </select>
+
+      <select id="filterStatus" class="border border-gray-200 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-48" onchange="searchOrders()">
+        <option value="">All Statuses</option>
+        <option value="Processing">Processing</option>
+        <option value="Shipped">Shipped</option>
+        <option value="Out for Delivery">Out for Delivery</option>
+        <option value="Delivered">Delivered</option>
+        <option value="Cancelled">Cancelled</option>
+        <option value="ReturnRequest">Return Request</option>
+        <option value="Returned">Returned</option>
+      </select>
+
+      <button id="clearSearch" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-all duration-300 w-full sm:w-auto" onclick="clearSearch()">Clear</button>
+    </div>
+  </form>
+</header>
+
                    
                     <!-- Order Listing as Table -->
                     <div id="order" class="space-y-6">
@@ -200,15 +200,15 @@
                                                 <td class="px-6 py-4"><%= order.orderID %></td>
                                                 <td class="px-6 py-4"><%= new Date(order.createdAt).toLocaleDateString() %></td>
                                                 <td class="px-6 py-4"><%= order.user ? order.user.name : 'Unknown' %></td>
-                                                <td class="px-6 py-4"><%= order.items ? order.items.length : 0 %></td>
-                                                <td class="px-6 py-4 status-cell">
-                                                    <span class="status-btn <%= order.orderStatus === 'Delivered' ? 'bg-green-200 text-green-800' : order.orderStatus === 'Processing' ? 'bg-yellow-200 text-yellow-800' : order.orderStatus === 'Shipped' ? 'bg-blue-200 text-blue-800' : order.orderStatus === 'Out for Delivery' ? 'bg-indigo-200 text-indigo-800' : order.orderStatus === 'Cancelled' ? 'bg-red-200 text-red-800' : order.orderStatus === 'ReturnRequest' ? 'bg-orange-200 text-orange-800' : 'bg-gray-200 text-gray-800' %>">
+                                                <td class="px-4 py-4"><%= order.items ? order.items.length : 0 %></td>
+                                                <td class="px-8 py-1 status-cell">
+                                                    <span class="status-btn rounded-lg py-1 px-1 <%= order.orderStatus === 'Delivered' ? 'bg-green-300 text-green-800' : order.orderStatus === 'Processing' ? 'bg-yellow-200 text-yellow-800' : order.orderStatus === 'Shipped' ? 'bg-blue-200 text-blue-800' : order.orderStatus === 'Out for Delivery' ? 'bg-indigo-200 text-indigo-800' : order.orderStatus === 'Cancelled' ? 'bg-red-200 text-red-800' : order.orderStatus === 'ReturnRequest' ? 'bg-orange-200 text-orange-800' : 'bg-gray-200 text-gray-800' %>">
                                                         <%= order.orderStatus %>
                                                     </span><br>
                                                     <% if(order.orderStatus !=='ReturnRequest' && order.orderStatus !=='Returned' && order.returnRequestCount > 0) { %>
-                                                        <div class="status-btn bg-violet-200 text-black-800">
+                                                        <span class="status-btn rounded-lg py-1 px-2 bg-violet-300 text-violet-800 ">
                                                             RtnReq <%= order.returnRequestCount %>
-                                                        </div>
+                                                        </span>
                                                     <% } %>
                                                 </td>
                                                 <td class="px-6 py-4">₹<%= order.finalAmount %></td>
@@ -218,11 +218,11 @@
                                                         View
                                                     </a>
                                                 </td>
-                                                <td class="px-6 py-4 actions-cell">
+                                                <td class=" py-4 actions-cell">
                                                     <% if (!['Cancelled', 'Returned', 'Delivered','ReturnRequest','Return Rejected','Pending'].includes(order.orderStatus)) { %>
                                                         <select name="status" 
                                                                 onchange="updateStatus('<%= order.orderID %>', this.value)" 
-                                                                class="border border-gray-200 rounded-lg py-2 px-1 focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-auto mb-2">
+                                                                class="border border-gray-200 rounded-lg py-2  focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-auto mb-2">
                                                             <option value="" disabled>Select Status</option>
                                                             <% if (order.orderStatus === 'Processing') { %>
                                                                 <option value="Shipped">Shipped</option>

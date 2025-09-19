@@ -1,4 +1,6 @@
 
+/* eslint-env browser */
+
 function setupAddressAutocomplete({ inputId, suggestionId, cityId, stateId, countryId, pincodeId, phoneId }) {
   const addressInput = document.getElementById(inputId);
   const suggestions = document.getElementById(suggestionId);
@@ -16,7 +18,9 @@ function setupAddressAutocomplete({ inputId, suggestionId, cityId, stateId, coun
     }
 
     try {
-      const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`);
+
+      const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5&lang=en&osm_tag=country:IN`);
+
       const data = await res.json();
 
       suggestions.innerHTML = "";
@@ -25,6 +29,8 @@ function setupAddressAutocomplete({ inputId, suggestionId, cityId, stateId, coun
 
       data.features.forEach(item => {
         const props = item.properties;
+
+         if (props.country !== "India") return;
 
         const fullAddress = [
           props.name,

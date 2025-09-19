@@ -7,8 +7,7 @@ const Wallet=require('../../models/walletSchema')
 const Transactions=require('../../models/transactionSchema');
 const PDFDocument = require('pdfkit');
 const { getBestPrice } = require('../../helpers/offerHelper');
-
-
+const logger = require('../../helpers/logger');
 
 
 
@@ -41,6 +40,7 @@ const orders = await Order.find(query)
 
 
     res.render('my-orders', {
+      title:'orders',
       user,
       orders,
       currentPage:page,
@@ -50,7 +50,7 @@ const orders = await Order.find(query)
     });
 
   } catch (error) {
-    console.error('Error in getOrders:', error);
+    logger.error('Error in getOrders:', error);
     res.status(500).send('Internal Server Error');
   }
 };
@@ -102,6 +102,7 @@ const userOrderDetails = async (req, res) => {
 
    if (!order ) {
   return res.render("orderDetails-user", {
+    title:'orderDetails',
     order: null,
     user,
     summary: null,
@@ -143,6 +144,7 @@ const userOrderDetails = async (req, res) => {
     const summary = calculateSummary(validOrderItems);
 
    res.render('orderDetails-user', {
+    title:'orderDetails',
       order,
       user,
       summary,
@@ -150,7 +152,7 @@ const userOrderDetails = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error in userOrderDetails:', error);
+    logger.error('Error in userOrderDetails:', error);
     res.status(500).send('Internal Server Error');
   }
 };
@@ -175,8 +177,9 @@ const cancelOrder = async (req, res) => {
         }
 
         const refundAmount=order.finalAmount
-
-        await Wallet.findOneAndUpdate(
+       
+        if(order.paymentMethod !=='cod'){
+          await Wallet.findOneAndUpdate(
           {user:userId},
           {
             $inc:{balance:refundAmount},
@@ -200,15 +203,22 @@ const cancelOrder = async (req, res) => {
   description: `Refund for cancelled order ${order.orderID}`
 });
 
+        }
+        
+
 
     for (const item of order.items) {
             await Product.updateOne(
                 { _id: item.product },
                 { $inc: { quantity: item.quantity } }  
             );
+             item.cancelled = true;
+            item.cancelReason = reason || 'Order cancelled';
+            item.orderStatus = 'Cancelled';
         }
 
         order.orderStatus = 'Cancelled';
+        
         order.cancellationReason = reason || 'No reason provided';
         order.refundAmount = refundAmount;   
         order.netAmount = order.finalAmount- order.refundAmount
@@ -217,7 +227,7 @@ const cancelOrder = async (req, res) => {
 
         res.json({ success: true, message: 'Order cancelled successfully' });
     } catch (error) {
-        console.error('Error in cancelOrder:', error);
+        logger.error('Error in cancelOrder:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -243,8 +253,13 @@ const cancelItem=async(req,res)=>{
     if (!item) return res.status(404).json({ message: 'Item not found' });
     if (item.cancelled) return res.status(400).json({ message: 'Item already cancelled' });
 
-    const refundAmount=item.price * item.quantity 
-     await Wallet.findOneAndUpdate(
+    const itemPriceTotal = item.price * item.quantity;
+const itemDiscount = (itemPriceTotal / order.totalAmount) * order.discountPrice;
+const refundAmount = (itemPriceTotal - itemDiscount).toFixed(2)
+ 
+
+    if(order.paymentMethod !=='cod'){
+      await Wallet.findOneAndUpdate(
       { user: userId },
       {
         $inc: { balance: refundAmount },
@@ -271,6 +286,9 @@ const cancelItem=async(req,res)=>{
 
 
 
+    }
+     
+
   
 
     await Product.updateOne(
@@ -285,23 +303,13 @@ const cancelItem=async(req,res)=>{
     order.refundAmount=(order.refundAmount || 0) + refundAmount;
     order.netAmount = order.finalAmount - order.refundAmount;
 
-//     if (order.items.every(i => i.orderStatus === 'Cancelled')) {
-//     order.orderStatus = 'Cancelled';
-// } else if (order.items.some(i => i.orderStatus === 'ReturnRequest')) {
-//     order.orderStatus = 'ReturnRequest';
-// } else if (order.items.every(i => i.orderStatus === 'Delivered')) {
-//     order.orderStatus = 'Delivered';
-// } else {
-//     order.orderStatus = 'Processing'; 
-// }
-
     await order.save();
 
 
     res.json({ success: true, message: 'Item cancelled successfully' });
 
   } catch (error) {
-     console.error('Cancel item error:', error);
+     logger.error('Cancel item error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 }
@@ -341,7 +349,7 @@ const returnOrder = async (req, res) => {
 
         res.json({ success: true, message: 'Return request submitted to admin' });
     } catch (error) {
-        console.error('Error in returnOrder:', error);
+        logger.error('Error in returnOrder:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -377,7 +385,7 @@ const returnItem = async (req, res) => {
 
     res.json({ success: true, message: 'Return request submitted successfully' });
   } catch (error) {
-    console.error('Return item error:', error);
+    logger.error('Return item error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -463,7 +471,7 @@ const downloadInvoice = async (req, res) => {
 
         doc.end();
     } catch (error) {
-        console.error('Invoice download error:', error);
+        logger.error('Invoice download error:', error);
         res.status(500).send('Server error');
     }
 }

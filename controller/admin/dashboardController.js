@@ -3,11 +3,11 @@ const Order=require('../../models/orderSchema')
 const PDFDocument = require("pdfkit");
 const User=require('../../models/userSchema.js')
 const Category=require('../../models/categorySchema.js')
-
 const { getBestPrice } = require('../../helpers/offerHelper');
+const logger = require('../../helpers/logger');
 
 
-async function fetchTopProducts(limit = 10) {
+async function fetchTopProducts(limit = 5) {
 
   const rawData = await Order.aggregate([
     { $match: { orderStatus: "Delivered" } },   
@@ -49,7 +49,8 @@ async function fetchTopProducts(limit = 10) {
 
 
 
-async function fetchTopBrands(limit = 10) {
+
+async function fetchTopBrands(limit = 5) {
 
   const rawData = await Order.aggregate([
     { $match: { orderStatus: "Delivered" } },
@@ -106,7 +107,7 @@ async function fetchTopBrands(limit = 10) {
 
 
 
-async function fetchTopCategories(limit = 10) {
+async function fetchTopCategories(limit = 5) {
   
   const rawData = await Order.aggregate([
     { $match: { orderStatus: "Delivered" } },
@@ -170,7 +171,7 @@ async function getMonthlyEarnings() {
   const result = await Order.aggregate([
     {
       $match: {
-        orderStatus: { $in: ["Delivered"] }, 
+        orderStatus: {$in:['Delivered','ReturnRequest','Return Rejected']}, 
         createdAt: { $gte: startOfMonth, $lt: endOfMonth }
       }
     },
@@ -196,7 +197,7 @@ const getYearlySales = async () => {
   const sales = await Order.aggregate([
     {
       $match: {
-        orderStatus: "Delivered",
+        orderStatus: {$in:['Delivered','ReturnRequest','Return Rejected']},
         createdAt: { $gte: startDate }
       }
     },
@@ -231,7 +232,7 @@ const getMonthlySales = async () => {
   const sales = await Order.aggregate([
     {
       $match: {
-        orderStatus: "Delivered",
+        orderStatus: {$in:['Delivered','ReturnRequest','Return Rejected']},
         createdAt: { $gte: startDate, $lte: endDate }
       }
     },
@@ -269,7 +270,7 @@ const getWeeklySales = async () => {
   const sales = await Order.aggregate([
     {
       $match: {
-        orderStatus: "Delivered",
+        orderStatus: {$in:['Delivered','ReturnRequest','Return Rejected']},
         createdAt: { $gte: startDate, $lte: endDate }
       }
     },
@@ -317,7 +318,7 @@ const getDailySales = async () => {
   const sales = await Order.aggregate([
     {
       $match: {
-        orderStatus: "Delivered",
+        orderStatus: {$in:['Delivered','ReturnRequest','Return Rejected']},
         createdAt: { $gte: startDate, $lte: endDate }
       }
     },
@@ -385,19 +386,19 @@ const loadDashboard = async (req, res) => {
   
       const total_products = await Product.countDocuments();
     const total_categories = await Category.countDocuments();
-    const total_orders = await Order.countDocuments();
+    const total_orders = await Order.countDocuments({orderStatus:{$in:['Delivered','ReturnRequest','Return Rejected']}});
 
     
    
     const revenue = await Order.aggregate([
-      { $match: { orderStatus: 'Delivered' } },
+      { $match: { orderStatus:{$in:['Delivered','ReturnRequest','Return Rejected']}} },
       { $group: { _id: null, total: { $sum: "$finalAmount" } } }
     ]);
 
-  
-    const womenOrders = await Order.find({ category: { $in: ['women'] } });
 
-    console.log(womenOrders)
+
+
+  
 
     res.render("dashboard", {
       revenue: revenue[0] ? revenue[0].total : 0,
@@ -411,7 +412,7 @@ const loadDashboard = async (req, res) => {
       
     });
   } catch (err) {
-    console.error("Error loading dashboard:", err);
+    logger.error("Error loading dashboard:", err);
   }
 };
 
@@ -439,12 +440,16 @@ function drawTable(doc, title, headers, rows, startY) {
   y += 10;
 
 
-  rows.forEach((r, i) => {
+rows.forEach((r, i) => {
+    const cleanRevenue = parseFloat(r.revenue.toString().replace(/[^\d.-]/g, ''));
+
     doc.text(`${i + 1}. ${r.name}`, startX, y);
     doc.text(r.sales, startX + 200, y);
-    doc.text(`$${r.revenue.toFixed(2)}`, startX + 350, y);
+    doc.text(`₹${cleanRevenue.toFixed(2)}`, startX + 350, y);
+
     y += 20;
-  });
+});
+
 
   return y + 20; 
 }
@@ -470,7 +475,7 @@ const generateLedger = async (req, res) => {
 
     doc.end();
   } catch (err) {
-    console.error("Ledger generation error:", err);
+    logger.error("Ledger generation error:", err);
     res.status(500).send("Error generating ledger");
   }
 };
@@ -482,3 +487,4 @@ module.exports={
     generateLedger,
     filteredSales
 }
+

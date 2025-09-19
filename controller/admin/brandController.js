@@ -1,9 +1,11 @@
 const Brand = require('../../models/brandSchema');
+const logger = require('../../helpers/logger');
 
 
 
 const getBrandPage = async (req, res) => {
   try {
+  
     let search = "";
     if (req.query.search) {
       search = req.query.search.trim();
@@ -32,7 +34,7 @@ const getBrandPage = async (req, res) => {
     
     });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.redirect("/admin/pageError");
   }
 };
@@ -74,7 +76,7 @@ if (!image || !brandName) {
 
 
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -2,8 +2,9 @@ const Order=require('../../models/orderSchema')
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
 const PDFkit=require('pdfkit-table');
-
+const logger = require('../../helpers/logger');
 const { getBestPrice } = require('../../helpers/offerHelper');
+
 
 const getSalesReport = async (req, res) => {
     try {
@@ -13,188 +14,69 @@ const getSalesReport = async (req, res) => {
         let filter = {};
         let start, end;
 
-      
-        if (period === 'custom' && startDate && endDate) {
-            const startDateObj = new Date(startDate);
-            const endDateObj = new Date(endDate);
-            const today = new Date();
-            today.setHours(23, 59, 59, 999);
+        if (period === 'custom') {
+    if (!startDate || !endDate) {
+        return res.status(400).send('Both start date and end date are required for custom period.');
+    }
 
-            if (startDateObj > today || endDateObj > today)
-                return res.status(400).send('Dates cannot be in the future.');
-            if (endDateObj < startDateObj)
-                return res.status(400).send('End date cannot be before start date.');
+    const startDateObj = new Date(startDate);
+    const endDateObj = new Date(endDate);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
 
-            filter.createdAt = { $gte: startDateObj, $lte: endDateObj };
-        } else if (period === 'daily') {
-            const today = new Date();
-            start = new Date(today.setHours(0, 0, 0, 0));
-            end = new Date(today.setHours(23, 59, 59, 999));
-            filter.createdAt = { $gte: start, $lte: end };
-        } else if (period === 'weekly') {
-            end = new Date();
-            start = new Date();
-            start.setDate(start.getDate() - 7);
-            filter.createdAt = { $gte: start, $lte: end };
-        } else if (period === 'yearly') {
-            end = new Date();
-            start = new Date();
-            start.setFullYear(start.getFullYear() - 1);
-            filter.createdAt = { $gte: start, $lte: end };
-        }
+    if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
+        return res.status(400).send('Invalid date format.');
+    }
 
-        const totalOrders = await Order.countDocuments(filter);
-       
+    if (startDateObj > today || endDateObj > today) {
+        return res.status(400).send('Dates cannot be in the future.');
+    }
 
-       
-       
+    if (endDateObj < startDateObj) {
+        return res.status(400).send('End date cannot be before start date.');
+    }
+
+    filter.createdAt = { $gte: startDateObj, $lte: endDateObj };
+} else if (period === 'daily') {
+    const today = new Date();
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    filter.createdAt = { $gte: start, $lte: end };
+} else if (period === 'weekly') {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 7);
+    filter.createdAt = { $gte: start, $lte: end };
+} else if (period === 'yearly') {
+    const end = new Date();
+    const start = new Date();
+    start.setFullYear(end.getFullYear() - 1);
+    filter.createdAt = { $gte: start, $lte: end };
+}
+
 
         const orders = await Order.find(filter)
             .populate('user')
             .populate('items.product')
             .sort({ createdAt: -1 })
-            .skip((page - 1) * perPage)
-            .limit(perPage)
             .lean();
 
-           
-            
-
-
-     
-        const enrichedOrders = await Promise.all(
-            orders.map(async (order) => {
-                const itemsWithBestOffer = await Promise.all(
-                    order.items.map(async (item) => {
-                        const product = item.product;
-                        const { finalPrice, bestOffer } = await getBestPrice(product);
-                        return {
-                            ...item,
-                            regularPrice: product.regularPrice,
-                            quantity: item.quantity,
-                            bestOffer,  
-                            finalPrice
-                        };
-                    })
-                );
-
-                const subtotal = itemsWithBestOffer.reduce(
-                    (sum, item) => sum + item.regularPrice * item.quantity,
-                    0
-                );
-
-                const totalAfterOffers = itemsWithBestOffer.reduce(
-                    (sum, item) => sum + item.finalPrice * item.quantity,
-                    0
-                );
-
-                
-             
-                const shipping =  50;
-                const couponDiscount = order.discountPrice || 0
-                const finalAmount = order.finalAmount
-                const discountPercentage = subtotal > 0  ? ((subtotal - totalAfterOffers) / subtotal * 100).toFixed(2)  : 0;
-              
-              
-
-                return {
-                    ...order,
-                    items: itemsWithBestOffer,
-                    subtotal,
-                    shipping,
-                    couponDiscount,
-                    finalAmount,
-                    discountPercentage,
-                    
-                   
-                };
-            })
+        const filteredOrders = orders.filter(order =>
+            order.items.some(item =>
+                ['Delivered', 'ReturnRequest', 'Return Rejected'].includes(item.orderStatus)
+            )
         );
 
-          
-  
-
-
-      
-  
-      const summary = {
-  totalSales: totalOrders,
-  subtotal: enrichedOrders.reduce((sum, o) => sum + o.subtotal, 0),
-  totalAmount: enrichedOrders.reduce((sum, o) => sum + (o.netAmount !== undefined ? o.netAmount : o.finalAmount), 0), 
-  shipping: enrichedOrders.reduce((sum, o) => sum + o.shipping, 0),
-  totalDiscount: enrichedOrders.reduce((sum, o) => sum + o.discountPrice, 0),
- 
-  
-
-  
-};
-
-
-
-
-        res.render('salesReport', {
-            salesData: enrichedOrders,
-            summary,
-            totalPages: Math.ceil(totalOrders / perPage),
-            currentPage: Number(page),
-            period,
-            startDate,
-            endDate,
-        
-            
-           
-        });
-
-    } catch (error) {
-        console.error('Error in getting sales report:', error);
-        res.status(500).send('Internal server error');
-    }
-};
-
-
-
-
-const downloadSalesReport = async (req, res) => {
-    try {
-        const { period = 'daily', startDate, endDate, format } = req.query;
-        let filter = {};
-        let start, end;
-
-   
-        if (period === 'custom' && startDate && endDate) {
-            start = new Date(startDate);
-            end = new Date(endDate);
-            end.setHours(23, 59, 59, 999);
-            filter.createdAt = { $gte: start, $lte: end };
-        } else if (period === 'daily') {
-            const today = new Date();
-            start = new Date(today.setHours(0, 0, 0, 0));
-            end = new Date(today.setHours(23, 59, 59, 999));
-            filter.createdAt = { $gte: start, $lte: end };
-        } else if (period === 'weekly') {
-            start = new Date();
-            start.setDate(start.getDate() - 7);
-            end = new Date();
-            filter.createdAt = { $gte: start, $lte: end };
-        } else if (period === 'yearly') {
-            start = new Date();
-            start.setFullYear(start.getFullYear() - 1);
-            end = new Date();
-            filter.createdAt = { $gte: start, $lte: end };
-        }
-
-      
-        const orders = await Order.find(filter)
-            .populate('user')
-            .populate('items.product')
-            .sort({ createdAt: -1 })
-            .lean();
-
-   
         const enrichedOrders = await Promise.all(
-            orders.map(async (order) => {
+            filteredOrders.map(async (order) => {
+                const activeItems = order.items.filter(
+                    item => item.orderStatus !== 'Cancelled' && item.orderStatus !== 'Returned'
+                );
+
                 const itemsWithBestOffer = await Promise.all(
-                    order.items.map(async (item) => {
+                    activeItems.map(async (item) => {
                         const product = item.product;
                         const { finalPrice, bestOffer } = await getBestPrice(product);
                         return {
@@ -217,14 +99,27 @@ const downloadSalesReport = async (req, res) => {
                     0
                 );
 
-               
                 const shipping = 50;
-                const couponDiscount = order.discountPrice || 0;
-                const finalAmount = order.finalAmount;
-                const discountPercentage =
-                    subtotal > 0
-                        ? ((subtotal - totalAfterOffers) / subtotal * 100).toFixed(2)
-                        : 0;
+
+                const activeItemsSubtotal = activeItems.reduce(
+                    (sum, item) => sum + item.price * item.quantity,
+                    0
+                );
+
+                const totalItemsSubtotal = order.items.reduce(
+                    (sum, item) => sum + item.price * item.quantity,
+                    0
+                );
+
+                const couponDiscount = totalItemsSubtotal > 0
+                    ? (activeItemsSubtotal / totalItemsSubtotal) * (order.discountPrice || 0)
+                    : 0;
+
+                const finalAmount = totalAfterOffers - couponDiscount + shipping;
+
+                const discountPercentage = subtotal > 0
+                    ? ((subtotal - totalAfterOffers) / subtotal * 100).toFixed(2)
+                    : 0;
 
                 return {
                     ...order,
@@ -237,6 +132,166 @@ const downloadSalesReport = async (req, res) => {
                 };
             })
         );
+
+        // Compute summary based on enrichedOrders
+        const summary = enrichedOrders.reduce((acc, order) => {
+            acc.totalSales += 1;
+            acc.totalAmount += order.finalAmount;
+            acc.totalDiscount += order.couponDiscount;
+            return acc;
+        }, { totalSales: 0, totalAmount: 0, totalDiscount: 0 });
+
+        res.render('salesReport', {
+            salesData: enrichedOrders,
+            summary,
+            totalPages: Math.ceil(summary.totalSales / perPage),
+            currentPage: Number(page),
+            period,
+            startDate,
+            endDate
+        });
+
+    } catch (error) {
+        logger.error('Error in getting sales report:', error);
+        res.status(500).send('Internal server error');
+    }
+};
+
+
+
+
+const downloadSalesReport = async (req, res) => {
+    try {
+        const { period = 'daily', startDate, endDate, format,page=1 } = req.query;
+        let perPage=10
+        let filter = {orderStatus: { $in: ['Delivered', 'ReturnRequest', 'Return Rejected'] }};
+        let start, end;
+
+     if (period === 'custom') {
+    if (!startDate || !endDate) {
+        return res.status(400).send('Both start date and end date are required for custom period.');
+    }
+
+    const startDateObj = new Date(startDate);
+    const endDateObj = new Date(endDate);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
+        return res.status(400).send('Invalid date format.');
+    }
+
+    if (startDateObj > today || endDateObj > today) {
+        return res.status(400).send('Dates cannot be in the future.');
+    }
+
+    if (endDateObj < startDateObj) {
+        return res.status(400).send('End date cannot be before start date.');
+    }
+
+    filter.createdAt = { $gte: startDateObj, $lte: endDateObj };
+} else if (period === 'daily') {
+    const today = new Date();
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    filter.createdAt = { $gte: start, $lte: end };
+} else if (period === 'weekly') {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 7);
+    filter.createdAt = { $gte: start, $lte: end };
+} else if (period === 'yearly') {
+    const end = new Date();
+    const start = new Date();
+    start.setFullYear(end.getFullYear() - 1);
+    filter.createdAt = { $gte: start, $lte: end };
+}
+
+
+      
+
+   const orders = await Order.find(filter)
+    .populate('user')
+    .populate('items.product')
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * perPage)
+    .limit(perPage)
+    .lean();
+
+
+const filteredOrders = orders.filter(order =>
+    order.items.some(item =>
+        ['Delivered', 'ReturnRequest', 'Return Rejected'].includes(item.orderStatus)
+    )
+);
+const enrichedOrders = await Promise.all(
+    filteredOrders.map(async (order) => {
+        const activeItems = order.items.filter(
+            item => item.orderStatus !== 'Cancelled' && item.orderStatus !== 'Returned'
+        );
+
+        const itemsWithBestOffer = await Promise.all(
+            activeItems.map(async (item) => {
+                const product = item.product;
+                const { finalPrice, bestOffer } = await getBestPrice(product);
+                return {
+                    ...item,
+                    regularPrice: product.regularPrice,
+                    quantity: item.quantity,
+                    bestOffer,
+                    finalPrice
+                };
+            })
+        );
+
+        const subtotal = itemsWithBestOffer.reduce(
+            (sum, item) => sum + item.regularPrice * item.quantity,
+            0
+        );
+
+        const totalAfterOffers = itemsWithBestOffer.reduce(
+            (sum, item) => sum + item.finalPrice * item.quantity,
+            0
+        );
+
+        const shipping = 50;
+
+        const activeItemsSubtotal = activeItems.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+        );
+
+        const totalItemsSubtotal = order.items.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+        );
+
+      
+            const couponDiscount = totalItemsSubtotal > 0
+    ? parseFloat(((activeItemsSubtotal / totalItemsSubtotal) * (order.discountPrice || 0)).toFixed(2))
+    : 0;
+
+
+        const finalAmount = totalAfterOffers - couponDiscount + shipping;
+
+        const discountPercentage = subtotal > 0
+            ? ((subtotal - totalAfterOffers) / subtotal * 100).toFixed(2)
+            : 0;
+
+        return {
+            ...order,
+            items: itemsWithBestOffer,
+            subtotal,
+            shipping,
+            couponDiscount,
+            finalAmount,
+            discountPercentage
+        };
+    })
+);
+
 
     
         if (format === 'excel') {
@@ -264,7 +319,7 @@ const downloadSalesReport = async (req, res) => {
                     subtotal: order.subtotal,
                     shipping: order.shipping,
                     discountPercentage: order.discountPercentage,
-                    couponDiscount: order.discountPrice || 0,
+                    couponDiscount: order.couponDiscount,
                     coupon:order.couponCode || 'None',
                     finalAmount: order.finalAmount,
                    status: order.orderStatus
@@ -335,7 +390,7 @@ const downloadSalesReport = async (req, res) => {
             order.subtotal ?? 0,
             (order.discountPercentage ?? 0) + '%',
             order.shipping ?? 0,
-            order.discountPrice ?? 0,
+            order.couponDiscount ?? 0,
             order.couponCode || 'None',
             order.finalAmount ?? 0,
             order.orderStatus || 'None'
@@ -381,7 +436,7 @@ const downloadSalesReport = async (req, res) => {
 
 
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).send('Error generating sales report');
     }
 };
