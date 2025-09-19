@@ -3,15 +3,28 @@ import pluginJs from "@eslint/js";
 
 export default [
   {
-    files: ["**/*.js"], // ✅ Lint all JS files in project
-    ignores: ["node_modules/**", "dist/**", "build/**"], // ✅ Ignore common dirs
+    files: ["**/*.js"], 
+    ignores: [
+      "node_modules/**",
+       "dist/**", 
+       "build/**",
+       "*.min.js",
+        "public/assets/js/*.min.js",
+         "public/assets/js/lightbox.js"
+      ], 
     languageOptions: {
-      globals: globals.node, // ✅ Allow Node.js globals (require, __dirname, etc.)
+      globals: {
+        ...globals.browser, 
+        ...globals.node,
+         jQuery: "readonly", 
+        $: "readonly"
+      }
     },
     rules: {
-      ...pluginJs.configs.recommended.rules, // ✅ Start with recommended rules
-      "no-unused-vars": "off", // Example custom rule
-      "no-console": "off", // Allow console logs if you want
+      ...pluginJs.configs.recommended.rules,
+      "no-unused-vars": "off",
+      "no-console": "off",
+
     },
   },
 ];

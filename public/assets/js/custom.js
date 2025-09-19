@@ -1,3 +1,6 @@
+/* global scrollReveal */
+
+
 (function ($) {
 	
 	"use strict";
@@ -121,8 +124,8 @@
 	        $(this).addClass('active');
 	      
 	        var target = this.hash,
-	        menu = target;
-	       	var target = $(this.hash);
+	        menu = this.hash;
+	       
 	        $('html, body').stop().animate({
 	            scrollTop: (target.offset().top) - 79
 	        }, 500, 'swing', function () {
