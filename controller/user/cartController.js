@@ -145,7 +145,7 @@ const incrementQuantity = async (req, res) => {
 if (cartItem.quantity >= cartItem.product.quantity) {
   return res.status(400).json({
     success: false,
-    stock: true,               // ← flag for stock limit
+    stock: true,            
     message: `Only ${cartItem.product.quantity} in stock`
   });
 }
@@ -153,7 +153,7 @@ if (cartItem.quantity >= cartItem.product.quantity) {
 if (cartItem.quantity >= MAX_ALLOWED_QUANTITY) {
   return res.status(400).json({
     success: false,
-    allowed: true,             // ← flag for max allowed
+    allowed: true,            
     message: `You cannot add more than ${MAX_ALLOWED_QUANTITY} of this item`
   });
 }

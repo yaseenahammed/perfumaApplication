@@ -23,11 +23,8 @@ router.get('/verify-otp', (req, res) => {
   res.render('verify-otp', { title: 'Verify OTP', message: req.flash('message') });
 });
 router.post('/verify-otp', userController.verifyOtp);
-
 router.post('/resend-OTP', userController.resendOtp);
 router.get('/pageNotFound', userController.pageNotFound);
-
-
 
 // Login/Logout
 router.get('/login',nocache(),isLogin, userController.loadLogin);
@@ -46,13 +43,9 @@ router.get('/reset-password', nocache(), isLogin, profileController.getResetPass
 router.post('/reset-password', nocache(), isLogin, profileController.resetPassword);
 router.post('/forget-resend-otp', nocache(), isLogin, profileController.resendOtp);
 
-
-
 // Product Details
 router.get('/productDetails',productController.productDetails);
 router.post('/add-to-cart/:productId',userAuth,productController.addToCart);
-
-
 
 //user profile
 router.get('/userProfile',userAuth,userProfileController.userProfile)
@@ -85,8 +78,6 @@ router.post('/apply-coupon',userAuth,checkoutController.applyCoupon)
 router.post('/checkout/coupon/remove',userAuth,checkoutController.removeCoupon)
 router.post('/select-address', userAuth, checkoutController.selectAddress);
 
-
-
 //order
 router.get('/my-orders',userAuth,orderController.getOrders)
 router.post('/cancel-order/:orderID',userAuth, orderController.cancelOrder);
@@ -111,8 +102,5 @@ router.post('/wallet/create-walletOrder',userAuth,walletController.createWalletO
 router.post('/wallet/verify-walletOrder',userAuth,walletController.verifyWalletOrder)
 router.get('/wallet/transaction-filter',userAuth,walletController.filterTransaction)
 router.get('/wallet/transactions', userAuth,walletController.getAllTransactions);
-
-
-
 
 module.exports = router;

@@ -425,7 +425,7 @@ const allDelivered = order.items.length > 0 &&
         }
 
         try {
-            // 1️⃣ Request a new Razorpay order from the backend
+          
             const response = await fetch('/retry-payment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -439,7 +439,7 @@ const allDelivered = order.items.length > 0 &&
                 return;
             }
 
-            // 2️⃣ Configure Razorpay options
+     
             const options = {
                 key: result.key,
                 amount: result.amount,
@@ -449,7 +449,7 @@ const allDelivered = order.items.length > 0 &&
                 description: 'Retry Order Payment',
                 handler: async function(paymentResponse) {
                     try {
-                        // 3️⃣ Verify the payment on the server
+                        
                         const verifyResponse = await fetch('/verify-payment', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -477,7 +477,7 @@ const allDelivered = order.items.length > 0 &&
                 theme: { color: '#6366f1' }
             };
 
-            // 4️⃣ Open Razorpay payment modal
+        
             const rzp = new Razorpay(options);
             rzp.open();
 

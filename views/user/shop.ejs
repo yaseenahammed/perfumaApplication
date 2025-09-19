@@ -490,11 +490,11 @@
         const data = await response.json();
 
         if (data.success) {
-          // ✅ Remove wishlist button active class safely
+        
           const wishlistBtn = btn.closest('.product-card')?.querySelector('.button-wishlist');
           if (wishlistBtn) {
             wishlistBtn.classList.remove('active');
-            // Optional: show toast for removal
+    
             Swal.fire({
               iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
               title: 'Removed from Wishlist!',

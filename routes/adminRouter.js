@@ -1,11 +1,6 @@
-
-
-
 const express = require('express');
 const router = express.Router();
-
 const uploads = require('../helpers/multer'); 
- 
 const dashboardController=require('../controller/admin/dashboardController')
 const adminController = require('../controller/admin/adminController');
 const customerController = require('../controller/admin/customerController');
@@ -17,11 +12,6 @@ const couponManageController=require('../controller/admin/couponManageController
 const salesController=require('../controller/admin/salesController')
 const nocache=require('nocache')
 const { adminAuth,isAdmin} = require("../middlewares/auth");
-
-
-
-
-
 
 // Login 
 router.get('/login',nocache(),isAdmin, adminController.loadLogin);
@@ -87,11 +77,5 @@ router.post('/coupon/delete/:couponCode',adminAuth,couponManageController.delete
 //salesReport
 router.get('/salesReport',adminAuth,salesController.getSalesReport)
 router.get('/salesReport/download', adminAuth,salesController.downloadSalesReport);
-
-
-
-
-
-
 
 module.exports = router;
