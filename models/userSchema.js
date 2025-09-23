@@ -1,4 +1,6 @@
 const mongoose=require('mongoose')
+const crypto = require('crypto');
+
 const {Schema}=mongoose
 
 const userSchema=new Schema({
@@ -46,7 +48,9 @@ const userSchema=new Schema({
 },
  referralToken: { 
   type: String,
-   unique: true 
+   unique: true ,
+   required:true,
+    default: () => crypto.randomBytes(8).toString('hex')
   },
   referredBy: {
   type: mongoose.Schema.Types.ObjectId,

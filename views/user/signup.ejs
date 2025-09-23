@@ -49,9 +49,16 @@
                     </div>
                 </div>
                 <% } %>
+                
 
+                <div id="formMessage" class="p-4 hidden rounded-lg mb-4">
+    <div class="flex">
+        <i id="formMessageIcon" class="fas mr-2 mt-0.5"></i>
+        <p class="text-sm" id="formMessageText"></p>
+    </div>
+</div>
                 <!-- Signup Form -->
-                <form id="signform" action="/signup" method="post" class="space-y-6">
+                <form id="signform" class="space-y-6">
                     <!-- Name Field -->
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
@@ -194,66 +201,96 @@
         const error3 = document.getElementById('error3');
         const error4 = document.getElementById('error4');
         const signform = document.getElementById('signform');
+document.addEventListener('DOMContentLoaded', function () {
+    signform.addEventListener("submit", async function (e) {
+        e.preventDefault(); // Always stop normal form submission
+        let hasError = false;
 
-        document.addEventListener('DOMContentLoaded', function () {
-            signform.addEventListener("submit", function (e) {
-                let hasError = false;
+        // Clear previous error styles
+        clearErrorStyles();
 
-                // Clear previous error styles
-                clearErrorStyles();
+        // Name validation
+        const nameVal = nameid.value;
+        const namePattern = /^[A-Za-z ]{3,10}$/;
+        if (nameVal.trim() === "") {
+            showError(error1, nameid, 'Enter a valid name');
+            hasError = true;
+        } else if (!namePattern.test(nameVal)) {
+            showError(error1, nameid, "Only alphabets and spaces (3-10 characters)");
+            hasError = true;
+        } else {
+            hideError(error1, nameid);
+        }
 
-                // Name validation
-                const nameVal = nameid.value;
-                const namePattern = /^[A-Za-z ]{3,10}$/;
-                if (nameVal.trim() === "") {
-                    showError(error1, nameid, 'Enter a valid name');
-                    hasError = true;
-                } else if (!namePattern.test(nameVal)) {
-                    showError(error1, nameid, "Only alphabets and spaces (3-10 characters)");
-                    hasError = true;
-                } else {
-                    hideError(error1, nameid);
-                }
+        // Email validation
+        const emailVal = emailid.value;
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (emailVal.trim() === "" || !emailPattern.test(emailVal)) {
+            showError(error2, emailid, "Invalid email format");
+            hasError = true;
+        } else {
+            hideError(error2, emailid);
+        }
 
-                // Email validation
-                const emailVal = emailid.value;
-                const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-                if (emailVal.trim() === "" || !emailPattern.test(emailVal)) {
-                    showError(error2, emailid, "Invalid email format");
-                    hasError = true;
-                } else {
-                    hideError(error2, emailid);
-                }
+        // Password validation
+        const passVal = passid.value;
+        const cpassVal = cpassid.value;
+        const hasAlphabet = /[A-Za-z]/.test(passVal);
+        const hasDigit = /[0-9]/.test(passVal);
 
-                // Password validation
-                const passVal = passid.value;
-                const cpassVal = cpassid.value;
-                const hasAlphabet = /[A-Za-z]/.test(passVal);
-                const hasDigit = /[0-9]/.test(passVal);
+        if (passVal.length < 6) {
+            showError(error3, passid, "Password should be at least 6 characters");
+            hasError = true;
+        } else if (!hasAlphabet || !hasDigit) {
+            showError(error3, passid, "Password must contain letters and numbers");
+            hasError = true;
+        } else {
+            hideError(error3, passid);
+        }
 
-                if (passVal.length < 6) {
-                    showError(error3, passid, "Password should be at least 6 characters");
-                    hasError = true;
-                } else if (!hasAlphabet || !hasDigit) {
-                    showError(error3, passid, "Password must contain letters and numbers");
-                    hasError = true;
-                } else {
-                    hideError(error3, passid);
-                }
+        // Confirm password validation
+        if (passVal !== cpassVal) {
+            showError(error4, cpassid, "Passwords do not match");
+            hasError = true;
+        } else {
+            hideError(error4, cpassid);
+        }
 
-                // Confirm password validation
-                if (passVal !== cpassVal) {
-                    showError(error4, cpassid, "Passwords do not match");
-                    hasError = true;
-                } else {
-                    hideError(error4, cpassid);
-                }
+     
+        if (hasError) return;
 
-                if (hasError) {
-                    e.preventDefault();
-                }
+       
+        const formData = {
+            name: nameid.value,
+            email: emailid.value,
+            password: passid.value,
+            confirmPassword: cpassid.value,
+            referredBy: document.querySelector("input[name='referredBy']").value
+        };
+
+        try {
+            const response = await fetch("/signup", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
             });
-        });
+
+            const result = await response.json();
+
+            if (response.ok) {
+    showFormMessage("success", result.message || "Signup successful!");
+    setTimeout(() => window.location.href = "/login", 2000); // redirect after 1.5s
+} else {
+    showFormMessage("error", result.message || "Something went wrong.");
+}
+
+        } catch (err) {
+            console.error("Error:", err);
+    showFormMessage("error", "Failed to connect to server.");
+        }
+    });
+});
+
 
         // Toggle password visibility
         document.getElementById('togglePassword').addEventListener('click', function() {
@@ -296,6 +333,31 @@
             inputElement.classList.add('border-red-500', 'focus:ring-red-500');
             inputElement.classList.remove('border-gray-300', 'focus:ring-amber-500');
         }
+
+        function showFormMessage(type, message) {
+    const box = document.getElementById("formMessage");
+    const text = document.getElementById("formMessageText");
+    const icon = document.getElementById("formMessageIcon");
+
+    // Reset styles
+    box.classList.remove("hidden", "bg-red-50", "border-red-200", "bg-green-50", "border-green-200");
+    text.classList.remove("text-red-700", "text-green-700");
+    icon.classList.remove("fa-exclamation-circle", "text-red-400", "fa-check-circle", "text-green-400");
+
+    // Apply based on type
+    if (type === "success") {
+        box.classList.add("bg-green-50", "border-green-200");
+        text.classList.add("text-green-700");
+        icon.classList.add("fa-check-circle", "text-green-400");
+    } else {
+        box.classList.add("bg-red-50", "border-red-200");
+        text.classList.add("text-red-700");
+        icon.classList.add("fa-exclamation-circle", "text-red-400");
+    }
+
+    text.textContent = message;
+}
+
 
         function hideError(errorElement, inputElement) {
             errorElement.style.display = "none";

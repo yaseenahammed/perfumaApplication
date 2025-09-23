@@ -11,6 +11,8 @@ const wishlistController=require('../controller/user/wishllistController')
 const shopController=require('../controller/user/shopController')
 const walletController=require('../controller/user/walletController')
 const uploads = require('../helpers/multer');
+const passport = require('../config/passport');
+
 const nocache=require('nocache')
 const { userAuth,isLogin,setUser} = require('../middlewares/auth');
 
@@ -29,6 +31,8 @@ router.get('/pageNotFound', userController.pageNotFound);
 // Login/Logout
 router.get('/login',nocache(),isLogin, userController.loadLogin);
 router.post('/login', userController.login);
+router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/auth/google/callback', userController.googleCallback);
 router.get('/logout', userAuth, userController.logout);
 
 // Shop

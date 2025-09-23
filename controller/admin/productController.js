@@ -86,7 +86,7 @@ const getEditProduct = async (req, res) => {
       return res.redirect('/admin/pageError');
     }
 
-    res.render('edit-Product', {
+    res.render('edit-product', {
       product,
       cat: categories,
       brand: brands,

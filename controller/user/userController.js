@@ -7,6 +7,9 @@ const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const logger = require('../../helpers/logger');
+const passport = require('../../config/passport');
+const express = require('express');
+const router = express.Router();
 
 
 function generateReferralToken() {
@@ -103,7 +106,7 @@ const signup = async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       if (existingUser.googleId) {
-        return res.json({ success: false, message: 'Email registered via Google.' });
+        return res.json({ success: false, message: 'Email registered via Google.Please log in that way' });
       }
       return res.json({ success: false, message: 'Email already exists.' });
     }
@@ -254,6 +257,37 @@ const resendOtp=async(req,res)=>{
 
 
 
+// Google Auth
+
+const googleCallback = (req, res, next) => {
+  passport.authenticate('google', async (err, user, info) => {
+    if (err) {
+      logger.error('Google Auth Error:', err);
+      return next(err);
+    }
+
+    if (!user) {
+      const errorMessage = info?.message || 'Google login failed';
+      return res.redirect('/login?error=' + encodeURIComponent(errorMessage));
+    }
+
+    req.logIn(user, (err) => {
+      if (err) return next(err);
+
+      // Make sure Google users also get referralToken if not already set
+      if (!user.referralToken) {
+        user.referralToken = generateReferralToken();
+        user.save().catch(e => logger.error('Error saving referralToken for Google user:', e));
+      }
+
+      req.session.userId = user._id;
+      return res.redirect('/');
+    });
+  })(req, res, next);
+};
+
+
+
 
 const pageNotFound = async (req, res) => {
   try {
@@ -378,6 +412,7 @@ const logout = async (req, res) => {
 
 
 module.exports = {
+
   loadHome,
   loadSignup,
   signup,
@@ -386,6 +421,7 @@ module.exports = {
   pageNotFound,
   loadLogin,
   login,
+  googleCallback,
   logout,
  
 };
