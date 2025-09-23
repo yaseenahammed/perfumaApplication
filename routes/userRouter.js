@@ -10,6 +10,7 @@ const orderController=require('../controller/user/orderController')
 const wishlistController=require('../controller/user/wishllistController')
 const shopController=require('../controller/user/shopController')
 const walletController=require('../controller/user/walletController')
+const contactController=require('../controller/user/contactController')
 const uploads = require('../helpers/multer');
 const passport = require('../config/passport');
 
@@ -38,6 +39,10 @@ router.get('/logout', userAuth, userController.logout);
 // Shop
 router.get('/shop', setUser,shopController.loadShop);
 router.post('/shop',setUser,shopController.searchProducts);
+
+router.get('/about',setUser,contactController.getAbout)
+router.get('/contact',setUser,contactController.getContact)
+router.post('/contact',setUser,contactController.postContact)
 
 // Profile Management
 router.get('/forgot-password', nocache(), isLogin, profileController.getForgotPassword);

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Perfuma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .btn-primary {
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: linear-gradient(90deg, #c79f15, #a67b0a);
+        }
+        .about-card {
+            transition: all 0.3s ease;
+        }
+        .about-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <%- include("../partials/user/header") %>
+
+    <!-- Page Header -->
+    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
+        <div class="relative z-10 container mx-auto px-4 text-center text-white">
+            <h1 class="text-4xl lg:text-5xl font-bold mb-4 animate-fade-in">About Us</h1>
+            <nav class="flex items-center justify-center space-x-2 text-lg">
+                <a href="/" class="text-gray-300 hover:text-white transition duration-200">Home</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <span class="text-amber-400">About</span>
+            </nav>
+        </div>
+    </section>
+
+    <!-- Main About Section -->
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-8 animate-fade-in">
+                    <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center mb-8">
+                        <i class="fas fa-leaf text-amber-500 mr-3"></i>
+                        Our Story
+                    </h2>
+                    <p class="text-gray-600 mb-8">Discover the essence of Perfuma, where passion for fragrances meets timeless craftsmanship.</p>
+
+                    <!-- About Content -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-slide-up">
+                        <!-- Our Mission -->
+                        <div class="about-card bg-gray-50 rounded-xl p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Our Mission</h3>
+                            <p class="text-gray-600 text-sm">At Perfuma, we strive to create fragrances that evoke emotions and memories, blending natural ingredients with innovative techniques to deliver scents that inspire and delight.</p>
+                        </div>
+                        <!-- Our Story -->
+                        <div class="about-card bg-gray-50 rounded-xl p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Our Journey</h3>
+                            <p class="text-gray-600 text-sm">Founded in 2024, Perfuma began with a vision to redefine luxury fragrances. From our humble beginnings, we’ve grown into a beloved brand, offering premium scents for men and women worldwide.</p>
+                        </div>
+                        <!-- Why Perfuma -->
+                        <div class="about-card bg-gray-50 rounded-xl p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Why Choose Perfuma?</h3>
+                            <p class="text-gray-600 text-sm">We prioritize quality, sustainability, and customer satisfaction. Our fragrances are crafted with care, using ethically sourced ingredients to ensure every bottle tells a unique story.</p>
+                        </div>
+                        <!-- Our Categories -->
+                        <div class="about-card bg-gray-50 rounded-xl p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Our Fragrances</h3>
+                            <p class="text-gray-600 text-sm">Explore our diverse range of Men’s and Women’s fragrances, each designed to complement your unique style and personality.</p>
+                            <a href="/shop" class="btn-primary inline-flex items-center mt-4 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
+                                <i class="fas fa-shopping-bag mr-2"></i>
+                                Shop Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include("../partials/user/footer") %>
+</body>
+</html>

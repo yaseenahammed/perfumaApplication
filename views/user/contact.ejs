@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Perfuma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .btn-primary, .btn-cancel {
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: linear-gradient(90deg, #c79f15, #a67b0a);
+        }
+        .btn-cancel:hover {
+            transform: scale(1.05);
+            background: #c53030;
+        }
+        .contact-card {
+            transition: all 0.3s ease;
+        }
+        .contact-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+         .swal2-popup {
+    background: #fff0f5;  /* Light lavender */
+    color: #333;
+    font-family: 'Arial, sans-serif';
+}
+
+.custom-swal-perfume-icon {
+    font-size: 30px !important;  /* Smaller icon size */
+    color: #ff69b4;              /* Pinkish */
+}
+    </style>
+</head>
+<body class="bg-gray-50">
+    <%- include("../partials/user/header") %>
+
+    <!-- Page Header -->
+    <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
+        <div class="relative z-10 container mx-auto px-4 text-center text-white">
+            <h1 class="text-4xl lg:text-5xl font-bold mb-4 animate-fade-in">Contact Us</h1>
+            <nav class="flex items-center justify-center space-x-2 text-lg">
+                <a href="/" class="text-gray-300 hover:text-white transition duration-200">Home</a>
+                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                <span class="text-amber-400">Contact</span>
+            </nav>
+        </div>
+    </section>
+
+    <!-- Main Contact Section -->
+    <main class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-8 animate-fade-in">
+                    <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center mb-8">
+                        <i class="fas fa-envelope text-amber-500 mr-3"></i>
+                        Get in Touch
+                    </h2>
+                    <p class="text-gray-600 mb-8">We’d love to hear from you! Reach out with any questions or feedback.</p>
+
+                    <!-- Contact Form and Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-slide-up">
+                        <!-- Contact Form -->
+                        <div class="contact-card bg-gray-50 rounded-xl p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Send Us a Message</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                                    <input type="text" id="name" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500" required>
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" id="email" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500" required>
+                                </div>
+                                <div>
+                                    <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
+                                    <input type="text" id="subject" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500" required>
+                                </div>
+                                <div>
+                                    <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+                                    <textarea id="message" rows="4" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500" required></textarea>
+                                </div>
+                                <button onclick="submitContactForm()" class="btn-primary w-full px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300">
+                                    Send Message
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Contact Info -->
+                        <div class="contact-card bg-gray-50 rounded-xl p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+                            <ul class="space-y-4 text-gray-600">
+                                <li class="flex items-center">
+                                    <i class="fas fa-envelope text-amber-500 mr-3"></i>
+                                    <a href="mailto:info@perfuma.com" class="hover:text-amber-500">infoperfuma0@gmail.com</a>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-phone text-amber-500 mr-3"></i>
+                                    <a href="tel:9207417901" class="hover:text-amber-500">9207417901</a>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-map-marker-alt text-amber-500 mr-3"></i>
+                                    <address class="not-italic">Fragrance Lane, Scent City, SC 45678, India</address>
+                                </li>
+                                <li class="flex items-center space-x-4">
+                                    <a href="#" class="text-gray-600 hover:text-amber-500"><i class="fab fa-facebook-f"></i></a>
+                                    <a href="#" class="text-gray-600 hover:text-amber-500"><i class="fab fa-twitter"></i></a>
+                                    <a href="#" class="text-gray-600 hover:text-amber-500"><i class="fab fa-instagram"></i></a>
+                                    <a href="#" class="text-gray-600 hover:text-amber-500"><i class="fab fa-linkedin-in"></i></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include("../partials/user/footer") %>
+
+    <script>
+async function submitContactForm() {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const subject = document.getElementById('subject').value.trim();
+    const message = document.getElementById('message').value.trim();
+
+    if (!name || !email || !subject || !message) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Please fill out all fields!',
+                showConfirmButton: false,
+                timer: 2000,
+                toast: true,
+                position: 'top-end',
+                width: '300px'
+        });
+        return;
+    }
+
+    try {
+        const response = await fetch('/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, subject, message })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            Swal.fire({
+                iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+                title: 'Message Sent!',
+                text: 'Thank you for contacting us 🌸',
+                showConfirmButton: false,
+                timer: 1000,
+                toast: true,
+                position: 'top-end',
+                width: '300px'
+            });
+
+            // reset form
+            document.getElementById('name').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('subject').value = '';
+            document.getElementById('message').value = '';
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Error',
+                text: data.message || 'Something went wrong. Try again later!',
+            });
+        }
+
+    } catch (error) {
+        console.error(error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Server Error',
+            text: 'Unable to send your message right now.',
+                showConfirmButton: false,
+                timer: 2000,
+                toast: true,
+                position: 'top-end',
+                width: '300px'
+        });
+    }
+}
+</script>
+
+
+ 
+</body>
+</html>
