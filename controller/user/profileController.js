@@ -61,33 +61,49 @@ const forgotEmailValid = async (req, res) => {
     const { email } = req.body;
 
     const findUser = await User.findOne({ email });
+
+    if (findUser && findUser.googleId) {
+      // Email registered with Google
+      return res.render('forgot-password', {
+        user: null,
+        message: 'This email is registered via Google. Please login with Google instead.'
+      });
+    }
+
     if (findUser) {
       const otp = generateOtp();
       const emailSent = await sendVerificationEmail(email, otp);
-      if (emailSent) {
-        
-        req.session.userEmail = email;
-req.session.userOtp = otp;
-req.session.otpCreatedAt = Date.now();
 
-        logger.info('Session set in forgotEmailValid:', req.session); 
+      if (emailSent) {
+        req.session.userEmail = email;
+        req.session.userOtp = otp;
+        req.session.otpCreatedAt = Date.now();
+
+        logger.info('Session set in forgotEmailValid:', req.session);
 
         req.session.save(err => {
           if (err) {
             logger.error('Session save error in forgotEmailValid:', err);
-            return res.status(500).json({ success: false, message: 'Session error' });
+            return res.render('forgot-password', {
+              user: null,
+              message: 'Something went wrong. Please try again.'
+            });
           }
           logger.info('Session saved in forgotEmailValid:', req.session);
           res.render('forgotPass-otp', { user: null, message: '' });
         });
+
         logger.info('OTP:', otp, 'for email:', email);
       } else {
-        res.json({ success: false, message: 'Failed to send OTP. Please try again' });
+        res.render('forgot-password', {
+          user: null,
+          message: 'Failed to send OTP. Please try again.'
+        });
       }
     } else {
       res.render('forgot-password', {
         user: null,
-        message: 'User with this email does not exist',
+        message: 'User with this email does not exist.'
       });
     }
   } catch (error) {
@@ -95,6 +111,8 @@ req.session.otpCreatedAt = Date.now();
     res.redirect('/pageNotFound');
   }
 };
+
+
 
 const verifyForgotPassOtp = async (req, res) => {
   try {
