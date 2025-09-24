@@ -106,9 +106,12 @@ const signup = async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       if (existingUser.googleId) {
-        return res.json({ success: false, message: 'Email registered via Google.Please log in that way' });
+        return res.json({ success: false,
+        message: 'Email registered via Google.Please enter with google account' ,
+        redirectUrl:'/login'
+      });
       }
-      return res.json({ success: false, message: 'Email already exists.' });
+      return res.json({ success: false, message: 'Email already exists.',redirectUrl:'/login' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
