@@ -279,7 +279,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (response.ok) {
     showFormMessage("success", result.message || "Signup successful!");
-    setTimeout(() => window.location.href = "/login", 2000); // redirect after 1.5s
+    setTimeout(() =>{
+         window.location.href = result.redirectUrl
+    } ,1500); 
 } else {
     showFormMessage("error", result.message || "Something went wrong.");
 }

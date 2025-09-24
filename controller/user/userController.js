@@ -132,7 +132,7 @@ const signup = async (req, res) => {
       text: `Your OTP is ${otp}. It is valid for 10 minutes.`,
     });
 
-    res.redirect('/verify-otp');
+    res.json({ success: true, message: 'OTP sent to your email. Please verify.' ,redirectUrl:'/verify-otp'});
   } catch (err) {
     logger.error('Signup error:', err);
     res.render('signup', {
