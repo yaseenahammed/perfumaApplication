@@ -74,6 +74,9 @@ const getCart = async (req, res) => {
 
     for (const item of cart.items) {
       const isBlocked = isItemBlocked(item);
+       if (!item.product) {
+           continue;
+  }
       if (!isBlocked) {
         const { finalPrice } = await getBestPrice(item.product);
         item.product.finalPrice = finalPrice;
