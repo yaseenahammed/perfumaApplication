@@ -171,13 +171,18 @@ if (quantity > MAX_ALLOWED_QUANTITY) {
 
     await cart.save();
 
+    const cartItemCount=cart.items.length
+
     await Wishlist.findOneAndDelete({
   user: userId,
   product: productId
 });
 
 
-    res.json({ success: true, message: 'Product added to cart' });
+    res.json({ success: true,
+       message: 'Product added to cart',
+       cartItemCount
+       });
   } catch (error) {
     logger.error('Error in addToCart:', error.stack);
     res.status(500).json({ error: 'Internal server error' });

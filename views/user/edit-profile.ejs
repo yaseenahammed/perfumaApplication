@@ -110,7 +110,10 @@
                             </div>
                         </div>
                     </form>
+                
+                  
                     <div class="button-group flex justify-center gap-4 mt-6">
+                           <%if(!googleUser){%> 
                         <button class="btn-custom inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition duration-300" data-bs-toggle="modal" data-bs-target="#currentEmailModal">
                             <i class="fas fa-envelope mr-2"></i>
                             Update Email
@@ -119,7 +122,9 @@
                             <i class="fas fa-lock mr-2"></i>
                             Change Password
                         </button>
+                          <%}%>
                     </div>
+                    
                 </div>
             </div>
         </div>
@@ -234,6 +239,25 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
 
     <script>
+        // Shop-style SweetAlert function
+        function shopToast(message, type = 'success') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1800,
+                timerProgressBar: true,
+                icon: type,
+                html: `<i class="fas fa-wine-bottle" style="color:#ff69b4; margin-right:6px;"></i> ${message}`,
+                background: '#fff0f5',
+                iconColor: '#ff69b4',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+        }
+
         // Edit Profile Validation
         document.querySelector('form[action="/edit-profile"]').addEventListener('submit', function (e) {
             const nameInput = document.getElementById('name');
@@ -245,184 +269,117 @@
 
             if (!nameRegex.test(name)) {
                 e.preventDefault();
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Invalid Name',
-                    text: 'Name must contain only letters and spaces, and be at least 3 characters long.',
-                });
+                shopToast('Name must contain only letters and spaces, and be at least 3 characters long.', 'warning');
                 return;
             }
 
             if (file && !allowedTypes.includes(file.type)) {
                 e.preventDefault();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Image Format',
-                    text: 'Only JPEG, PNG, or WEBP files are allowed.',
-                });
+                shopToast('Only JPEG, PNG, or WEBP files are allowed.', 'error');
                 return;
             }
         });
 
+        $(document).ready(function () {
+            // Current Email
+            $('#currentEmailForm').on('submit', function (e) {
+                e.preventDefault();
+                const currentEmail = $('#currentEmail').val().trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      
-  
-    $(document).ready(function () {
-        
-        $('#currentEmailForm').on('submit', function (e) {
-            e.preventDefault();
-            const currentEmail = $('#currentEmail').val().trim();
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-            if (!emailRegex.test(currentEmail)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Email',
-                    text: 'Please enter a valid email address.',
-                });
-                return;
-            }
-
-            $.ajax({
-                url: '/send-email-otp',
-                type: 'POST',
-                data: { email: currentEmail, type: 'current' }, 
-                success: function (response) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'OTP Sent',
-                        text: response.message,
-                    });
-                    $('#currentEmailForm').hide();
-                    $('#currentOtpForm').show();
-                },
-                error: function (xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: xhr.responseJSON?.message || 'Something went wrong!',
-                    });
+                if (!emailRegex.test(currentEmail)) {
+                    shopToast('Please enter a valid email address.', 'error');
+                    return;
                 }
+
+                $.ajax({
+                    url: '/send-email-otp',
+                    type: 'POST',
+                    data: { email: currentEmail, type: 'current' },
+                    success: function (response) {
+                        shopToast(response.message, 'success');
+                        $('#currentEmailForm').hide();
+                        $('#currentOtpForm').show();
+                    },
+                    error: function (xhr) {
+                        shopToast(xhr.responseJSON?.message || 'Something went wrong!', 'error');
+                    }
+                });
+            });
+
+            $('#currentOtpForm').on('submit', function (e) {
+                e.preventDefault();
+                const otp = $('#currentOtp').val().trim();
+
+                if (otp.length !== 6) {
+                    shopToast('OTP should be 6 digits.', 'warning');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/verify-email-otp',
+                    type: 'POST',
+                    data: { otp, type: 'current' },
+                    success: function (response) {
+                        shopToast(response.message, 'success');
+                        $('#currentEmailModal').modal('hide');
+                        setTimeout(() => $('#newEmailModal').modal('show'), 1500);
+                    },
+                    error: function (xhr) {
+                        shopToast(xhr.responseJSON?.message || 'Invalid OTP.', 'error');
+                    }
+                });
+            });
+
+            // New Email
+            $('#newEmailForm').on('submit', function (e) {
+                e.preventDefault();
+                const newEmail = $('#newEmail').val().trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (!emailRegex.test(newEmail)) {
+                    shopToast('Please enter a valid email address.', 'error');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/send-email-otp',
+                    type: 'POST',
+                    data: { email: newEmail, type: 'new' },
+                    success: function (response) {
+                        shopToast(response.message, 'success');
+                        $('#newEmailForm').hide();
+                        $('#newOtpForm').show();
+                    },
+                    error: function (xhr) {
+                        shopToast(xhr.responseJSON?.message || 'Something went wrong!', 'error');
+                    }
+                });
+            });
+
+            $('#newOtpForm').on('submit', function (e) {
+                e.preventDefault();
+                const otp = $('#newOtp').val().trim();
+
+                if (otp.length !== 6) {
+                    shopToast('OTP should be 6 digits.', 'warning');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/verify-email-otp',
+                    type: 'POST',
+                    data: { otp, type: 'new' },
+                    success: function (response) {
+                        shopToast(response.message, 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    },
+                    error: function (xhr) {
+                        shopToast(xhr.responseJSON?.message || 'Invalid OTP.', 'error');
+                    }
+                });
             });
         });
-
-       
-        $('#currentOtpForm').on('submit', function (e) {
-            e.preventDefault();
-            const otp = $('#currentOtp').val().trim();
-
-            if (otp.length !== 6) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Invalid OTP',
-                    text: 'OTP should be 6 digits.',
-                });
-                return;
-            }
-
-            $.ajax({
-                url: '/verify-email-otp',
-                type: 'POST',
-                data: { otp, type: 'current' }, 
-                success: function (response) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Verified',
-                        text: response.message,
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                    $('#currentEmailModal').modal('hide');
-                    setTimeout(() => $('#newEmailModal').modal('show'), 1500);
-                },
-                error: function (xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Verification Failed',
-                        text: xhr.responseJSON?.message || 'Invalid OTP.'
-                    });
-                }
-            });
-        });
-
-        // New Email Form
-        $('#newEmailForm').on('submit', function (e) {
-            e.preventDefault();
-            const newEmail = $('#newEmail').val().trim();
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-            if (!emailRegex.test(newEmail)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Email',
-                    text: 'Please enter a valid email address.',
-                });
-                return;
-            }
-
-            $.ajax({
-                url: '/send-email-otp',
-                type: 'POST',
-                data: { email: newEmail, type: 'new' }, 
-                success: function (response) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'OTP Sent',
-                        text: response.message,
-                    });
-                    $('#newEmailForm').hide();
-                    $('#newOtpForm').show();
-                },
-                error: function (xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: xhr.responseJSON?.message || 'Something went wrong!',
-                    });
-                }
-            });
-        });
-
-        // New OTP Form
-        $('#newOtpForm').on('submit', function (e) {
-            e.preventDefault();
-            const otp = $('#newOtp').val().trim();
-
-            if (otp.length !== 6) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Invalid OTP',
-                    text: 'OTP should be 6 digits.',
-                });
-                return;
-            }
-
-            $.ajax({
-                url: '/verify-email-otp',
-                type: 'POST',
-                data: { otp, type: 'new' }, 
-                success: function (response) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Email Updated',
-                        text: response.message,
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                    setTimeout(() => location.reload(), 1500);
-                },
-                error: function (xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Verification Failed',
-                        text: xhr.responseJSON?.message || 'Invalid OTP.'
-                    });
-                }
-            });
-        });
-    });
-
-   
 
         // Password Change Form
         document.getElementById('changePasswordForm').addEventListener('submit', async function (e) {
@@ -433,62 +390,35 @@
             const confirmPassword = document.getElementById('confirmPassword').value.trim();
 
             if (!currentPassword || !newPassword || !confirmPassword) {
-                return Swal.fire({
-                    icon: 'warning',
-                    title: 'All fields required',
-                    text: 'Please fill in all fields.'
-                });
+                return shopToast('Please fill in all fields.', 'warning');
             }
 
             const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
             if (!passwordRegex.test(newPassword)) {
-                return Swal.fire({
-                    icon: 'warning',
-                    title: 'Weak Password',
-                    text: 'Password must contain letters and numbers and be at least 6 characters long.'
-                });
+                return shopToast('Password must contain letters and numbers and be at least 6 characters long.', 'warning');
             }
 
             if (newPassword !== confirmPassword) {
-                return Swal.fire({
-                    icon: 'error',
-                    title: 'Password Mismatch',
-                    text: 'New password and confirmation do not match.'
-                });
+                return shopToast('New password and confirmation do not match.', 'error');
             }
 
             try {
                 const response = await fetch('/change-password', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ currentPassword, newPassword, confirmPassword })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: data.message
-                    }).then(() => {
-                        window.location.href = '/edit-profile';
-                    });
+                    shopToast(data.message, 'success');
+                    setTimeout(() => window.location.href = '/edit-profile', 1800);
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message
-                    });
+                    shopToast(data.message, 'error');
                 }
             } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops!',
-                    text: 'Something went wrong.'
-                });
+                shopToast('Something went wrong.', 'error');
             }
         });
     </script>

@@ -1,61 +1,56 @@
-const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const passport = require('passport');
 const User = require('../models/userSchema');
 require('dotenv').config();
+
+const callbackURL =
+  process.env.NODE_ENV === 'production'
+    ? process.env.GOOGLE_CALLBACK_URL_PROD
+    : process.env.GOOGLE_CALLBACK_URL_LOCAL;
 
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
+      callbackURL,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        
         let user = await User.findOne({ googleId: profile.id });
         if (user) {
-          if (user.isBlocked) {
-            console.log('Blocked Google user attempted login:', user.email);
-            return done(null, false, { message: 'User is blocked by admin' });
-          }
-          console.log('Existing Google user found:', user.email);
+          if (user.isBlocked) return done(null, false, { message: 'User is blocked by admin' });
           return done(null, user);
         }
 
+        // If user exists by email, link Google ID
         user = await User.findOne({ email: profile.emails[0].value });
         if (user) {
-          if (user.isBlocked) {
-            console.log('Blocked user with email attempted Google login:', user.email);
-            return done(null, false, { message: 'User is blocked by admin' });
-          }
+          if (user.isBlocked) return done(null, false, { message: 'User is blocked by admin' });
           user.googleId = profile.id;
           user.isVerified = true;
           await user.save();
-          console.log('Updated user with Google ID:', user.email);
           return done(null, user);
         }
 
         // Create new user
         user = new User({
-          name: profile.displayName,
-          email: profile.emails[0].value,
-          googleId: profile.id,
-          isVerified: true,
-          isAdmin: false,
-          isBlocked: false,
-        });
+  name: profile.displayName,
+  email: profile.emails[0].value,
+  googleId: profile.id,
+  isVerified: true,
+  isBlocked: false,
+});
 
         await user.save();
-        console.log('New Google user saved:', user.email);
         return done(null, user);
-      } catch (error) {
-        console.error('Error in Google Strategy:', error.stack);
-        return done(error, null);
+      } catch (err) {
+        return done(err, null);
       }
     }
   )
 );
+
 
 passport.serializeUser((user, done) => {
   console.log('Serializing user:', user._id);

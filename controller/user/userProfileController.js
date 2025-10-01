@@ -12,9 +12,14 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.NODEMAILER_EMAIL,
     pass: process.env.NODEMAILER_PASSWORD,
+    
   
   },
 });
+
+console.log("EMAIL:", process.env.NODEMAILER_EMAIL);
+console.log("PASS:", process.env.NODEMAILER_PASSWORD ? "Loaded" : "Missing");
+
 
 
 const userProfile=async(req,res)=>{
@@ -58,12 +63,21 @@ const getEditProfile=async(req,res)=>{
     try {
         const userId=req.session.userId
         const user=await User.findById(userId).lean()
-
+       
+        if(!user){
+          res.redirect('/login')
+        }
         
-        res.render('edit-profile',{
+        const googleUser = !!user.googleId 
+
+     console.log('user.googleId:', user.googleId);
+console.log('googleUser flag:', googleUser);
+
+         res.render('edit-profile',{
            title:'editProfile',
            user,
-           message:''
+           googleUser,
+           message:'',
            
         })
     } catch (error) {
@@ -279,7 +293,7 @@ const sendEmailOtp = async (req, res) => {
       text: `Your OTP for ${type === 'current' ? 'verifying your current email' : 'updating your email'} is ${otp}. It expires in 10 minutes.`,
     };
 
-    await transporter.sendMail(mailOptions);
+  await transporter.sendMail(mailOptions)
     res.status(200).json({ message: `OTP sent to ${email}` });
   } catch (error) {
     logger.info("Error in sendEmailOtp:", error);
@@ -338,7 +352,10 @@ const changePassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
+    
+    if(currentPassword == newPassword){
+      return res.status(400).json({message:'current pass and new password are same'})
+    }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {

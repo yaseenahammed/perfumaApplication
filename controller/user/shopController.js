@@ -218,6 +218,7 @@ const searchProducts = async (req, res) => {
     );
 
     res.render('shop', {
+      title:'shop',
       user,
       products:enrichedProducts,
       categories,

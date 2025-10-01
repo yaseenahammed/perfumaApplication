@@ -6,28 +6,23 @@
     <title><%= product.name %> - Perfuma</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-
-    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-    
-/* SweetAlert2 popup styling */
-.swal2-popup {
-  background: #fff0f5 !important; 
-  color: #333 !important;
-  font-family: 'Arial, sans-serif' !important;
-  border-radius: 12px !important; 
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-}
+        /* SweetAlert2 popup styling */
+        .swal2-popup {
+            background: #fff0f5 !important; 
+            color: #333 !important;
+            font-family: 'Arial, sans-serif' !important;
+            border-radius: 12px !important; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
 
-/* Custom perfume icon */
-.custom-swal-perfume-icon {
-  font-size: 30px !important;  
-  color: #ff69b4 !important;   
-}
-
+        .custom-swal-perfume-icon {
+            font-size: 30px !important;  
+            color: #ff69b4 !important;   
+        }
 
         .detail-gallery {
             position: relative;
@@ -50,7 +45,6 @@
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
         }
 
-        /* Zoom Functionality */
         .zoom-lens {
             position: absolute;
             width: 100px;
@@ -78,12 +72,10 @@
             background-color: #fff;
         }
 
-        /* Thumbnail Gallery */
         .thumbnail-gallery {
             display: flex;
             gap: 10px;
             margin-top: 20px;
-            overflow-x: auto;
             padding: 5px 0;
         }
 
@@ -111,7 +103,6 @@
             box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
         }
 
-        /* Zoom Icon */
         .zoom-icon {
             position: absolute;
             top: 15px;
@@ -132,7 +123,6 @@
             background: rgba(245, 158, 11, 0.1);
         }
 
-        /* Quantity Controls */
         .detail-qty {
             display: inline-flex;
             align-items: center;
@@ -167,7 +157,6 @@
             color: #374151;
         }
 
-        /* Buttons */
         .button-add-to-cart {
             background: linear-gradient(135deg, #f59e0b, #f97316);
             color: white;
@@ -213,7 +202,6 @@
             transform: scale(1.1);
         }
 
-        /* Loading Animation */
         .button-add-to-cart.loading {
             position: relative;
             pointer-events: none;
@@ -237,7 +225,6 @@
             to { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
-        /* Product Cards */
         .product-cart-wrap {
             border: 1px solid #e5e7eb;
             border-radius: 15px;
@@ -254,31 +241,97 @@
             border-color: #f59e0b;
         }
 
-        /* Responsive Design */
+        .wishlist-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: #000;
+            fill: none;
+            transition: fill 0.3s, stroke 0.3s;
+        }
+
+        .wishlist-btn.active svg {
+            fill: #dc2626;
+            stroke: #dc2626;
+        }
+
+        /* Updated Mobile Responsiveness for Main Product Section */
         @media (max-width: 768px) {
             .detail-gallery {
                 max-width: 100%;
-            }
-
-            .zoom-result {
-                display: none !important;
-            }
-
-            .zoom-lens {
-                display: none !important;
+                padding: 0 10px; /* Reduced padding for mobile */
             }
 
             .main-product-image img {
-                max-height: 350px;
+                max-height: 300px; /* Slightly smaller for mobile */
+                border-radius: 10px;
+            }
+
+            .thumbnail-gallery {
+                flex-wrap: wrap; /* Wrap thumbnails into multiple rows */
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .thumbnail-item {
+                width: 60px; /* Smaller thumbnails for mobile */
+                height: 60px;
+            }
+
+            .zoom-result, .zoom-lens, .zoom-icon {
+                display: none !important; /* Hide zoom entirely on mobile */
             }
 
             .detail-info {
-                padding-left: 0;
-                margin-top: 30px;
+                padding: 0 10px; /* Consistent padding with gallery */
+                margin-top: 20px; /* Reduced margin */
+            }
+
+            .detail-info h1 {
+                font-size: 1.75rem; /* Smaller heading */
+            }
+
+            .detail-info .text-4xl {
+                font-size: 1.5rem; /* Smaller price text */
+            }
+
+            .detail-info .text-xl {
+                font-size: 1rem; /* Smaller original price */
+            }
+
+            .detail-info p {
+                font-size: 0.875rem; /* Smaller description text */
+            }
+
+            .detail-qty {
+                margin-right: 10px;
+            }
+
+            .qty-down, .qty-up {
+                padding: 10px 14px; /* Slightly smaller padding */
+                font-size: 0.875rem;
+            }
+
+            .qty-val {
+                padding: 10px 16px;
+                min-width: 50px;
+                font-size: 0.875rem;
+            }
+
+            .button-add-to-cart {
+                padding: 10px 20px; /* Slightly smaller padding */
+                font-size: 0.875rem; /* Smaller font */
+            }
+
+            .action-btn {
+                width: 40px; /* Smaller wishlist button */
+                height: 40px;
+            }
+
+            .detail-info ul li {
+                font-size: 0.875rem; /* Smaller meta text */
             }
         }
 
-        /* Custom Animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -286,19 +339,6 @@
 
         .animate-fade-in {
             animation: fadeIn 0.6s ease-out;
-            .wishlist-btn svg {
-  width: 20px;
-  height: 20px;
-  stroke: #000;
-  fill: none;
-  transition: fill 0.3s, stroke 0.3s;
-}
-
-.wishlist-btn.active svg {
-  fill: #dc2626;
-  stroke: #dc2626;
-}
-
         }
     </style>
 
@@ -476,19 +516,17 @@
                                         <i class="fas fa-shopping-cart mr-2"></i>
                                         Add to Cart
                                     </button>
-    <a class="action-btn wishlist-btn <%= wishlistItems && wishlistItems.some(item => item.product._id.toString() === product._id.toString()) ? 'active' : '' %>" 
-  onclick="toggleWishlist('<%= product._id %>', this)">
-  <svg viewBox="0 0 24 24">
-    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-  </svg>
-</a>
-
+                                    <a class="action-btn wishlist-btn <%= wishlistItems && wishlistItems.some(item => item.product._id.toString() === product._id.toString()) ? 'active' : '' %>" 
+                                        onclick="toggleWishlist('<%= product._id %>', this)">
+                                        <svg viewBox="0 0 24 24">
+                                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                        </svg>
+                                    </a>
                                 </div>
 
                                 <!-- Product Meta -->
                                 <div class="border-t border-gray-200 pt-6">
                                     <ul class="space-y-2 text-gray-600">
-                                        
                                         <li><strong>Category:</strong> 
                                             <span class="text-amber-600"><%= product.category?.name || 'No Category' %></span>
                                         </li>
@@ -498,7 +536,6 @@
                                                 <%= product.quantity > 0 ? '(' + product.quantity + ' left)' : '' %>
                                             </span>
                                         </li>
-                                      
                                     </ul>
                                 </div>
                             </div>
@@ -528,14 +565,12 @@
                                         >
                                     </a>
                                     <a class="absolute top-2 right-2 z-10 bg-white rounded-full p-2 shadow-md wishlist-btn 
-  <%= wishlistItems && wishlistItems.some(item => item.product._id.toString() === similarProduct._id.toString()) ? 'active' : '' %>" 
-  onclick="toggleWishlist('<%= similarProduct._id %>', this)">
-  <svg class="w-5 h-5 text-red-500 fill-current" viewBox="0 0 24 24">
-    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-  </svg>
-</a>
-
-
+                                        <%= wishlistItems && wishlistItems.some(item => item.product._id.toString() === similarProduct._id.toString()) ? 'active' : '' %>" 
+                                        onclick="toggleWishlist('<%= similarProduct._id %>', this)">
+                                        <svg class="w-5 h-5 text-red-500 fill-current" viewBox="0 0 24 24">
+                                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                        </svg>
+                                    </a>
                                 </div>
 
                                 <div class="space-y-4">
@@ -558,8 +593,6 @@
                                             <i class="fas fa-star text-xs"></i>
                                         </div>
                                     </div>
-
-                                    
                                 </div>
                             </div>
                         <% }) %>
@@ -576,6 +609,7 @@
             </div>
         </div>
     </section>
+
 
     <%- include("../partials/user/footer") %>
 
