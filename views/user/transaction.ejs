@@ -52,15 +52,36 @@
                    <form method="get" action="/wallet/transactions" class="mb-8 flex flex-wrap gap-4">
   <% const today = new Date().toISOString().split("T")[0]; %>
 
-  <input type="date" name="startDate" id="startDate"
-         value="<%= filters.startDate || '' %>" 
-         max="<%= today %>"
-         class="w-full sm:w-auto border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+  <div class="relative w-full sm:w-auto">
+  <input 
+    type="date" 
+    name="startDate" 
+    id="startDate"
+    value="<%= filters.startDate || '' %>" 
+    max="<%= today %>"
+    class="peer w-full border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+  >
+  <label for="startDate" 
+    class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-amber-600 bg-white px-1">
+    Start Date
+  </label>
+</div>
 
-  <input type="date" name="endDate" id="endDate"
-         value="<%= filters.endDate || '' %>" 
-         max="<%= today %>"
-         class="w-full sm:w-auto border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+<div class="relative w-full sm:w-auto mt-3 sm:mt-0">
+  <input 
+    type="date" 
+    name="endDate" 
+    id="endDate"
+    value="<%= filters.endDate || '' %>" 
+    max="<%= today %>"
+    class="peer w-full border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+  >
+  <label for="endDate" 
+    class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-amber-600 bg-white px-1">
+    End Date
+  </label>
+</div>
+
 
   <select name="status" 
           class="w-full sm:w-auto border-gray-300 bg-gray-50 p-3 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
