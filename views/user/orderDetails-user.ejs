@@ -33,6 +33,17 @@
     </script>
 
     <style>
+        .swal2-popup {
+    background: #fff0f5;  /* Light lavender */
+    color: #333;
+    font-family: 'Arial, sans-serif';
+}
+
+.custom-swal-perfume-icon {
+    font-size: 30px !important;  /* Smaller icon size */
+    color: #ff69b4;              /* Pinkish */
+}
+
         .order-item-card {
             transition: all 0.3s ease;
         }
@@ -367,27 +378,45 @@
                     const data = await response.json();
 
                     if (response.ok) {
-                        Swal.fire(
-                            "Success",
-                            data.message || "Item cancelled successfully",
-                            "success"
-                        );
+                         Swal.fire({
+            title: 'Order cancelled!',
+            text: data.message || 'your item cancelled successfully🌸',
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            showConfirmButton: false,
+            timer: 1800,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+          })
+                        
                         closeModal("cancel");
                         setTimeout(() => location.reload(), 1000);
                     } else {
-                        Swal.fire(
-                            "Error",
-                            data.message || "Failed to cancel item",
-                            "error"
-                        );
+                        Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: data.message || 'failed to cancel item',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+                        
                     }
                 } catch (error) {
                     console.error("Cancel item error:", error);
-                    Swal.fire(
-                        "Error",
-                        "Something went wrong. Please try again.",
-                        "error"
-                    );
+                    Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'Something went wrong,please try again',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+                    
                 }
             }
 
@@ -395,12 +424,32 @@
                 const reason = document.getElementById("returnReason").value.trim();
 
                 if (!reason) {
-                    Swal.fire("Error", "Please provide a reason for return.", "error");
+                    Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'Provide a reason for return',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+                    
                     return;
                 }
 
                 if (!currentReturnOrderID) {
-                    Swal.fire("Error", "Invalid order ID", "error");
+                    Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text:  'Invalid order id',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+                    
                     return;
                 }
 
@@ -417,27 +466,44 @@
                     const data = await response.json();
 
                     if (response.ok) {
-                        Swal.fire(
-                            "Success",
-                            data.message || "Return request submitted successfully",
-                            "success"
-                        );
+                         Swal.fire({
+            title: 'Order cancelled!',
+            text: data.message || 'Return request submited successfully🌸',
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            showConfirmButton: false,
+            timer: 1800,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+          })
+                        
                         closeModal("return");
                         setTimeout(() => location.reload(), 1000);
                     } else {
-                        Swal.fire(
-                            "Error",
-                            data.message || "Failed to submit return request",
-                            "error"
-                        );
+                       Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: data.message || 'failed to submit return request',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
                     }
                 } catch (error) {
                     console.error("Return item error:", error);
-                    Swal.fire(
-                        "Error",
-                        "Something went wrong. Please try again.",
-                        "error"
-                    );
+                    Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text:  'Something went wrong,try again',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+                    
                 }
             }
         </script>

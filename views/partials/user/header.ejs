@@ -169,155 +169,152 @@
 
     <!-- Header -->
     <header class="bg-white/95 backdrop-blur-md shadow-lg fixed w-full top-0 z-40">
-        <div class="container mx-auto px-4 lg:px-8">
-            <div class="flex items-center justify-between h-20">
-                <!-- Logo -->
-                <div >
-                    <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-violet-700 bg-clip-text text-transparent tracking-wide">
-                        PERFUMA
-                    </h1>
-                    <p class="text-xs text-gray-500 -mt-1">Premium Fragrances</p>
-                </div>
+    <div class="container mx-auto px-4 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+            <!-- Logo -->
+            <div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-violet-700 bg-clip-text text-transparent tracking-wide">
+                    PERFUMA
+                </h1>
+                <p class="text-xs text-gray-500 -mt-1">Premium Fragrances</p>
+            </div>
 
-                <!-- Desktop Navigation -->
-                <nav class="hidden lg:flex items-center space-x-8">
-                    <a href="/" class="text-gray-700 hover:text-purple-600 font-medium transition duration-300 py-2">
-                        <i class="fas fa-home mr-2"></i>Home
-                    </a>
-                    <div class="relative">
-                        <button id="home-dropdown" class="flex items-center space-x-1 text-gray-700 hover:text-purple-600 font-medium transition duration-300 py-2 cursor-pointer">
-                            <!-- <span>Home</span>
-                            <i class="fas fa-chevron-down text-xs transition duration-300"></i> -->
-                        </button>
-                        <div id="home-menu" class="dropdown-menu">
-                            <!-- <a href="#men"><i class="fas fa-male mr-2"></i>Men's Collection</a>
-                            <a href="#women"><i class="fas fa-female mr-2"></i>Women's Collection</a> -->
-                        </div>
-                    </div>
-                    <div class="relative">
-                        <button id="pages-dropdown" class="flex items-center space-x-1 text-gray-700 hover:text-purple-600 font-medium transition duration-300 py-2 cursor-pointer">
-                            <span>Pages</span>
-                            <i class="fas fa-chevron-down text-xs transition duration-300"></i>
-                        </button>
-                        <div id="pages-menu" class="dropdown-menu">
-                            <a href="/shop"><i class="fas fa-store mr-2"></i>Shop</a>
-                             <a href="/about" class="sidebar-sub-item"><i class="fas fa-info-circle mr-2"></i>About Us</a>
-                            <a href="/contact" class="sidebar-sub-item"><i class="fas fa-envelope mr-2"></i>Contact Us</a> 
-                        </div>
-                    </div>
-                    <a href="/my-orders" class="text-gray-700 hover:text-purple-600 font-medium transition duration-300 py-2">
-                        <i class="fas fa-box-open mr-2"></i>My Orders
-                    </a>
-                    
-
-                    <a href="/wishlist" class="text-gray-700 hover:text-purple-600 font-medium transition duration-300 py-2">
-                        <i class="fas fa-heart mr-2"></i>Wishlist
-                    </a>
-<a href="/cart" class="text-gray-700 hover:text-purple-600 font-medium transition duration-300 py-2 relative flex items-center">
-  <div class="relative">
-    <i class="fas fa-shopping-cart text-xl"></i>
-    <% if (cartItemCount > 0 && title !== 'cart') { %>
-      <span class="cart-count absolute -top-2 -right-2 bg-red-600 text-white rounded-full text-xs px-1">
-        <%= cartItemCount %>
-      </span>
-    <% } %>
-  </div>
-  <span class="ml-2">Cart</span>
-</a>
-
-                </nav>
-
-                <!-- User Section -->
-                <div class="flex items-center space-x-4">
-                    <% if (user) { %>
-                    <div class="relative hidden lg:block">
-                        <button id="user-dropdown" class="flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-violet-600 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-violet-700 transition duration-300 shadow-md cursor-pointer">
-                            <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                                <i class="fas fa-user text-sm"></i>
-                            </div>
-                            <span class="hidden sm:block font-medium"><%= user.name || 'User' %></span>
-                            <i class="fas fa-chevron-down text-xs transition duration-300"></i>
-                        </button>
-                        <div id="user-menu" class="dropdown-menu user-dropdown">
-                            <a href="/userProfile"><i class="fas fa-user-circle mr-2"></i>Profile</a>
-                            <a href="/logout" style="color: #dc2626 !important;"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a>
-                        </div>
-                    </div>
-                    <% } else { %>
-                    <div class="flex items-center space-x-3">
-                        <a href="/login" class="px-4 py-2 text-gray-700 hover:text-purple-600 font-medium transition duration-300 border border-gray-300 rounded-lg hover:border-purple-500">
-                            Login
-                        </a>
-                        <a href="/signup" class="px-4 py-2 bg-gradient-to-r from-purple-500 to-violet-600 text-white font-medium rounded-lg hover:from-purple-600 hover:to-violet-700 transition duration-300 shadow-md transform hover:scale-105">
-                            Sign Up
-                        </a>
-                    </div>
-                    <% } %>
-                    <button id="sidebar-toggle" class="lg:hidden p-2 text-gray-700 hover:text-purple-600 transition duration-300">
-                        <i class="fas fa-bars text-xl"></i>
+            <!-- Desktop Navigation -->
+            <nav class="hidden lg:flex items-center space-x-8">
+                <a href="/" class="text-gray-700 hover:text-purple-600 font-medium transition duration-300 py-2">
+                    <i class="fas fa-home mr-2"></i>Home
+                </a>
+                <!-- <div class="relative">
+                    <button id="home-dropdown" class="flex items-center space-x-1 text-gray-700 hover:text-purple-600 font-medium transition duration-300 py-2 cursor-pointer">
+                        <span>Home</span>
+                        <i class="fas fa-chevron-down text-xs transition duration-300"></i>
                     </button>
-                </div>
-
-                
-            </div>
-        </div>
-
-        <!-- Left Sidebar for Mobile -->
-        <div id="left-sidebar" class="left-sidebar lg:hidden">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-2">
-                <h2 class="text-xl font-bold text-gray-900">Menu</h2>
-                <button id="close-sidebar" class="text-gray-700 hover:text-purple-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <nav class="space-y-1">
-                <div class="sidebar-item">
-                     
-                    <a href="/" class="sidebar-toggle sidebar-item flex items-center"><i class="fas fa-home mr-2 mr-2"></i>Home</a>
-                    <!-- <div class="sidebar-toggle" data-target="home-sub">
-                        <span class="flex items-center"><i class="fas fa-home mr-2"></i>Home</span>
-                        <i class="fas fa-chevron-down text-xs"></i>
+                    <div id="home-menu" class="dropdown-menu">
+                        <a href="#men"><i class="fas fa-male mr-2"></i>Men's Collection</a>
+                        <a href="#women"><i class="fas fa-female mr-2"></i>Women's Collection</a>
                     </div>
-                    <div class="sidebar-sub-menu" id="home-sub">
-                        <a href="#men" class="sidebar-sub-item"><i class="fas fa-male mr-2"></i>Men's Collection</a>
-                        <a href="#women" class="sidebar-sub-item"><i class="fas fa-female mr-2"></i>Women's Collection</a>
-                    </div>  -->
-                </div>
-                <div class="sidebar-item">
-                    <div class="sidebar-toggle" data-target="pages-sub">
-                        <span class="flex items-center"><i class="fas fa-th-large mr-2"></i>Pages</span>
-                        <i class="fas fa-chevron-down text-xs"></i>
-                    </div>
-                    <div class="sidebar-sub-menu" id="pages-sub">
-                        <a href="/shop" class="sidebar-sub-item"><i class="fas fa-store mr-2"></i>Shop</a>
+                </div> -->
+                <div class="relative">
+                    <button id="pages-dropdown" class="flex items-center space-x-1 text-gray-700 hover:text-purple-600 font-medium transition duration-300 py-2 cursor-pointer">
+                        <span>Pages</span>
+                        <i class="fas fa-chevron-down text-xs transition duration-300"></i>
+                    </button>
+                    <div id="pages-menu" class="dropdown-menu">
+                        <a href="/shop"><i class="fas fa-store mr-2"></i>Shop</a>
                         <a href="/about" class="sidebar-sub-item"><i class="fas fa-info-circle mr-2"></i>About Us</a>
                         <a href="/contact" class="sidebar-sub-item"><i class="fas fa-envelope mr-2"></i>Contact Us</a>
                     </div>
                 </div>
-                <a href="/my-orders" class="sidebar-toggle sidebar-item flex items-center"><i class="fas fa-box-open mr-2"></i>My Orders</a>
-                <a href="/cart" class="sidebar-toggle sidebar-item flex items-center"><i class="fas fa-shopping-cart mr-2"></i>Cart</a>
-                <a href="/wishlist" class="sidebar-toggle sidebar-item flex items-center"><i class="fas fa-heart mr-2"></i>Wishlist</a>
-                <% if (user) { %>
-                <div class="sidebar-item">
-                    <div class="sidebar-toggle" data-target="user-sub">
-                        <span class="flex items-center"><i class="fas fa-user mr-2"></i><%= user.name || 'User' %></span>
-                        <i class="fas fa-chevron-down text-xs"></i>
+                <a href="/my-orders" class="text-gray-700 hover:text-purple-600 font-medium transition duration-300 py-2">
+                    <i class="fas fa-box-open mr-2"></i>My Orders
+                </a>
+                <a href="/wishlist" class="text-gray-700 hover:text-purple-600 font-medium transition duration-300 py-2">
+                    <i class="fas fa-heart mr-2"></i>Wishlist
+                </a>
+                <a href="/cart" class="text-gray-700 hover:text-purple-600 font-medium transition duration-300 py-2 relative flex items-center">
+                    <div class="relative">
+                        <i class="fas fa-shopping-cart text-xl"></i>
+                        <% if (cartItemCount > 0 && title !== 'cart') { %>
+                        <span class="cart-count absolute -top-2 -right-2 bg-red-600 text-white rounded-full text-xs px-1">
+                            <%= cartItemCount %>
+                        </span>
+                        <% } %>
                     </div>
-                    <div class="sidebar-sub-menu" id="user-sub">
-                        <a href="/userProfile" class="sidebar-sub-item"><i class="fas fa-user-circle mr-2"></i>Profile</a>
-                        <a href="/logout" class="sidebar-sub-item text-red-600 hover:text-red-700"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a>
+                    <span class="ml-2">Cart</span>
+                </a>
+            </nav>
+
+            <!-- User Section -->
+            <div class="flex items-center space-x-4">
+                <% if (user) { %>
+                <!-- Show only for desktop -->
+                <div class="relative hidden lg:block">
+                    <button id="user-dropdown" class="flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-violet-600 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-violet-700 transition duration-300 shadow-md cursor-pointer">
+                        <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-sm"></i>
+                        </div>
+                        <span class="hidden sm:block font-medium"><%= user.name || 'User' %></span>
+                        <i class="fas fa-chevron-down text-xs transition duration-300"></i>
+                    </button>
+                    <div id="user-menu" class="dropdown-menu user-dropdown">
+                        <a href="/userProfile"><i class="fas fa-user-circle mr-2"></i>Profile</a>
+                        <a href="/logout" style="color: #dc2626 !important;"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a>
                     </div>
                 </div>
                 <% } else { %>
-                <div class="sidebar-item">
-                    <a href="/login" class="sidebar-toggle sidebar-item flex items-center"><i class="fas fa-sign-in-alt mr-2"></i>Login</a>
-                    <a href="/signup" class="sidebar-toggle sidebar-item flex items-center"><i class="fas fa-user-plus mr-2"></i>Sign Up</a>
+                <!-- Hide login/signup in mobile, show only in desktop -->
+                <div class="hidden lg:flex items-center space-x-3">
+                    <a href="/login" class="px-4 py-2 text-gray-700 hover:text-purple-600 font-medium transition duration-300 border border-gray-300 rounded-lg hover:border-purple-500">
+                        Login
+                    </a>
+                    <a href="/signup" class="px-4 py-2 bg-gradient-to-r from-purple-500 to-violet-600 text-white font-medium rounded-lg hover:from-purple-600 hover:to-violet-700 transition duration-300 shadow-md transform hover:scale-105">
+                        Sign Up
+                    </a>
                 </div>
                 <% } %>
-            </nav>
+
+                <!-- Mobile sidebar toggle -->
+                <button id="sidebar-toggle" class="lg:hidden p-2 text-gray-700 hover:text-purple-600 transition duration-300">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
         </div>
-        <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
-    </header>
+    </div>
+
+    <!-- Left Sidebar for Mobile -->
+    <div id="left-sidebar" class="left-sidebar lg:hidden">
+        <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-2">
+            <h2 class="text-xl font-bold text-gray-900">Menu</h2>
+            <button id="close-sidebar" class="text-gray-700 hover:text-purple-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <nav class="space-y-1">
+            <div class="sidebar-item">
+                <a href="/" class="sidebar-toggle sidebar-item flex items-center"><i class="fas fa-home mr-2"></i>Home</a>
+            </div>
+            <div class="sidebar-item">
+                <div class="sidebar-toggle" data-target="pages-sub">
+                    <span class="flex items-center"><i class="fas fa-th-large mr-2"></i>Pages</span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </div>
+                <div class="sidebar-sub-menu" id="pages-sub">
+                    <a href="/shop" class="sidebar-sub-item"><i class="fas fa-store mr-2"></i>Shop</a>
+                    <a href="/about" class="sidebar-sub-item"><i class="fas fa-info-circle mr-2"></i>About Us</a>
+                    <a href="/contact" class="sidebar-sub-item"><i class="fas fa-envelope mr-2"></i>Contact Us</a>
+                </div>
+            </div>
+            <a href="/my-orders" class="sidebar-toggle sidebar-item flex items-center"><i class="fas fa-box-open mr-2"></i>My Orders</a>
+            <a href="/cart" class="sidebar-toggle sidebar-item flex items-center"><i class="fas fa-shopping-cart mr-2"></i>Cart</a>
+            <a href="/wishlist" class="sidebar-toggle sidebar-item flex items-center"><i class="fas fa-heart mr-2"></i>Wishlist</a>
+
+            <% if (user) { %>
+            <div class="sidebar-item">
+                <div class="sidebar-toggle" data-target="user-sub">
+                    <span class="flex items-center"><i class="fas fa-user mr-2"></i><%= user.name || 'User' %></span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </div>
+                <div class="sidebar-sub-menu" id="user-sub">
+                    <a href="/userProfile" class="sidebar-sub-item"><i class="fas fa-user-circle mr-2"></i>Profile</a>
+                    <a href="/logout" class="sidebar-sub-item text-red-600 hover:text-red-700"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a>
+                </div>
+            </div>
+            <% } else { %>
+            <!-- Mobile-only login/signup buttons -->
+            <div class="sidebar-item flex flex-col space-y-2">
+                <a href="/login" class="px-3 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:text-purple-600 hover:border-purple-500 transition">
+                    <i class="fas fa-sign-in-alt mr-1"></i>Login
+                </a>
+                <a href="/signup" class="px-3 py-2 text-sm rounded-md bg-gradient-to-r from-purple-500 to-violet-600 text-white hover:from-purple-600 hover:to-violet-700 shadow-md transition">
+                    <i class="fas fa-user-plus mr-1"></i>Sign Up
+                </a>
+            </div>
+            <% } %>
+        </nav>
+    </div>
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+</header>
+
 
     <div class="pt-20">
         <!-- Page content goes here -->
@@ -346,13 +343,16 @@
         function toggleDropdown(buttonId, menuId) {
             const button = document.getElementById(buttonId);
             const menu = document.getElementById(menuId);
-            button.addEventListener('click', function(e) {
+            if(button && menu){
+                button.addEventListener('click', function(e) {
                 e.stopPropagation();
                 document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
                     if (dropdown.id !== menuId) dropdown.classList.remove('show');
                 });
                 menu.classList.toggle('show');
             });
+            }
+           
         }
 
         toggleDropdown('home-dropdown', 'home-menu');

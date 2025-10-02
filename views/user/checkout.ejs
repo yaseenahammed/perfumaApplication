@@ -32,6 +32,17 @@
     </script>
 
     <style>
+        .swal2-popup {
+    background: #fff0f5;  /* Light lavender */
+    color: #333;
+    font-family: 'Arial, sans-serif';
+}
+
+.custom-swal-perfume-icon {
+    font-size: 30px !important;  /* Smaller icon size */
+    color: #ff69b4;              /* Pinkish */
+}
+
         .address-card, .coupon-card {
             transition: all 0.3s ease;
             cursor: pointer;
@@ -536,6 +547,7 @@
                             card.querySelector('.fa-check-circle').classList.remove('hidden');
                         } else {
                             Swal.fire('Error', data.message || 'Failed to select address', 'error');
+                            
                         }
                     } catch (error) {
                         console.error('Error selecting address:', error);
@@ -863,10 +875,20 @@ if (!indianPhone.test(phone)) {
     });
 
     if (response.ok) {
-      Swal.fire("Success", "Address added successfully!", "success").then(() => {
+        Swal.fire({
+            title: 'Address Added!',
+            text: 'Now your address added 🌸',
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            showConfirmButton: false,
+            timer: 1800,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+          }).then(() => {
         closeModal(addAddressModal, addAddressContent);
         window.location.reload();
       });
+  
     } else {
       const errorData = await response.json();
       Swal.fire("Failed", errorData.message || "Unknown error", "error");
@@ -944,7 +966,16 @@ if (!indianPhone.test(phone)) {
     });
 
     if (response.ok) {
-      Swal.fire("Success", "Address updated successfully!", "success").then(() => {
+     Swal.fire({
+            title: 'Address updated!',
+            text: 'Now your address updated🌸',
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            showConfirmButton: false,
+            timer: 1800,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+          }).then(() => {
         closeModal(editAddressModal, editAddressContent);
         window.location.reload();
       });
@@ -960,7 +991,16 @@ if (!indianPhone.test(phone)) {
 
 placeOrderBtn.addEventListener('click', () => {
     if (!window.selectedAddressId) {
-        Swal.fire('Error', 'Please select a shipping address.', 'error');
+        Swal.fire({
+            title: 'Select a address',
+            text: 'Confirem you are selected a address for your order🌸',
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            showConfirmButton: false,
+            timer: 1800,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+          })
         return;
     }
 
@@ -1007,7 +1047,17 @@ confirmPlaceBtn.addEventListener('click', async () => {
             const data = await res.json();
 
             if (!res.ok || !data.success) {
-  Swal.fire("Error", data.message || "Order failed", "error");
+                 Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: data.message || 'Order failed',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+  
   return;  
 }
             if (data.success) {
@@ -1018,8 +1068,18 @@ confirmPlaceBtn.addEventListener('click', async () => {
                 showOrderFailedModal();
             }
         } catch (err) {
-            console.error('Error placing order:', err);
-            Swal.fire('Error', 'An error occurred. Please try again.', 'error');
+             Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'An error occured pls try again',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+            
+           
         }
     } else {
         try {
@@ -1030,10 +1090,20 @@ confirmPlaceBtn.addEventListener('click', async () => {
             });
 
             const data = await res.json();
-            console.log('Razorpay order response:', data);
+           
 
             if (!data.success) {
-                Swal.fire('Error', data.message || 'Failed to create order.', 'error');
+                 Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: data.message || 'failed to create order',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+               
                 return;
             }
 
@@ -1067,12 +1137,32 @@ confirmPlaceBtn.addEventListener('click', async () => {
                             openModal(orderSuccessfulModal, orderSuccessfulContent);
                         } else {
                             handlePaymentFailure(window.latestOrderId);
-                            Swal.fire('Error', verifyData.message || 'Payment verification failed.', 'error');
+                             Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: verifyData.message || 'Payment verification failed',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+                           
                         }
                     } catch (err) {
                         console.error('Error verifying payment:', err);
                         handlePaymentFailure(window.latestOrderId);
-                        Swal.fire('Error', 'An error occurred during payment verification.', 'error');
+                         Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'An error occurred during payment verification.',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+                        
                     }
                 },
                 modal: {
@@ -1089,7 +1179,17 @@ confirmPlaceBtn.addEventListener('click', async () => {
             rzp.open();
         } catch (err) {
             console.error('Error initiating Razorpay:', err);
-            Swal.fire('Error', 'Payment initiation failed.', 'error');
+            Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'Payment initiation failed.',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+           
         }
     }
 });
@@ -1102,7 +1202,17 @@ viewOrderDetailsBtn.addEventListener('click', () => {
     if (window.latestOrderId) {
         window.location.href = `/order-details/${window.latestOrderId}`;
     } else {
-        Swal.fire('Error', 'Order ID not found.', 'error');
+          Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'Order id not found',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+       
     }
 });
 
@@ -1117,7 +1227,17 @@ window.handlePaymentFailure = function (orderId) {
 
 window.retryOrder = async function () {
     if (!window.latestOrderId) {
-        Swal.fire('Error', 'No order found to retry!', 'error');
+         Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'No order found to retry',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+        
         return;
     }
     closeModal(
@@ -1165,12 +1285,32 @@ window.retryOrder = async function () {
                             openModal(orderSuccessfulModal, orderSuccessfulContent);
                         } else {
                             handlePaymentFailure(window.latestOrderId);
-                            Swal.fire('Error', verifyResult.message || 'Payment verification failed.', 'error');
+                             Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: verifyResult.message || 'Payment initiation failed.',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+                            
                         }
                     } catch (err) {
                         console.error('Error verifying retry payment:', err);
                         handlePaymentFailure(window.latestOrderId);
-                        Swal.fire('Error', 'An error occurred during payment verification.', 'error');
+                         Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'An error during payment verification.',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+                        
                     }
                 },
                 modal: {
@@ -1186,11 +1326,31 @@ window.retryOrder = async function () {
             const rzp = new Razorpay(options);
             rzp.open();
         } else {
-            Swal.fire('Error', result.message, 'error');
+             Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: result.message,
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+          
         }
     } catch (error) {
         console.error('Retry order error:', error);
-        Swal.fire('Error', 'Failed to retry payment.', 'error');
+         Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'Failed to retry payment',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+       
     }
 };
 

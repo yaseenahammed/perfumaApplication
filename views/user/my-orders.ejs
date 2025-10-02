@@ -32,6 +32,17 @@
     </script>
 
     <style>
+        .swal2-popup {
+    background: #fff0f5;  /* Light lavender */
+    color: #333;
+    font-family: 'Arial, sans-serif';
+}
+
+.custom-swal-perfume-icon {
+    font-size: 30px !important;  /* Smaller icon size */
+    color: #ff69b4;              /* Pinkish */
+}
+
         .order-card {
             transition: all 0.3s ease;
             cursor: pointer;
@@ -362,15 +373,45 @@ const allDelivered = order.items.length > 0 &&
                 const data = await response.json();
 
                 if (response.ok) {
-                    Swal.fire('Success', data.message || 'Order cancelled successfully', 'success');
+                     Swal.fire({
+            title: 'Order cancelled!',
+            text: data.message || 'your Order cancelled successfully🌸',
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            showConfirmButton: false,
+            timer: 1800,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+          })
+                  
                     closeModal('cancel');
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    Swal.fire('Error', data.message || 'Failed to cancel order', 'error');
+                     Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: data.message || 'failed to cancel order',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+                    
                 }
             } catch (error) {
                 console.error('Cancel order error:', error);
-                Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
+                 Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'Something went wrong ,Please try again',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+                
             }
         }
 
@@ -378,12 +419,32 @@ const allDelivered = order.items.length > 0 &&
             const reason = document.getElementById('returnReason').value.trim();
 
             if (!reason) {
-                Swal.fire('Error', 'Please provide a reason for return.', 'error');
+                 Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'Please provide a reasong for return',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+               
                 return;
             }
 
             if (!currentReturnOrderID) {
-                Swal.fire('Error', 'Invalid order ID', 'error');
+                 Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'Invalid Order Id',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+               
                 return;
             }
 
@@ -399,15 +460,45 @@ const allDelivered = order.items.length > 0 &&
                 const data = await response.json();
 
                 if (response.ok) {
-                    Swal.fire('Success', data.message || 'Return request submitted successfully', 'success');
+                     Swal.fire({
+            title: 'Return request',
+            text:data.message || 'Return request submitted successfully🌸',
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            showConfirmButton: false,
+            timer: 1800,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+          })
+                    
                     closeModal('return');
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    Swal.fire('Error', data.message || 'Failed to submit return request', 'error');
+                     Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: data.message || 'Failed to submit return request',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+                   
                 }
             } catch (error) {
                 console.error('Return order error:', error);
-                Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
+                 Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'Something went wrong,Please try again',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+               
             }
         }
 
@@ -420,7 +511,17 @@ const allDelivered = order.items.length > 0 &&
         
     window.retryOrder = async function(orderId) {
         if (!orderId) {
-            Swal.fire('Error', 'No order found to retry!', 'error');
+             Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text:  'Order Not found to retry',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+           
             return;
         }
 
@@ -435,7 +536,17 @@ const allDelivered = order.items.length > 0 &&
             const result = await response.json();
 
             if (!result.success) {
-                Swal.fire('Error', result.message || 'Failed to initiate retry payment.', 'error');
+                 Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: data.message || 'Failed to initiate retry payment',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+               
                 return;
             }
 
@@ -471,7 +582,17 @@ const allDelivered = order.items.length > 0 &&
                         }
                     } catch (err) {
                         console.error('Error verifying retry payment:', err);
-                        Swal.fire('Error', 'An error occurred during payment verification.', 'error');
+                         Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'Error during payment verification',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+                       
                     }
                 },
                 theme: { color: '#6366f1' }
@@ -483,7 +604,17 @@ const allDelivered = order.items.length > 0 &&
 
         } catch (error) {
             console.error('Retry order error:', error);
-            Swal.fire('Error', 'Failed to retry payment.', 'error');
+             Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: ' failed to retry payment',
+    showConfirmButton: false,
+    timer: 1800,
+    toast: true,
+    position: 'top-end',
+    width: '300px'
+  });
+            
         }
     };
 
