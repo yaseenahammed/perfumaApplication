@@ -776,6 +776,11 @@ if (response.status === 401) {
 const data = await response.json();
 
 if (data.success) {
+    const cartCountEl=document.getElementById('cart-count')
+    if(cartCountEl){
+        cartCountEl.innerText=data.cartItemCount
+        cartCountEl.style.display=data.cartItemCount>0 ? 'inline-block': 'none'
+    }
 Swal.fire({
   iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
   title: 'Added to Cart',

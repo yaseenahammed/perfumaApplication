@@ -32,6 +32,16 @@
     </script>
 
     <style>
+        .swal2-popup {
+    background: #fff0f5;  /* Light lavender */
+    color: #333;
+    font-family: 'Arial, sans-serif';
+}
+
+.custom-swal-perfume-icon {
+    font-size: 30px !important;  /* Smaller icon size */
+    color: #ff69b4;              /* Pinkish */
+}
         .wishlist-item {
             transition: all 0.3s ease;
         }
@@ -94,9 +104,9 @@
                                         </div>
                                     <% }) %>
                                 </div>
-                                <button class="clear-wishlist-btn mt-6 w-full flex items-center justify-center px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200">
+                                <!-- <button class="clear-wishlist-btn mt-6 w-full flex items-center justify-center px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200">
                                     <i class="fas fa-trash-alt mr-2"></i> Clear Wishlist
-                                </button>
+                                </button> -->
                             <% } else { %>
                                 <p class="text-gray-600 text-center">Your wishlist is empty. Add some items to get started!</p>
                             <% } %>
@@ -115,6 +125,12 @@
             const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
             const clearWishlistBtn = document.querySelector('.clear-wishlist-btn');
 
+             const cartCountEl = document.getElementById('cart-count');
+    if (cartCountEl) {
+        const current = parseInt(cartCountEl.innerText, 10) || 0;
+        cartCountEl.style.display = current > 0 ? 'inline-block' : 'none';
+    }
+
             // Remove Item
             removeButtons.forEach(button => {
                 button.addEventListener('click', async (event) => {
@@ -132,7 +148,17 @@
                                
                             }
                         } else {
-                            Swal.fire('Error', data.message || 'Failed to remove item', 'error');
+                             Swal.fire({
+            title: data.message || 'Failed to remove igem',
+            text: 'Failed to remove from whishlist',
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            showConfirmButton: false,
+            timer: 1500,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+          });
+                            
                         }
                     } catch (error) {
                         console.error('Error removing item:', error);
@@ -153,43 +179,75 @@
                         });
                         const data = await response.json();
                         if (data.success) {
-                            Swal.fire('Success', 'Item added to cart!', 'success').then(() => {
-                                button.closest('.wishlist-item').remove();
+                            
+                            if(cartCountEl){
+                                cartCountEl.innerText=data.cartItemCount;
+                                cartCountEl.style.display=data.cartItemCount > 0 ? 'inline-block' :'none'
+                            }
+                            Swal.fire({
+            title: 'Perfume Added!',
+            text: 'Your perfume is now in the cart 🌸',
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            showConfirmButton: false,
+            timer: 1800,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+          }).then(() => {
+            button.closest('.wishlist-item').remove();
                                
-                                if (document.querySelectorAll('.wishlist-item').length === 0) {
-                                    window.location.reload(); 
-                                }
+                              
                             });
                         } else {
-                            Swal.fire('Error', data.message || 'Failed to add to cart', 'error');
+                             Swal.fire({
+            title: data.message || 'Failed to add cart',
+            text: 'Failed Adding to Cart',
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            showConfirmButton: false,
+            timer: 1500,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+          });
+                            
                         }
                     } catch (error) {
                         console.error('Error adding to cart:', error);
-                        Swal.fire('Error', 'An error occurred while adding to cart.', 'error');
+                         Swal.fire({
+            title: 'An error while adding to cart',
+            text: 'Something went wrong',
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            showConfirmButton: false,
+            timer: 1500,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+          });
+                       
                     }
                 });
             });
 
         
-            clearWishlistBtn?.addEventListener('click', async () => {
-                try {
-                    const response = await fetch('/wishlist/clear', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        document.querySelectorAll('.wishlist-item').forEach(item => item.remove());
+            // clearWishlistBtn?.addEventListener('click', async () => {
+            //     try {
+            //         const response = await fetch('/wishlist/clear', {
+            //             method: 'POST',
+            //             headers: { 'Content-Type': 'application/json' }
+            //         });
+            //         const data = await response.json();
+            //         if (data.success) {
+            //             document.querySelectorAll('.wishlist-item').forEach(item => item.remove());
                         
-                          clearWishlistBtn.style.display = 'none';
-                    } else {
-                        Swal.fire('Error', data.message || 'Failed to clear wishlist', 'error');
-                    }
-                } catch (error) {
-                    console.error('Error clearing wishlist:', error);
-                    Swal.fire('Error', 'An error occurred while clearing the wishlist.', 'error');
-                }
-            });
+            //               clearWishlistBtn.style.display = 'none';
+            //         } else {
+            //             Swal.fire('Error', data.message || 'Failed to clear wishlist', 'error');
+            //         }
+            //     } catch (error) {
+            //         console.error('Error clearing wishlist:', error);
+            //         Swal.fire('Error', 'An error occurred while clearing the wishlist.', 'error');
+            //     }
+            // });
         });
     </script>
 </body>

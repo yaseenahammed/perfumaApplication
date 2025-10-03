@@ -33,14 +33,15 @@ const getWishlist = async (req, res) => {
       })
     )
  
-
+  const cart=user ? await Cart.findOne({user:user}).lean() : null
+  const cartItemCount=cart ? cart.items.length : 0
    
 
     res.render('wishlist', {
       title:'wishlist',
      user,
       wishlistItems,
-   
+     cartItemCount
     });
   } catch (error) {
     logger.error('Error fetching wishlist:', error);

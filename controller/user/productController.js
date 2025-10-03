@@ -74,6 +74,9 @@ const productDetails = async (req, res) => {
       }));
     }
 
+    const cart= userId ? await Cart.findOne({user:userId}).lean():null
+    const cartItemCount=cart ? cart.items.length : 0
+
     
     res.render('product-details', {
       title:'productDetails',
@@ -86,7 +89,7 @@ const productDetails = async (req, res) => {
       category: product.category,
       error: req.flash('error')[0] || null,
       wishlistItems,
-
+      cartItemCount,
     });
 
   } catch (error) {

@@ -613,6 +613,14 @@ function toggleSidebar() {
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
  document.addEventListener('DOMContentLoaded', () => {
+
+  
+             const cartCountEl = document.getElementById('cart-count');
+    if (cartCountEl) {
+        const current = parseInt(cartCountEl.innerText, 10) || 0;
+        cartCountEl.style.display = current > 0 ? 'inline-block' : 'none';
+    }
+    
   const addToCartBtns = document.querySelectorAll('.button-add-to-cart');
 
   addToCartBtns.forEach(btn => {
@@ -634,6 +642,14 @@ function toggleSidebar() {
         const data = await response.json();
 
         if (data.success) {
+
+          const cartCountEl=document.getElementById('cart-count');
+            if(cartCountEl){
+               cartCountEl.innerText=data.cartItemCount;
+               cartCountEl.style.display=data.cartItemCount>0?'inline-block':'none'
+
+            }
+          
         
           const wishlistBtn = btn.closest('.product-card')?.querySelector('.button-wishlist');
           if (wishlistBtn) {

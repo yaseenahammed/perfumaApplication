@@ -3,6 +3,7 @@ const Category = require('../../models/categorySchema');
 const Brand = require('../../models/brandSchema');
 const User = require('../../models/userSchema');
 const Wishlist=require('../../models/wishlistSchema')
+const Cart=require('../../models/cartSchema')
 const { getBestPrice } = require('../../helpers/offerHelper');
 const logger = require('../../helpers/logger');
 
@@ -104,6 +105,8 @@ const loadShop = async (req, res) => {
     }
 
     
+   const cart = userId ? await Cart.findOne({ user: userId }).lean() : null;
+  const cartItemCount = cart ? cart.items.length : 0;
 
   
 
@@ -122,6 +125,7 @@ const loadShop = async (req, res) => {
       priceRange,
       searchQuery,
       wishlistItems,
+      cartItemCount
     });
 
   } catch (error) {
