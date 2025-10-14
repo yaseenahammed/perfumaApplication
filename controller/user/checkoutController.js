@@ -295,6 +295,7 @@ const orderConfirm = async (req, res) => {
       .lean();
 
     res.render('my-orders', {
+      title:'orders',
       user,
       orders,
       currentPage: page,
