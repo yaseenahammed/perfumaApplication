@@ -13,9 +13,7 @@ const loadLogin = async (req, res) => {
   
   try {
     if (req.session.admin) {
-
-      
-      return res.redirect('/admin/dashboard');
+ return res.redirect('/admin/dashboard');
     }
     const message = req.session.message;
     req.session.message = null;

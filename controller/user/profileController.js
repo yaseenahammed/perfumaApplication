@@ -116,8 +116,6 @@ const forgotEmailValid = async (req, res) => {
 
 const verifyForgotPassOtp = async (req, res) => {
   try {
- 
-
     const enterOtp = req.body.otp;
     logger.info('Received OTP:', enterOtp, typeof enterOtp);
     logger.info('Session OTP:', req.session.userOtp, typeof req.session.userOtp);

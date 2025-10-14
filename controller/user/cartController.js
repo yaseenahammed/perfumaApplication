@@ -265,12 +265,11 @@ const decrementQuantity = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
-
 const removeFromCart = async (req, res) => {
   try {
     const userId = req.session.userId;
-    const { productId } = req.body; 
- 
+    const { productId } = req.body;
+
     if (!userId || !mongoose.isValidObjectId(userId)) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
@@ -278,40 +277,49 @@ const removeFromCart = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid product ID' });
     }
 
-    const cart = await Cart.findOne({ user: userId })
-      .populate({
-        path: 'items.product',
-        populate: [
-          { path: 'brand', select: 'isBlocked' },
-          { path: 'category', select: 'isListed isBlocked' }
-        ]
-      });
-
+    const cart = await Cart.findOne({ user: userId });
     if (!cart) {
       return res.status(404).json({ success: false, message: 'Cart not found' });
     }
 
-    const itemIndex = cart.items.findIndex(i => i.product && i.product._id.toString() === productId);
+    // Remove invalid items first
+    cart.items = cart.items.filter(item => item.product);
+
+    // Remove requested item safely
+    const itemIndex = cart.items.findIndex(
+      i => i.product.toString() === productId
+    );
     if (itemIndex === -1) {
       return res.status(400).json({ success: false, message: 'Item not in cart' });
     }
 
     cart.items.splice(itemIndex, 1);
-    await cart.save();
+
+    await cart.save(); // now safe
+
+    // Populate for subtotal calculation
+    await cart.populate({
+      path: 'items.product',
+      populate: [
+        { path: 'brand', select: 'isBlocked' },
+        { path: 'category', select: 'isListed isBlocked' }
+      ]
+    });
 
     let subtotal = 0;
-    for (let cartItem of cart.items) {
-      if (!isItemBlocked(cartItem)) {
-        const { finalPrice } = await getBestPrice(cartItem.product);
-        cartItem.totalPrice = finalPrice * cartItem.quantity;
-        subtotal += cartItem.totalPrice;
+    for (const item of cart.items) {
+      if (!isItemBlocked(item)) {
+        const { finalPrice } = await getBestPrice(item.product);
+        item.totalPrice = finalPrice * item.quantity;
+        subtotal += item.totalPrice;
+      } else {
+        item.totalPrice = 0;
       }
     }
 
     const shipping = cart.items.length > 0 ? SHIPPING_FEE : 0;
     const total = parseFloat((subtotal + shipping).toFixed(2));
     const cartItemCount = cart.items.length;
-
     const hasUnavailableItems = cart.items.some(item => isItemBlocked(item));
 
     res.json({
@@ -323,11 +331,13 @@ const removeFromCart = async (req, res) => {
       hasUnavailableItems,
       disableCheckout: hasUnavailableItems || cartItemCount === 0
     });
+
   } catch (error) {
     logger.error('Error in removeFromCart:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
 
 module.exports = {
   getCart,

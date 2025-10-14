@@ -75,8 +75,8 @@ const getSalesReport = async (req, res) => {
                     item => item.orderStatus !== 'Cancelled' && item.orderStatus !== 'Returned'
                 );
 
-                const itemsWithBestOffer = await Promise.all(
-                    activeItems.map(async (item) => {
+                const itemsWithBestOffer = await Promise.all(activeItems.filter(item => item.product)
+                    .map(async (item) => {
                         const product = item.product;
                         const { finalPrice, bestOffer } = await getBestPrice(product);
                         return {
@@ -233,7 +233,9 @@ const enrichedOrders = await Promise.all(
         );
 
         const itemsWithBestOffer = await Promise.all(
-            activeItems.map(async (item) => {
+            activeItems
+            .filter(item => item.product)
+            .map(async (item) => {
                 const product = item.product;
                 const { finalPrice, bestOffer } = await getBestPrice(product);
                 return {
