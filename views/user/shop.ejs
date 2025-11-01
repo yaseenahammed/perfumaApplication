@@ -615,7 +615,7 @@ function toggleSidebar() {
  document.addEventListener('DOMContentLoaded', () => {
 
   
-             const cartCountEl = document.getElementById('cart-count');
+        const cartCountEl = document.getElementById('cart-count');
     if (cartCountEl) {
         const current = parseInt(cartCountEl.innerText, 10) || 0;
         cartCountEl.style.display = current > 0 ? 'inline-block' : 'none';

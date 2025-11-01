@@ -1,4 +1,4 @@
-const Order=require('../../models/orderSchema')
+const Order = require('../../models/orderSchema')
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
 const PDFkit=require('pdfkit-table');

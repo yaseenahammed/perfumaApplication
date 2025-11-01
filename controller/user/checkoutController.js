@@ -64,6 +64,9 @@ const getCheckout = async (req, res) => {
       return res.redirect('/login');
     }
 
+    req.session.appliedCouponCode = null;
+req.session.discountPrice = null;
+
       const orderId = req.query.orderId || null;
       let order = null;
 
@@ -216,6 +219,8 @@ const addAddress = async (req, res) => {
 
         await userAddress.save();
         req.session.selectedAddressId = userAddress.addresses[userAddress.addresses.length - 1]._id.toString();
+          req.session.appliedCouponCode = null;
+         req.session.discountPrice = null;
         res.redirect('/checkout');
     } catch (error) {
         logger.error("Error in addAddress:", error);
@@ -258,6 +263,8 @@ const editAddress = async (req, res) => {
 
         await addressDoc.save();
         req.session.selectedAddressId = addressId;
+          req.session.appliedCouponCode = null;
+    req.session.discountPrice = null;
         res.redirect('/checkout');
     } catch (error) {
         logger.error("Error in editAddress:", error);
@@ -377,9 +384,8 @@ if (couponCode) {
 
   finalDiscountPrice = result.finalDiscountPrice;
   appliedCouponCode = result.appliedCouponCode;
-} else if (req.session.appliedCouponCode) {
-  return res.status(400).json({ success: false, message: 'No coupon code provided but a coupon is applied in session' });
 }
+
 
       
         const finalAmount = subtotal + shipping - finalDiscountPrice;
@@ -511,6 +517,8 @@ const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET
 });
+
+
 const createRazorpayOrder = async (req, res) => {
   try {
     const { paymentMethod, couponCode, discountPrice, addressId } = req.body; 
@@ -534,6 +542,7 @@ const createRazorpayOrder = async (req, res) => {
 
     let subtotal = 0;
     const items = [];
+
     for (let cartItem of cart.items) {
       if (isItemBlocked(cartItem)) continue;
       const { finalPrice } = await getBestPrice(cartItem.product);
@@ -608,6 +617,8 @@ const method = validMethods.includes(paymentMethod) ? paymentMethod : null;
 
     await newOrder.save();
 
+      
+
     await Transactions.create({
   user: userId,
   type: "Order",
@@ -664,6 +675,22 @@ const retryPayment = async (req, res) => {
             receipt: `receipt_order_${order.orderID}_${Date.now()}`
         };
 
+        for (const item of order.items) {
+  const product = await Product.findById(item.product);
+  if (!product) {
+    return res.status(400).json({ success: false, message: `Product not found` });
+  }
+
+  if (product.quantity < item.quantity || product.quantity==0) {
+
+    return res.status(400).json({
+      success: false,
+      message: `Product "${product.name}" is out of stock. Cannot retry payment.`,
+    });
+  }
+}
+
+
         const razorpayOrder = await razorpay.orders.create(options);
         order.razorpayOrderId = razorpayOrder.id;
         await order.save();
@@ -678,7 +705,12 @@ const retryPayment = async (req, res) => {
         });
     } catch (error) {
         logger.error('Retry payment error:', error);
-        res.status(500).json({ success: false, message: 'Retry payment failed' });
+        res.status(500).json({
+  success: false,
+  message: error.message || 'Retry payment failed',
+});
+
+        
     }
 };
 
@@ -748,6 +780,11 @@ const verifyPayment = async (req, res) => {
       status: "Success",
       description: `Payment completed for order ${order.orderID}`,
     });
+
+        req.session.appliedCouponCode = null;
+        req.session.discountPrice = null;
+        req.session.selectedAddressId = null;
+
 
     res.json({ success: true, message: "Payment verified successfully" });
   } catch (error) {

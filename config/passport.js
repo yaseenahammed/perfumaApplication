@@ -23,7 +23,7 @@ passport.use(
           return done(null, user);
         }
 
-        // If user exists by email, link Google ID
+       
         user = await User.findOne({ email: profile.emails[0].value });
         if (user) {
           if (user.isBlocked) return done(null, false, { message: 'User is blocked by admin' });
@@ -33,7 +33,7 @@ passport.use(
           return done(null, user);
         }
 
-        // Create new user
+    
         user = new User({
   name: profile.displayName,
   email: profile.emails[0].value,

@@ -277,7 +277,7 @@ const googleCallback = (req, res, next) => {
     req.logIn(user, (err) => {
       if (err) return next(err);
 
-      // Make sure Google users also get referralToken if not already set
+     
       if (!user.referralToken) {
         user.referralToken = generateReferralToken();
         user.save().catch(e => logger.error('Error saving referralToken for Google user:', e));

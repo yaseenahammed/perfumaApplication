@@ -135,7 +135,7 @@ const userOrderDetails = async (req, res) => {
 
     if (hasInvalidItems) {
       req.flash('error', 'Some items in your cart are unavailable');
-      return res.redirect('/my-orders');
+      return res.redirect('/my-orders',{title:'orders'});
     }
 
     
@@ -255,7 +255,8 @@ const cancelItem=async(req,res)=>{
 
     const itemPriceTotal = item.price * item.quantity;
 const itemDiscount = (itemPriceTotal / order.totalAmount) * order.discountPrice;
-const refundAmount = (itemPriceTotal - itemDiscount).toFixed(2)
+const refundAmount = Number((itemPriceTotal - itemDiscount).toFixed(2));
+
  
 
     if(order.paymentMethod !=='cod'){
