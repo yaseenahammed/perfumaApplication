@@ -371,7 +371,7 @@ document.querySelectorAll('.btn-increment').forEach(button => {
             return;
         }
 
-        // Call backend only if checks pass
+   
         try {
             const response = await fetch(`/cart/add/${productId}`, {
                 method: 'POST',

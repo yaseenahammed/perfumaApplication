@@ -11,8 +11,9 @@ const getSalesReport = async (req, res) => {
         const { period = 'daily', startDate, endDate, page = 1 } = req.query;
         const perPage = 10;
 
-        let filter = {};
-        let start, end;
+          let filter = {};
+       
+      
 
         if (period === 'custom') {
     if (!startDate || !endDate) {
@@ -35,7 +36,9 @@ const getSalesReport = async (req, res) => {
     if (endDateObj < startDateObj) {
         return res.status(400).send('End date cannot be before start date.');
     }
-
+    
+     startDateObj.setHours(0, 0, 0, 0);
+      endDateObj.setHours(23, 59, 59, 999);
     filter.createdAt = { $gte: startDateObj, $lte: endDateObj };
 } else if (period === 'daily') {
     const today = new Date();
@@ -47,28 +50,33 @@ const getSalesReport = async (req, res) => {
 } else if (period === 'weekly') {
     const end = new Date();
     const start = new Date();
-    start.setDate(end.getDate() - 7);
+    start.setDate(end.getDate() - 6);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
     filter.createdAt = { $gte: start, $lte: end };
 } else if (period === 'yearly') {
     const end = new Date();
     const start = new Date();
     start.setFullYear(end.getFullYear() - 1);
+    start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
     filter.createdAt = { $gte: start, $lte: end };
 }
 
 
-        const orders = await Order.find(filter)
+        filter.items = { $elemMatch: { orderStatus: { $in: ['Delivered', 'ReturnRequest', 'Return Rejected'] } } };
+        const totalOrders=await Order.countDocuments(filter) 
+        
+         const orders = await Order.find(filter)
             .populate('user')
             .populate('items.product')
             .sort({ createdAt: -1 })
+            .skip((page - 1) * perPage)
+            .limit(perPage)
             .lean();
 
-        const filteredOrders = orders.filter(order =>
-            order.items.some(item =>
-                ['Delivered', 'ReturnRequest', 'Return Rejected'].includes(item.orderStatus)
-            )
-        );
-
+        const filteredOrders = orders
+       
         const enrichedOrders = await Promise.all(
             filteredOrders.map(async (order) => {
                 const activeItems = order.items.filter(
@@ -111,9 +119,11 @@ const getSalesReport = async (req, res) => {
                     0
                 );
 
-                const couponDiscount = totalItemsSubtotal > 0
-                    ? (activeItemsSubtotal / totalItemsSubtotal) * (order.discountPrice || 0)
-                    : 0;
+                
+
+                     const couponDiscount = totalItemsSubtotal > 0
+    ? parseFloat(((activeItemsSubtotal / totalItemsSubtotal) * (order.discountPrice || 0)).toFixed(2))
+    : 0;
 
                 const finalAmount = totalAfterOffers - couponDiscount + shipping;
 
@@ -140,11 +150,15 @@ const getSalesReport = async (req, res) => {
             acc.totalDiscount += order.couponDiscount;
             return acc;
         }, { totalSales: 0, totalAmount: 0, totalDiscount: 0 });
-
+        
+         
+        
+    
+       
         res.render('salesReport', {
             salesData: enrichedOrders,
             summary,
-            totalPages: Math.ceil(summary.totalSales / perPage),
+            totalPages: Math.ceil(totalOrders / perPage),
             currentPage: Number(page),
             period,
             startDate,
@@ -162,10 +176,12 @@ const getSalesReport = async (req, res) => {
 
 const downloadSalesReport = async (req, res) => {
     try {
-        const { period = 'daily', startDate, endDate, format,page=1 } = req.query;
-        let perPage=10
-        let filter = {orderStatus: { $in: ['Delivered', 'ReturnRequest', 'Return Rejected'] }};
-        let start, end;
+        const { period = 'daily', startDate, endDate, format} = req.query;
+
+
+        let filter = {
+  items: { $elemMatch: { orderStatus: { $in: ['Delivered','ReturnRequest','Return Rejected'] } } }
+};
 
      if (period === 'custom') {
     if (!startDate || !endDate) {
@@ -188,44 +204,45 @@ const downloadSalesReport = async (req, res) => {
     if (endDateObj < startDateObj) {
         return res.status(400).send('End date cannot be before start date.');
     }
-
+     
+      startDateObj.setHours(0, 0, 0, 0);
+      endDateObj.setHours(23, 59, 59, 999);
     filter.createdAt = { $gte: startDateObj, $lte: endDateObj };
 } else if (period === 'daily') {
-    const today = new Date();
+    
     const start = new Date();
-    start.setHours(0, 0, 0, 0);
     const end = new Date();
+    start.setHours(0, 0, 0, 0);
     end.setHours(23, 59, 59, 999);
     filter.createdAt = { $gte: start, $lte: end };
 } else if (period === 'weekly') {
     const end = new Date();
     const start = new Date();
-    start.setDate(end.getDate() - 7);
+    start.setDate(end.getDate() - 6);
+     start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
     filter.createdAt = { $gte: start, $lte: end };
 } else if (period === 'yearly') {
     const end = new Date();
     const start = new Date();
     start.setFullYear(end.getFullYear() - 1);
+    start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
     filter.createdAt = { $gte: start, $lte: end };
 }
 
 
-      
-
-   const orders = await Order.find(filter)
-    .populate('user')
-    .populate('items.product')
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * perPage)
-    .limit(perPage)
-    .lean();
 
 
-const filteredOrders = orders.filter(order =>
-    order.items.some(item =>
-        ['Delivered', 'ReturnRequest', 'Return Rejected'].includes(item.orderStatus)
-    )
-);
+
+const orders = await Order.find(filter)
+  .populate('user')
+  .populate('items.product')
+  .sort({ createdAt: -1 })
+  .lean();
+
+  const filteredOrders=orders
+
 const enrichedOrders = await Promise.all(
     filteredOrders.map(async (order) => {
         const activeItems = order.items.filter(
@@ -318,13 +335,13 @@ const enrichedOrders = await Promise.all(
                     orderID: order.orderID,
                     date: new Date(order.createdAt).toLocaleDateString(),
                     customer: order.user?.name || 'Unknown',
-                    subtotal: order.subtotal,
+                    subtotal: order.subtotal ?? 0,
                     shipping: order.shipping,
-                    discountPercentage: order.discountPercentage,
+                    discountPercentage: order.discountPercentage ?? 0,
                     couponDiscount: order.couponDiscount,
                     coupon:order.couponCode || 'None',
                     finalAmount: order.finalAmount,
-                   status: order.orderStatus
+                    status: order.items[0]?.orderStatus || 'N/A'
                 });
             });
 
@@ -395,7 +412,8 @@ const enrichedOrders = await Promise.all(
             order.couponDiscount ?? 0,
             order.couponCode || 'None',
             order.finalAmount ?? 0,
-            order.orderStatus || 'None'
+            order.items[0]?.orderStatus || 'N/A'
+
         ];
 
      
