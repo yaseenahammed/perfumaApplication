@@ -40,19 +40,7 @@
 </style>
 
 <body class="bg-gray-50">
-    <!-- Page Header -->
-    <!-- <section class="relative py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
-        <div class="relative z-10 container mx-auto px-4 text-center text-white">
-            <h1 class="text-4xl lg:text-5xl font-bold mb-4 animate-fade-in">Edit Category</h1>
-            <nav class="flex items-center justify-center space-x-2 text-lg">
-                <a href="/admin" class="text-gray-300 hover:text-white transition duration-200">Admin Dashboard</a>
-                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
-                <a href="/admin/category" class="text-gray-300 hover:text-white transition duration-200">Categories</a>
-                <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
-                <span class="text-amber-400">Edit Category</span>
-            </nav>
-        </div>
-    </section> -->
+
 
     <!-- Main Content -->
     <main class="py-16">
@@ -75,6 +63,7 @@
                                 name="categoryName" 
                                 value="<%= category.name %>" 
                                 class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+                                maxlength="30"
                             >
                         </div>
                         <div class="mb-6">
@@ -83,6 +72,7 @@
                                 name="description" 
                                 class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
                                 rows="4"
+                                maxlength="200"
                             ><%= category.description %></textarea>
                         </div>
                         <div class="text-end">
@@ -106,6 +96,28 @@
 
         const form = this;
         const formData = new FormData(form);
+
+        const name = formData.get("categoryName").trim();
+const description = formData.get("description").trim();
+
+if (name.length > 30) {
+    Swal.fire({
+        icon: "error",
+        title: "Invalid Name",
+        text: "Name cannot exceed 30 characters"
+    });
+    return;
+}
+
+if (description.length > 200) {
+    Swal.fire({
+        icon: "error",
+        title: "Invalid Description",
+        text: "Description cannot exceed 200 characters"
+    });
+    return;
+}
+
 
         try {
             const response = await fetch('/admin/editCategory', {

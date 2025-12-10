@@ -250,17 +250,17 @@
                 <div class="mb-4">
                     <label for="couponCode">Coupon Code:</label>
                     <input type="text" id="couponCode" name="couponCode"
-                        class="w-full border rounded px-3 py-2" required>
+                        class="w-full border rounded px-3 py-2" required maxlength="20">
                 </div>
                 <div class="mb-4">
                     <label for="discountPrice">Discount Price (₹):</label>
                     <input type="number" id="discountPrice" name="discountPrice"
-                        class="w-full border rounded px-3 py-2" required>
+                        class="w-full border rounded px-3 py-2" required maxlength="6">
                 </div>
                 <div class="mb-4">
                     <label for="minPrice">Minimum Order Price (₹):</label>
                     <input type="number" id="minPrice" name="minPrice"
-                        class="w-full border rounded px-3 py-2" required>
+                        class="w-full border rounded px-3 py-2" required maxlength="6">
                 </div>
                 <div class="mb-4">
                     <label for="expireOn">Expire On:</label>
@@ -370,6 +370,18 @@ function closeCouponModal() {
                 expireOn: document.getElementById('expireOn').value,
                 isList: document.getElementById('isList').value === 'true'
             };
+
+             if (couponData.couponCode.length > 20) {
+        return Swal.fire("Error", "Coupon code cannot exceed 20 characters.", "error");
+    }
+
+    if (document.getElementById("discountPrice").value.length > 6) {
+        return Swal.fire("Error", "Discount price is too long.", "error");
+    }
+
+    if (document.getElementById("minPrice").value.length > 6) {
+        return Swal.fire("Error", "Minimum order price is too long.", "error");
+    }
 
             if (!couponData.couponCode || isNaN(couponData.discountPrice) || isNaN(couponData.minPrice) || !couponData.expireOn) {
                 Swal.fire('Error', 'Please fill all fields correctly.', 'error');

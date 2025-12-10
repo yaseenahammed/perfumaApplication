@@ -297,7 +297,8 @@
                         id="product_name" 
                         placeholder="Type here" 
                         class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
-                    >
+                        maxlength="30"
+                        >
                     <div id="name-error" class="error-message text-red-500 text-sm mt-1"></div>
                 </div>
 
@@ -307,6 +308,7 @@
                         class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
                         name="brand" 
                         id="brand"
+                    
                     >
                         <option value="" disabled selected>Select a brand</option>
                         <% for (let i = 0; i < brand.length; i++) { %>
@@ -323,6 +325,7 @@
                         name="description" 
                         class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
                         rows="4"
+                        maxlength="200"
                     ></textarea>
                     <div id="description-error" class="error-message text-red-500 text-sm mt-1"></div>
                 </div>
@@ -363,6 +366,7 @@
                             name="regularPrice" 
                             id="regularPrice" 
                             type="text" 
+                            maxlength="10"
                             class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
                         >
                         <div id="regularPrice-error" class="error-message text-red-500 text-sm mt-1"></div>
@@ -533,132 +537,151 @@
             }
         }
 
-        document.getElementById('addProductForm').addEventListener('submit', async function (event) {
-            event.preventDefault();
+       document.getElementById('addProductForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
 
-            let isValid = true;
-            const requiredFields = [
-                { id: 'product_name', errorId: 'name-error', message: 'Product name is required' },
-                { id: 'descriptionid', errorId: 'description-error', message: 'Description is required' },
-                { id: 'regularPrice', errorId: 'regularPrice-error', message: 'Regular price is required' },
-                { id: 'quantity', errorId: 'quantity-error', message: 'Quantity is required' },
-                { id: 'brand', errorId: 'brand-error', message: 'Brand is required' },
-                { id: 'category', errorId: 'category-error', message: 'Category is required' },
-                { id: 'status', errorId: 'status-error', message: 'Status is required' },
-            ];
+    let isValid = true;
 
-            for (let field of requiredFields) {
-                const input = document.getElementById(field.id);
-                const errorDiv = document.getElementById(field.errorId);
-                if (!input.value.trim()) {
-                    errorDiv.innerText = field.message;
-                    errorDiv.style.display = 'block';
-                    isValid = false;
-                } else {
-                    errorDiv.innerText = '';
-                    errorDiv.style.display = 'none';
-                }
+    const requiredFields = [
+        { id: 'product_name', errorId: 'name-error', message: 'Product name is required' },
+        { id: 'descriptionid', errorId: 'description-error', message: 'Description is required' },
+        { id: 'regularPrice', errorId: 'regularPrice-error', message: 'Regular price is required' },
+        { id: 'quantity', errorId: 'quantity-error', message: 'Quantity is required' },
+        { id: 'brand', errorId: 'brand-error', message: 'Brand is required' },
+        { id: 'category', errorId: 'category-error', message: 'Category is required' },
+        { id: 'status', errorId: 'status-error', message: 'Status is required' },
+    ];
+
+    for (let field of requiredFields) {
+        const input = document.getElementById(field.id);
+        const errorDiv = document.getElementById(field.errorId);
+
+        if (!input.value.trim()) {
+            errorDiv.innerText = field.message;
+            errorDiv.style.display = 'block';
+            isValid = false;
+        } else {
+            errorDiv.innerText = '';
+            errorDiv.style.display = 'none';
+        }
+    }
+
+    const maxLengthRules = [
+        { id: 'product_name', max: 30, errorId: 'name-error', message: 'Product name cannot exceed 50 characters' },
+        { id: 'descriptionid', max: 200,errorId: 'description-error', message: 'Description cannot exceed 500 characters' },
+        { id: 'regularPrice', max: 10, errorId: 'regularPrice-error', message: 'Price cannot exceed 10 digits' },
+      
+    ];
+
+    for (let rule of maxLengthRules) {
+        const input = document.getElementById(rule.id);
+        const errorDiv = document.getElementById(rule.errorId);
+        const value = input.value.trim();
+
+        if (value.length > rule.max) {
+            errorDiv.innerText = rule.message;
+            errorDiv.style.display = 'block';
+            isValid = false;
+        } else {
+        
+            if (value.length !== 0) {
+                errorDiv.innerText = '';
+                errorDiv.style.display = 'none';
             }
+        }
+    }
 
-            const numericFields = [
-                { id: 'regularPrice', errorId: 'regularPrice-error', message: 'Regular price must be a positive number' },
-                { id: 'quantity', errorId: 'quantity-error', message: 'Quantity must be a positive number' },
-                { id: 'offer', errorId: 'offer-error', message: 'Offer must be between 0 and 100' },
-            ];
+    const numericFields = [
+        { id: 'regularPrice', errorId: 'regularPrice-error', message: 'Regular price must be a positive number' },
+        { id: 'quantity', errorId: 'quantity-error', message: 'Quantity must be a positive number' },
+        { id: 'offer', errorId: 'offer-error', message: 'Offer must be between 0 and 100' },
+    ];
 
-            for (let field of numericFields) {
-                const input = document.querySelector(`[name="${field.id}"]`);
-                const errorDiv = document.getElementById(field.errorId);
-                const value = input.value.trim();
-                if ( field.id === 'offer') {
-                    if (value && (isNaN(value) || Number(value) < 0 || Number(value) > 100)) {
-                        errorDiv.innerText = field.message;
-                        errorDiv.style.display = 'block';
-                        isValid = false;
-                    }
-                } else if (value && (isNaN(value) || Number(value) <= 0)) {
-                    errorDiv.innerText = field.message;
-                    errorDiv.style.display = 'block';
-                    isValid = false;
-                }
-            }
+    for (let field of numericFields) {
+        const input = document.getElementById(field.id);
+        const errorDiv = document.getElementById(field.errorId);
+        const value = input.value.trim();
 
-            const imageInputs = ['input1', 'input2', 'input3', 'input4'];
-            let hasImage = false;
-            for (let id of imageInputs) {
-                const input = document.getElementById(id);
-                if (input.files.length > 0) {
-                    hasImage = true;
-                    if (input.dataset.cropped === 'false') {
-                        Swal.fire('Error', `Please click "Crop & Keep" for Image ${id.replace('input', '')} before submitting.`, 'error');
-                        isValid = false;
-                    }
-                }
-            }
-
-            const imageError = document.getElementById('productImages-error');
-            if (!hasImage) {
-                imageError.innerText = 'Please upload at least one image';
-                imageError.style.display = 'block';
+        if (field.id === 'offer') {
+            if (value && (isNaN(value) || Number(value) < 0 || Number(value) > 100)) {
+                errorDiv.innerText = field.message;
+                errorDiv.style.display = 'block';
                 isValid = false;
-            } else {
-                imageError.innerText = '';
-                imageError.style.display = 'none';
             }
+        } else if (value && (isNaN(value) || Number(value) <= 0)) {
+            errorDiv.innerText = field.message;
+            errorDiv.style.display = 'block';
+            isValid = false;
+        }
+    }
 
-            if (!isValid) {
-                return;
+
+    const imageInputs = ['input1', 'input2', 'input3', 'input4'];
+    let hasImage = false;
+
+    for (let id of imageInputs) {
+        const input = document.getElementById(id);
+        if (input.files.length > 0) {
+            hasImage = true;
+            if (input.dataset.cropped === 'false') {
+                Swal.fire('Error', `Please click "Crop & Keep" for Image ${id.replace('input', '')} before submitting.`, 'error');
+                isValid = false;
             }
+        }
+    }
 
-            const form = event.target;
-            const formData = new FormData(form);
+    const imageError = document.getElementById('productImages-error');
+    if (!hasImage) {
+        imageError.innerText = 'Please upload at least one image';
+        imageError.style.display = 'block';
+        isValid = false;
+    } else {
+        imageError.innerText = '';
+        imageError.style.display = 'none';
+    }
 
-            try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                });
+    if (!isValid) {
+        return;
+    }
 
-                const data = await response.json();
+  
+    const form = event.target;
+    const formData = new FormData(form);
 
-                if (response.ok && data.success) {
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'Product added successfully',
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                    }).then(() => {
-                        form.reset();
-                        imageInputs.forEach(id => {
-                            const img = document.getElementById(`imgView${id.replace('input', '')}`);
-                            img.src = '';
-                            img.style.display = 'none';
-                            const input = document.getElementById(id);
-                            input.value = '';
-                            input.dataset.cropped = '';
-                            if (croppers[id.replace('input', '')]) {
-                                croppers[id.replace('input', '')].destroy();
-                                delete croppers[id.replace('input', '')];
-                            }
-                        });
-                        document.getElementById('addProductModal').style.display = 'none';
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: data.error || 'Failed to add product',
-                        icon: 'error',
-                    });
-                }
-            } catch (error) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'An unexpected error occurred',
-                    icon: 'error',
-                });
-            }
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
         });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Product added successfully',
+                icon: 'success',
+                confirmButtonText: 'OK',
+            }).then(() => {
+                form.reset();
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                title: 'Error!',
+                text: data.error || 'Failed to add product',
+                icon: 'error',
+            });
+        }
+    } catch (error) {
+        Swal.fire({
+            title: 'Error!',
+            text: 'An unexpected error occurred',
+            icon: 'error',
+        });
+    }
+});
+
 
         // Add Offer
         function openOfferPrompt(productId) {

@@ -188,6 +188,7 @@
                                 value="<%= product.name %>" 
                                 class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
                                 id="product_name"
+                                maxlength="30"
                             >
                             <div id="name-error" class="error-message mt-1"></div>
                         </div>
@@ -213,6 +214,7 @@
                                 class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50" 
                                 id="descriptionid" 
                                 rows="4"
+                                maxlength="200"
                             ><%= product.description %></textarea>
                             <div id="description-error" class="error-message mt-1"></div>
                         </div>
@@ -239,6 +241,7 @@
                                     type="text" 
                                     value="<%= product.regularPrice %>" 
                                     class="w-full border border-gray-200 rounded-lg py-3 px-4 text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50"
+                                    maxlength="10"
                                 >
                                 <div id="regularPrice-error" class="error-message mt-1"></div>
                             </div>
@@ -496,6 +499,28 @@
                 errorDiv.style.display = 'none';
             }
         }
+
+        // Maxlength validation
+const maxRules = [
+    { id: 'product_name', max: 50, errorId: 'name-error', msg: 'Product name cannot exceed 50 characters' },
+    { id: 'descriptionid', max: 200, errorId: 'description-error', msg: 'Description cannot exceed 200 characters' },
+    { id: 'highlights', max: 200, errorId: 'highlights-error', msg: 'Highlights cannot exceed 200 characters' },
+    { id: 'regularPrice', max: 10, errorId: 'regularPrice-error', msg: 'Regular price is too long' },
+    { id: 'quantity', max: 5, errorId: 'quantity-error', msg: 'Quantity is too long' },
+    { id: 'offer', max: 3, errorId: 'offer-error', msg: 'Offer cannot exceed 3 digits' }
+];
+
+for (let rule of maxRules) {
+    const input = document.getElementById(rule.id) || document.querySelector(`[name="${rule.id}"]`);
+    const errorDiv = document.getElementById(rule.errorId);
+    
+    if (input && input.value.trim().length > rule.max) {
+        errorDiv.innerText = rule.msg;
+        errorDiv.style.display = 'block';
+        isValid = false;
+    }
+}
+
 
         const numericFields = [
             { id: 'regularPrice', errorId: 'regularPrice-error', message: 'Regular price must be a positive number' },
