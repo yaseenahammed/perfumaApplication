@@ -1,9 +1,9 @@
-// logger.js
+
 const { createLogger, format, transports } = require('winston');
 const path = require('path');
 
 const logger = createLogger({
-  level: 'info', // default log level
+  level: 'info', 
   format: format.combine(
     format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     format.errors({ stack: true }),
@@ -11,14 +11,13 @@ const logger = createLogger({
     format.json()
   ),
   transports: [
-    // Log errors to error.log
+   
     new transports.File({ filename: path.join(__dirname, 'logs/error.log'), level: 'error' }),
-    // Log all logs to combined.log
+  
     new transports.File({ filename: path.join(__dirname, 'logs/combined.log') }),
   ],
 });
 
-// Console logging in dev environment
 if (process.env.NODE_ENV !== 'production') {
   logger.add(new transports.Console({
     format: format.combine(

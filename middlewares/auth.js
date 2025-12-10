@@ -83,7 +83,6 @@ const setUser = async (req, res, next) => {
 
 const adminAuth = async (req, res, next) => {
 
-
   try {
     if (req.session.admin) {
       const admin = await User.findById(req.session.admin);
@@ -101,6 +100,8 @@ const adminAuth = async (req, res, next) => {
     res.status(500).send("Internal Server Error");
   }
 };
+
+
 
 
 const isAdmin=async (req,res,next)=>{

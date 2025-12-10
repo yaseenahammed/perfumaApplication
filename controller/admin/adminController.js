@@ -33,7 +33,7 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const admin = await User.findOne({ email, isAdmin: true });
-
+ 
     if (admin) {
       const passwordMatch = await bcrypt.compare(password, admin.password);
       if (passwordMatch) {
