@@ -112,17 +112,43 @@ const updateProfile = async (req, res) => {
 
 const userAddress = async (req, res) => {
   try {
+     
+
+    
     const user = await User.findById(req.session.userId);
+    const search= req.query.search || ' '
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    const addressData = await Address.findOne({ userId: req.session.userId });
+   
+ 
     
+        const query = {
+          user: user,
+          orderID: { $regex: search, $options: 'i' }
+        };
+    
+     const page=parseInt(req.query.page) || 1
+    const limit=5
+    
+    const addressData = await Address.find(query)
+      .populate('items.product')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+    
+ 
+    
+    const totalAddress=await Address.countDocuments(addressData)
+    const totalPages=Math.ceil(totalAddress/limit)
 
     res.render('user-address',{ 
       title:'address',
         user ,
-        addresses: addressData ? addressData.addresses : []
+        addresses: addressData ? addressData.addresses : [],
+        currentPage:page,
+        totalPages
       }); 
   } catch (error) {
     logger.info('Error in user-address page:', error);
