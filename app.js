@@ -34,11 +34,11 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use(
   session({
-    secret:process.env.SESSION_SECRET,
+    secret: "your-secret-key",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure:process.env.NODE_ENV === "production",
+      secure: false, 
       maxAge: 10 * 60 * 1000, 
     },
   })
