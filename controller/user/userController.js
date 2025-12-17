@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const logger = require('../../helpers/logger');
+const { handleReferralCoupon } = require("../../helpers/referralHelper");
 const passport = require('../../config/passport');
 const express = require('express');
 const router = express.Router();
@@ -176,28 +177,7 @@ const verifyOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email already registered' });
     }
 
-let referrerId = null;
-if (referredBy) {
-  const referrer = await User.findOne({ referralToken: referredBy });
-  if (referrer) {
-    referrerId = referrer._id;
-
-    const couponCode = `REF-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
-    const coupon = new Coupon({
-      couponCode,
-      discountPrice: 100,
-      minPrice: 1000,
-      expireOn: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      isList: true,
-      maxUsesPerUser: 1,
-      userId: [referrer._id],
-    });
-
-    await coupon.save();
-
-   
-  }
-}
+const referrerId = await handleReferralCoupon(referredBy);
 
 const newUser = new User({
   name,
@@ -259,9 +239,7 @@ const resendOtp=async(req,res)=>{
 }
 
 
-
 // Google Auth
-
 const googleCallback = (req, res, next) => {
   passport.authenticate('google', async (err, user, info) => {
     if (err) {
@@ -274,20 +252,28 @@ const googleCallback = (req, res, next) => {
       return res.redirect('/login?error=' + encodeURIComponent(errorMessage));
     }
 
-    req.logIn(user, (err) => {
+    req.logIn(user, async (err) => {   
       if (err) return next(err);
 
-     
       if (!user.referralToken) {
         user.referralToken = generateReferralToken();
-        user.save().catch(e => logger.error('Error saving referralToken for Google user:', e));
+        await user.save();
       }
+
+      if (!user.referredBy && req.session.referredBy) {
+        const referrerId = await handleReferralCoupon(req.session.referredBy);
+        user.referredBy = referrerId;
+        await user.save();
+      }
+
+      delete req.session.referredBy;
 
       req.session.userId = user._id;
       return res.redirect('/');
     });
   })(req, res, next);
 };
+
 
 
 
