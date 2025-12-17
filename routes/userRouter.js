@@ -32,7 +32,15 @@ router.get('/pageNotFound', userController.pageNotFound);
 // Login/Logout
 router.get('/login',nocache(),isLogin, userController.loadLogin);
 router.post('/login', userController.login);
-router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/auth/google',
+  (req, res, next) => {
+    if (req.query.ref) {
+      req.session.referredBy = req.query.ref;
+    }
+    next();
+  },
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
 router.get('/auth/google/callback', userController.googleCallback);
 router.get('/logout', userAuth, userController.logout);
 
