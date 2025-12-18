@@ -8,6 +8,7 @@ const callbackURL =
   process.env.NODE_ENV === 'production'
     ? process.env.GOOGLE_CALLBACK_URL_PROD
     : process.env.GOOGLE_CALLBACK_URL_LOCAL;
+
 passport.use(
   new GoogleStrategy(
     {
@@ -16,27 +17,31 @@ passport.use(
       callbackURL,
       passReqToCallback: true,
     },
-
-    async (req, accessToken, refreshToken, profile, done) => {  
+    async (req, accessToken, refreshToken, profile, done) => {
       try {
         let user = await User.findOne({ googleId: profile.id });
+
+        // Existing Google user
         if (user) {
-          if (user.isBlocked)
-            return done(null, false, { message: 'User is blocked by admin' });
+          if (user.isBlocked) {
+            return done(new Error('User is blocked by admin'));
+          }
           return done(null, user);
         }
 
+        // Existing email user → link Google
         user = await User.findOne({ email: profile.emails[0].value });
         if (user) {
-          if (user.isBlocked)
-            return done(null, false, { message: 'User is blocked by admin' });
+          if (user.isBlocked) {
+            return done(new Error('User is blocked by admin'));
+          }
           user.googleId = profile.id;
           user.isVerified = true;
           await user.save();
           return done(null, user);
         }
 
-     
+        // New Google signup with referral
         let referrerId = null;
         if (req.session?.referredBy) {
           referrerId = await handleReferralCoupon(req.session.referredBy);
@@ -52,13 +57,34 @@ passport.use(
         });
 
         await user.save();
+        delete req.session.referredBy;
+
         return done(null, user);
       } catch (err) {
-        return done(err, null);
+        return done(err);
       }
     }
   )
 );
 
+// REQUIRED – prevents serialize error
+passport.serializeUser((user, done) => {
+  if (!user || !user._id) {
+    return done(new Error('Invalid user'));
+  }
+  done(null, user._id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    if (user && user.isBlocked) {
+      return done(new Error('User is blocked'));
+    }
+    done(null, user);
+  } catch (err) {
+    done(err);
+  }
+});
 
 module.exports = passport;

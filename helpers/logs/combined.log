@@ -24,3 +24,9 @@
 {"level":"info","message":"Password match:","timestamp":"2025-12-17 20:36:42"}
 {"buffer":{"data":[105,55,197,215,223,34,41,28,101,123,46,68],"type":"Buffer"},"level":"info","message":"Session userId set:","timestamp":"2025-12-17 20:36:42"}
 {"level":"info","message":"server running","timestamp":"2025-12-17 21:21:53"}
+{"level":"info","message":"server running","timestamp":"2025-12-18 20:09:08"}
+{"level":"info","message":"server running","timestamp":"2025-12-18 20:09:31"}
+{"level":"info","message":"server running","timestamp":"2025-12-18 20:10:51"}
+{"level":"info","message":"server running","timestamp":"2025-12-18 20:11:13"}
+{"code":"invalid_grant","level":"error","message":"Bad Request","name":"TokenError","stack":"TokenError: Bad Request\n    at OAuth2Strategy.parseErrorResponse (C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\passport-oauth2\\lib\\strategy.js:373:12)\n    at OAuth2Strategy._createOAuthError (C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\passport-oauth2\\lib\\strategy.js:420:16)\n    at C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\passport-oauth2\\lib\\strategy.js:177:45\n    at C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\oauth\\lib\\oauth2.js:196:18\n    at passBackControl (C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\oauth\\lib\\oauth2.js:132:9)\n    at IncomingMessage.<anonymous> (C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\oauth\\lib\\oauth2.js:157:7)\n    at IncomingMessage.emit (node:events:536:35)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)","status":500,"timestamp":"2025-12-18 20:11:19"}
+{"level":"info","message":"server running","timestamp":"2025-12-18 20:16:32"}
