@@ -351,17 +351,47 @@ const placeOrder = async (req, res) => {
 
         
 
-        const items=[]
+       
 
-        for(let item of cart.items){
-            if (isItemBlocked(item)) continue;
-            const {finalPrice}=await getBestPrice(item.product)
-            items.push({
-                 product: item.product._id,
-            quantity: item.quantity,
-            price: finalPrice,
-            })
-        }
+       const items = [];
+
+for (let item of cart.items) {
+
+  // Skip blocked products
+  if (isItemBlocked(item)) continue;
+
+  // 🔴 STOCK CHECK (IMPORTANT)
+  if (!item.product || item.product.quantity <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: `${item.product.product_name} is out of stock`
+    });
+  }
+
+  // 🔴 CART QUANTITY > STOCK
+  if (item.quantity > item.product.quantity) {
+    return res.status(400).json({
+      success: false,
+      message: `Only ${item.product.quantity} quantity available for ${item.product.product_name}`
+    });
+  }
+
+  const { finalPrice } = await getBestPrice(item.product);
+
+  items.push({
+    product: item.product._id,
+    quantity: item.quantity,
+    price: finalPrice,
+  });
+}
+
+if (!items.length) {
+  return res.status(400).json({
+    success: false,
+    message: "No valid items available to place order"
+  });
+}
+
 
         const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const shipping = SHIPPING_FEE;
@@ -485,10 +515,18 @@ const orders = new Order({
 
 
         for (const item of items) {
-            await Product.updateOne(
-                { _id: item.product },
-                { $inc: { quantity: -item.quantity } }
-            );
+            const updated = await Product.updateOne(
+  { _id: item.product, quantity: { $gte: item.quantity } },
+  { $inc: { quantity: -item.quantity } }
+);
+
+if (updated.modifiedCount === 0) {
+  return res.status(400).json({
+    success: false,
+    message: "Stock changed. Please refresh cart and try again."
+  });
+}
+
         }
 
         await Cart.findOneAndUpdate({ user: user._id }, { items: [] });
@@ -586,7 +624,13 @@ if (couponCode) {
     const validMethods = ['card', 'upi', 'netbanking'];
 const method = validMethods.includes(paymentMethod) ? paymentMethod : null;
 
-   
+   if (!items.length) {
+  return res.status(400).json({
+    success: false,
+    message: "No valid items available for payment"
+  });
+}
+
 
     const razorpayOrder = await razorpay.orders.create({
       amount,
@@ -751,10 +795,23 @@ const verifyPayment = async (req, res) => {
     await order.save();
 
     for (const item of order.items) {
-      await Product.updateOne(
-        { _id: item.product },
-        { $inc: { quantity: -item.quantity } }
-      );
+     const updated = await Product.updateOne(
+  { _id: item.product, quantity: { $gte: item.quantity } },
+  { $inc: { quantity: -item.quantity } }
+);
+
+if (updated.modifiedCount === 0) {
+  order.paymentStatus = "Failed";
+  order.orderStatus = "Failed";
+  await order.save();
+
+  return res.status(400).json({
+    success: false,
+    message: "Stock changed after payment. Amount will be refunded."
+  });
+}
+
+
     }
 
     

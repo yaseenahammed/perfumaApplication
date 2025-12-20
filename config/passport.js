@@ -19,31 +19,23 @@ passport.use(
     },
     async (req, accessToken, refreshToken, profile, done) => {
       try {
+        // 1️⃣ Already Google user
         let user = await User.findOne({ googleId: profile.id });
+        if (user) return done(null, user);
 
-        // Existing Google user
-        if (user) {
-          if (user.isBlocked) {
-            return done(new Error('User is blocked by admin'));
-          }
-          return done(null, user);
-        }
-
-        // Existing email user → link Google
+        // 2️⃣ Email exists → link Google
         user = await User.findOne({ email: profile.emails[0].value });
         if (user) {
-          if (user.isBlocked) {
-            return done(new Error('User is blocked by admin'));
-          }
           user.googleId = profile.id;
           user.isVerified = true;
           await user.save();
           return done(null, user);
         }
 
-        // New Google signup with referral
+        // 3️⃣ BRAND NEW USER → REFERRAL COUPON
         let referrerId = null;
-        if (req.session?.referredBy) {
+
+        if (req.session && req.session.referredBy) {
           referrerId = await handleReferralCoupon(req.session.referredBy);
         }
 
@@ -57,7 +49,9 @@ passport.use(
         });
 
         await user.save();
-        delete req.session.referredBy;
+
+        // clear referral AFTER success
+        req.session.referredBy = null;
 
         return done(null, user);
       } catch (err) {
@@ -67,24 +61,14 @@ passport.use(
   )
 );
 
-// REQUIRED – prevents serialize error
+// REQUIRED
 passport.serializeUser((user, done) => {
-  if (!user || !user._id) {
-    return done(new Error('Invalid user'));
-  }
   done(null, user._id);
 });
 
 passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    if (user && user.isBlocked) {
-      return done(new Error('User is blocked'));
-    }
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
+  const user = await User.findById(id);
+  done(null, user);
 });
 
 module.exports = passport;

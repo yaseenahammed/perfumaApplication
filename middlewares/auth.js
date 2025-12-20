@@ -141,7 +141,35 @@ const cartMiddleware = async (req, res, next) => {
 };
 
 
+const pageNotFound = (req, res, next) => {
+  if (req.originalUrl.startsWith('/admin')) {
+    return res.status(404).render('admin-error', {
+      title: 'Admin - Page Not Found',
+      message: `Admin page ${req.originalUrl} does not exist`
+    });
+  } else {
+    return res.status(404).render('page-404', {
+      title: 'Page Not Found',
+      message: `Sorry, the page ${req.originalUrl} does not exist`
+    });
+  }
+};
 
+const globalErrorHandler = (err, req, res, next) => {
+  console.error(err.stack);
+
+  if (req.originalUrl.startsWith('/admin')) {
+    res.status(500).render('admin-error', {
+      title: 'Admin Error',
+      message: err.message || 'Something went wrong on admin side'
+    });
+  } else {
+    res.status(500).render('page-404', {
+      title: 'Error',
+      message: err.message || 'Something went wrong'
+    });
+  }
+};
 
 module.exports={
    
@@ -150,5 +178,7 @@ module.exports={
     adminAuth,
     isAdmin,
     setUser,
-    cartMiddleware
+    cartMiddleware,
+    pageNotFound,
+    globalErrorHandler
 }

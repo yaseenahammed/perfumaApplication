@@ -153,13 +153,15 @@
                 <label class="text-xs text-gray-500 block mb-1">Referral Link:</label>
                 <div class="flex items-center gap-2">
                   <input type="text"
-                    value="<%= process.env.BASE_URL %>/signup?ref=<%= user.referralToken || '' %>"
+                    value="  http://localhost:3000/signup?ref=<%= user.referralToken || '' %>"
+                    
                     readonly
                     class="w-full text-sm bg-white border border-gray-300 rounded px-2 py-1 text-gray-700">
                   <button onclick="copyReferral()"
                     class="shrink-0 bg-orange-500 text-white text-xs px-3 py-1 rounded hover:bg-blue-700">
                     Copy
                   </button>
+                  <!-- value="<%= process.env.BASE_URL %>/signup?ref=<%= user.referralToken || '' %>" -->
                 </div>
               </div>
             </div>

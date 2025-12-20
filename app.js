@@ -6,7 +6,7 @@ const db=require('./config/db')
 const flash = require('connect-flash');
 const userRouter=require('./routes/userRouter')
 const adminRouter=require('./routes/adminRouter')
-const {cartMiddleware}=require('./middlewares/auth')
+const {cartMiddleware,pageNotFound,globalErrorHandler}=require('./middlewares/auth')
 const session=require('express-session')
 const User=require('./models/userSchema')
 const passport=require('./config/passport')
@@ -34,7 +34,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use(
   session({
-    secret: "your-secret-key",
+    secret:process.env.SESSION_SECRET ,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -77,7 +77,10 @@ app.use('/',userRouter);
 app.use('/admin',adminRouter)
 
 
-
+// 404 handler 
+app.use(pageNotFound);
+// Global error handler
+app.use(globalErrorHandler);
 
 
 app.listen(process.env.PORT,()=>{

@@ -30,10 +30,14 @@ const isItemBlocked = (item) => {
     !item.product.isListed ||
     item.product.isBlocked ||
     (item.product.brand && item.product.brand.isBlocked) ||
-    (item.product.category && !item.product.category.isListed) ||
-    item.quantity > item.product.quantity
+    (item.product.category && !item.product.category.isListed)
   );
 };
+
+const isOutOfStock = (item) => {
+  return item.quantity > item.product.quantity;
+};
+
 
 const getCart = async (req, res) => {
   try {
@@ -72,21 +76,43 @@ const getCart = async (req, res) => {
     const validCartItems = [];
     const allCartItems = [];
 
-    for (const item of cart.items) {
-      const isBlocked = isItemBlocked(item);
-       if (!item.product) {
-           continue;
-  }
-      if (!isBlocked) {
-        const { finalPrice } = await getBestPrice(item.product);
-        item.product.finalPrice = finalPrice;
-        validCartItems.push(item);
-      }
-      allCartItems.push({ ...item, isBlocked });
-    }
+   for (const item of cart.items) {
+  if (!item.product) continue;
 
-    const disableCheckout = validCartItems.length === 0;
+    if (item.quantity > item.product.quantity) {
+    item.quantity = item.product.quantity;
+  }
+
+  const blocked = isItemBlocked(item);
+  const outOfStock = isOutOfStock(item);
+
+  if (!blocked && !outOfStock) {
+    const { finalPrice } = await getBestPrice(item.product);
+    item.product.finalPrice = finalPrice;
+    validCartItems.push(item);
+  }
+
+  allCartItems.push({
+    ...item,
+    isBlocked: blocked,
+    outOfStock,
+    availableStock: item.product.quantity
+  });
+}
+
+
+    const disableCheckout =
+  validCartItems.length === 0 ||
+  allCartItems.some(item => item.isBlocked);
+
+
     const summary = await calculateSummary(validCartItems);
+
+    await Cart.updateOne(
+  { user: userId },
+  { $set: { items: cart.items } }
+);
+
 
     res.render('cart', {
       title:'cart',
@@ -144,6 +170,12 @@ const incrementQuantity = async (req, res) => {
     if (isItemBlocked(cartItem)) {
       return res.status(400).json({ success: false, message: 'This item is unavailable' });
     }
+
+    if (cartItem.quantity > cartItem.product.quantity) {
+  cartItem.quantity = cartItem.product.quantity;
+  await cart.save();
+}
+
 
 if (cartItem.quantity >= cartItem.product.quantity) {
   return res.status(400).json({

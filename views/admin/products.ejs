@@ -608,7 +608,7 @@
                 errorDiv.style.display = 'block';
                 isValid = false;
             }
-        } else if (value && (isNaN(value) || Number(value) <= 0)) {
+        } else if (value && (isNaN(value) || Number(value) < 0)) {
             errorDiv.innerText = field.message;
             errorDiv.style.display = 'block';
             isValid = false;

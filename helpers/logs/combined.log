@@ -30,3 +30,60 @@
 {"level":"info","message":"server running","timestamp":"2025-12-18 20:11:13"}
 {"code":"invalid_grant","level":"error","message":"Bad Request","name":"TokenError","stack":"TokenError: Bad Request\n    at OAuth2Strategy.parseErrorResponse (C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\passport-oauth2\\lib\\strategy.js:373:12)\n    at OAuth2Strategy._createOAuthError (C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\passport-oauth2\\lib\\strategy.js:420:16)\n    at C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\passport-oauth2\\lib\\strategy.js:177:45\n    at C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\oauth\\lib\\oauth2.js:196:18\n    at passBackControl (C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\oauth\\lib\\oauth2.js:132:9)\n    at IncomingMessage.<anonymous> (C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\oauth\\lib\\oauth2.js:157:7)\n    at IncomingMessage.emit (node:events:536:35)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)","status":500,"timestamp":"2025-12-18 20:11:19"}
 {"level":"info","message":"server running","timestamp":"2025-12-18 20:16:32"}
+{"level":"info","message":"server running","timestamp":"2025-12-18 21:07:08"}
+{"email":"safna@gmail.com","level":"info","message":"Login request body:","timestamp":"2025-12-18 21:07:52"}
+{"0":"s","1":"a","10":"l","11":".","12":"c","13":"o","14":"m","2":"f","3":"n","4":"a","5":"@","6":"g","7":"m","8":"a","9":"i","level":"info","message":"User found:","timestamp":"2025-12-18 21:07:52"}
+{"level":"info","message":"Password match:","timestamp":"2025-12-18 21:07:52"}
+{"buffer":{"data":[105,68,24,101,60,92,73,122,250,45,247,140],"type":"Buffer"},"level":"info","message":"Session userId set:","timestamp":"2025-12-18 21:07:52"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 09:48:26"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 09:50:24"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 09:50:34"}
+{"email":"jalal@gmail.com","level":"info","message":"Login request body:","timestamp":"2025-12-19 09:50:56"}
+{"0":"j","1":"a","10":"l","11":".","12":"c","13":"o","14":"m","2":"l","3":"a","4":"l","5":"@","6":"g","7":"m","8":"a","9":"i","level":"info","message":"User found:","timestamp":"2025-12-19 09:50:56"}
+{"level":"info","message":"Password match:","timestamp":"2025-12-19 09:50:56"}
+{"buffer":{"data":[104,211,119,12,145,38,226,220,58,174,171,124],"type":"Buffer"},"level":"info","message":"Session userId set:","timestamp":"2025-12-19 09:50:56"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:05:37"}
+{"email":"jalal@gmail.com","level":"info","message":"Login request body:","timestamp":"2025-12-19 10:06:38"}
+{"0":"j","1":"a","10":"l","11":".","12":"c","13":"o","14":"m","2":"l","3":"a","4":"l","5":"@","6":"g","7":"m","8":"a","9":"i","level":"info","message":"User found:","timestamp":"2025-12-19 10:06:38"}
+{"level":"info","message":"Password match:","timestamp":"2025-12-19 10:06:38"}
+{"buffer":{"data":[104,211,119,12,145,38,226,220,58,174,171,124],"type":"Buffer"},"level":"info","message":"Session userId set:","timestamp":"2025-12-19 10:06:38"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:13:21"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:13:37"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:34:43"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:35:04"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:35:56"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:36:43"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:38:28"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:38:58"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:39:36"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:39:50"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:40:45"}
+{"email":"jalal@gmail.com","level":"info","message":"Login request body:","timestamp":"2025-12-19 10:41:10"}
+{"0":"j","1":"a","10":"l","11":".","12":"c","13":"o","14":"m","2":"l","3":"a","4":"l","5":"@","6":"g","7":"m","8":"a","9":"i","level":"info","message":"User found:","timestamp":"2025-12-19 10:41:10"}
+{"level":"info","message":"Password match:","timestamp":"2025-12-19 10:41:10"}
+{"buffer":{"data":[104,211,119,12,145,38,226,220,58,174,171,124],"type":"Buffer"},"level":"info","message":"Session userId set:","timestamp":"2025-12-19 10:41:10"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:47:54"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:48:38"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:49:44"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:53:20"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:54:20"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:57:35"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 10:59:17"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 11:00:29"}
+{"email":"jalal@gmail.com","level":"info","message":"Login request body:","timestamp":"2025-12-19 11:02:06"}
+{"0":"j","1":"a","10":"l","11":".","12":"c","13":"o","14":"m","2":"l","3":"a","4":"l","5":"@","6":"g","7":"m","8":"a","9":"i","level":"info","message":"User found:","timestamp":"2025-12-19 11:02:06"}
+{"level":"info","message":"Password match:","timestamp":"2025-12-19 11:02:06"}
+{"buffer":{"data":[104,211,119,12,145,38,226,220,58,174,171,124],"type":"Buffer"},"level":"info","message":"Session userId set:","timestamp":"2025-12-19 11:02:06"}
+{"email":"jalal@gmail.com","level":"info","message":"Login request body:","timestamp":"2025-12-19 11:16:50"}
+{"0":"j","1":"a","10":"l","11":".","12":"c","13":"o","14":"m","2":"l","3":"a","4":"l","5":"@","6":"g","7":"m","8":"a","9":"i","level":"info","message":"User found:","timestamp":"2025-12-19 11:16:50"}
+{"level":"info","message":"Password match:","timestamp":"2025-12-19 11:16:50"}
+{"buffer":{"data":[104,211,119,12,145,38,226,220,58,174,171,124],"type":"Buffer"},"level":"info","message":"Session userId set:","timestamp":"2025-12-19 11:16:50"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 11:38:32"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 11:38:49"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 11:53:51"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 11:55:38"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 11:55:45"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 11:56:02"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 11:56:12"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 11:56:42"}
+{"level":"info","message":"server running","timestamp":"2025-12-19 11:56:55"}

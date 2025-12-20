@@ -335,41 +335,41 @@ document.querySelectorAll('.btn-increment').forEach(button => {
         e.preventDefault();
         const btn = e.target.closest('button'); // ensures correct button
         const productId = btn.getAttribute('data-id');
-        const maxStock = parseInt(btn.getAttribute('data-max')); // stock from data-max
+       
 
         const itemElement = btn.closest('.cart-item-card');
         const quantityEl = itemElement.querySelector('.quantity'); // relative selector
-        let currentQty = parseInt(quantityEl.textContent.trim());
+     
+const maxStock = Number(btn.dataset.max);
+const currentQty = Number(quantityEl.textContent);
 
-        // Max allowed quantity check
-        if (currentQty >= MAX_ALLOWED_QUANTITY) {
-            Swal.fire({
-                iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
-                title: `Maximum ${MAX_ALLOWED_QUANTITY} allowed`,
-                text: `You cannot add more than ${MAX_ALLOWED_QUANTITY} of this item.`,
-                showConfirmButton: false,
-                timer: 2000,
-                toast: true,
-                position: 'top-end',
-                width: '300px'
-            });
-            return;
-        }
+// 🔴 STOCK LIMIT FIRST
+if (currentQty >= maxStock) {
+    Swal.fire({
+        iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+        title: `Only ${maxStock} in stock`,
+        text: `Stock limit reached`,
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000
+    });
+    return;
+}
 
-        // Max stock check
-        if (currentQty >= maxStock) {
-            Swal.fire({
-                iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
-                title: `Only ${maxStock} in stock`,
-                text: `You cannot add more than the available stock.`,
-                showConfirmButton: false,
-                timer: 2000,
-                toast: true,
-                position: 'top-end',
-                width: '300px'
-            });
-            return;
-        }
+// 🔴 MAX ALLOWED SECOND
+if (currentQty >= MAX_ALLOWED_QUANTITY) {
+    Swal.fire({
+        iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+        title: `Maximum ${MAX_ALLOWED_QUANTITY} allowed`,
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000
+    });
+    return;
+}
+
 
    
         try {
@@ -379,7 +379,50 @@ document.querySelectorAll('.btn-increment').forEach(button => {
                 body: JSON.stringify({ productId })
             });
             const result = await response.json();
-            if (result.success) updateCartUI(result, productId);
+
+if (!result.success) {
+
+    // 🔴 Stock reached (backend)
+    if (result.stock) {
+        Swal.fire({
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            title: 'Stock limit reached',
+            text: result.message,
+            showConfirmButton: false,
+            timer: 2000,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+        });
+        return;
+    }
+
+    // 🔴 Max allowed reached (backend)
+    if (result.allowed) {
+        Swal.fire({
+            iconHtml: '<i class="fas fa-wine-bottle custom-swal-perfume-icon"></i>',
+            title: 'Limit reached',
+            text: result.message,
+            showConfirmButton: false,
+            timer: 2000,
+            toast: true,
+            position: 'top-end',
+            width: '300px'
+        });
+        return;
+    }
+
+    // 🔴 Any other error
+    Swal.fire({
+        icon: 'error',
+        text: result.message || 'Something went wrong'
+    });
+    return;
+}
+
+// ✅ SUCCESS
+updateCartUI(result, productId);
+
         } catch (err) {
             console.error('Increment error:', err);
         }
