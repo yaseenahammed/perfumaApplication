@@ -87,3 +87,51 @@
 {"level":"info","message":"server running","timestamp":"2025-12-19 11:56:12"}
 {"level":"info","message":"server running","timestamp":"2025-12-19 11:56:42"}
 {"level":"info","message":"server running","timestamp":"2025-12-19 11:56:55"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:07:58"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:12:10"}
+{"encoding":"7bit","fieldname":"profileImage","filename":"product-images/ymfpdkdu9vstl1fzcbj7","level":"info","message":"image:","mimetype":"image/jpeg","originalname":"my1.jpg","path":"https://res.cloudinary.com/dqk32hnsp/image/upload/v1766212968/product-images/ymfpdkdu9vstl1fzcbj7.jpg","size":29082,"timestamp":"2025-12-20 12:12:49"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:17:20"}
+{"level":"error","message":"Failed to obtain access token","name":"InternalOAuthError","oauthError":{"code":"ENOTFOUND","errno":-3008,"hostname":"www.googleapis.com","syscall":"getaddrinfo"},"stack":"InternalOAuthError: Failed to obtain access token\n    at OAuth2Strategy._createOAuthError (C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\passport-oauth2\\lib\\strategy.js:423:17)\n    at C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\passport-oauth2\\lib\\strategy.js:177:45\n    at C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\oauth\\lib\\oauth2.js:196:18\n    at ClientRequest.<anonymous> (C:\\Users\\USER\\Desktop\\Desktop\\My things\\webApp\\node_modules\\oauth\\lib\\oauth2.js:166:7)\n    at ClientRequest.emit (node:events:524:28)\n    at emitErrorEvent (node:_http_client:104:11)\n    at TLSSocket.socketErrorListener (node:_http_client:518:5)\n    at TLSSocket.emit (node:events:524:28)\n    at emitErrorNT (node:internal/streams/destroy:170:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:129:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)","timestamp":"2025-12-20 12:17:40"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:21:08"}
+{"level":"info","message":"image:","timestamp":"2025-12-20 12:21:39"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:23:04"}
+{"level":"info","message":"image:","timestamp":"2025-12-20 12:24:36"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:25:00"}
+{"email":"jalal@gmail.com","level":"info","message":"Login request body:","timestamp":"2025-12-20 12:26:38"}
+{"0":"j","1":"a","10":"l","11":".","12":"c","13":"o","14":"m","2":"l","3":"a","4":"l","5":"@","6":"g","7":"m","8":"a","9":"i","level":"info","message":"User found:","timestamp":"2025-12-20 12:26:38"}
+{"level":"info","message":"Password match:","timestamp":"2025-12-20 12:26:38"}
+{"buffer":{"data":[104,211,119,12,145,38,226,220,58,174,171,124],"type":"Buffer"},"level":"info","message":"Session userId set:","timestamp":"2025-12-20 12:26:38"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:27:33"}
+{"email":"jalal@gmail.com","level":"info","message":"Login request body:","timestamp":"2025-12-20 12:36:34"}
+{"0":"j","1":"a","10":"l","11":".","12":"c","13":"o","14":"m","2":"l","3":"a","4":"l","5":"@","6":"g","7":"m","8":"a","9":"i","level":"info","message":"User found:","timestamp":"2025-12-20 12:36:34"}
+{"level":"info","message":"Password match:","timestamp":"2025-12-20 12:36:34"}
+{"buffer":{"data":[104,211,119,12,145,38,226,220,58,174,171,124],"type":"Buffer"},"level":"info","message":"Session userId set:","timestamp":"2025-12-20 12:36:34"}
+{"level":"info","message":"image:","timestamp":"2025-12-20 12:36:49"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:37:37"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:37:42"}
+{"email":"jalal@gmail.com","level":"info","message":"Login request body:","timestamp":"2025-12-20 12:37:53"}
+{"0":"j","1":"a","10":"l","11":".","12":"c","13":"o","14":"m","2":"l","3":"a","4":"l","5":"@","6":"g","7":"m","8":"a","9":"i","level":"info","message":"User found:","timestamp":"2025-12-20 12:37:53"}
+{"level":"info","message":"Password match:","timestamp":"2025-12-20 12:37:53"}
+{"buffer":{"data":[104,211,119,12,145,38,226,220,58,174,171,124],"type":"Buffer"},"level":"info","message":"Session userId set:","timestamp":"2025-12-20 12:37:53"}
+{"level":"info","message":"image:","timestamp":"2025-12-20 12:38:08"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:40:55"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:41:02"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:46:54"}
+{"email":"safna@gmail.com","level":"info","message":"Login request body:","timestamp":"2025-12-20 12:48:12"}
+{"0":"N","1":"o","2":"n","3":"e","level":"info","message":"User found:","timestamp":"2025-12-20 12:48:12"}
+{"0":"3","1":"7","2":"8","3":"5","4":"5","5":"0","level":"info","message":"your otp is","timestamp":"2025-12-20 12:48:29"}
+{"email":"safna@gmail.com","level":"info","message":"Login request body:","timestamp":"2025-12-20 12:50:10"}
+{"0":"s","1":"a","10":"l","11":".","12":"c","13":"o","14":"m","2":"f","3":"n","4":"a","5":"@","6":"g","7":"m","8":"a","9":"i","level":"info","message":"User found:","timestamp":"2025-12-20 12:50:10"}
+{"level":"info","message":"Password match:","timestamp":"2025-12-20 12:50:10"}
+{"buffer":{"data":[105,70,77,216,228,248,85,173,84,96,146,165],"type":"Buffer"},"level":"info","message":"Session userId set:","timestamp":"2025-12-20 12:50:10"}
+{"0":"1","1":"9","2":"2","3":"9","4":"4","5":"1","level":"info","message":"your otp is","timestamp":"2025-12-20 12:51:17"}
+{"0":"h","1":"a","10":"i","11":"l","12":".","13":"c","14":"o","15":"m","2":"s","3":"h","4":"i","5":"m","6":"@","7":"g","8":"m","9":"a","level":"info","message":"Resend OTP to:","timestamp":"2025-12-20 12:52:26"}
+{"0":"8","1":"5","2":"0","3":"5","4":"3","5":"2","level":"info","message":"New otp is:","timestamp":"2025-12-20 12:52:26"}
+{"0":"1","1":"1","2":"3","3":"7","4":"7","5":"9","level":"info","message":"your otp is","timestamp":"2025-12-20 12:53:11"}
+{"email":"safna@gmail.com","level":"info","message":"Login request body:","timestamp":"2025-12-20 12:54:29"}
+{"0":"s","1":"a","10":"l","11":".","12":"c","13":"o","14":"m","2":"f","3":"n","4":"a","5":"@","6":"g","7":"m","8":"a","9":"i","level":"info","message":"User found:","timestamp":"2025-12-20 12:54:29"}
+{"level":"info","message":"Password match:","timestamp":"2025-12-20 12:54:29"}
+{"buffer":{"data":[105,70,77,216,228,248,85,173,84,96,146,165],"type":"Buffer"},"level":"info","message":"Session userId set:","timestamp":"2025-12-20 12:54:29"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:57:56"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:58:00"}
+{"level":"info","message":"server running","timestamp":"2025-12-20 12:58:10"}

@@ -8,6 +8,7 @@ const userRouter=require('./routes/userRouter')
 const adminRouter=require('./routes/adminRouter')
 const {cartMiddleware,pageNotFound,globalErrorHandler}=require('./middlewares/auth')
 const session=require('express-session')
+const methodOverride = require('method-override');
 const User=require('./models/userSchema')
 const passport=require('./config/passport')
 const nocache=require('nocache')
@@ -19,9 +20,7 @@ db()
 app.use(nocache())
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
-
-
-
+app.use(methodOverride('_method'));
 
 
 
@@ -81,6 +80,9 @@ app.use('/admin',adminRouter)
 app.use(pageNotFound);
 // Global error handler
 app.use(globalErrorHandler);
+
+
+
 
 
 app.listen(process.env.PORT,()=>{
