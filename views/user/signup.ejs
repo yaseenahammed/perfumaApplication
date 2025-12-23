@@ -211,17 +211,21 @@ document.addEventListener('DOMContentLoaded', function () {
         clearErrorStyles();
 
         // Name validation
-        const nameVal = nameid.value;
-        const namePattern = /^[A-Za-z ]{3,10}$/;
-        if (nameVal.trim() === "") {
-            showError(error1, nameid, 'Enter a valid name');
-            hasError = true;
-        } else if (!namePattern.test(nameVal)) {
-            showError(error1, nameid, "Only alphabets and spaces (3-10 characters)");
-            hasError = true;
-        } else {
-            hideError(error1, nameid);
-        }
+        const nameVal = nameid.value.trim();
+const namePattern = /^[A-Za-z]+( [A-Za-z]+)*$/;
+
+if (nameVal === "") {
+    showError(error1, nameid, "Enter a valid name");
+    hasError = true;
+} else if (nameVal.length < 3 || nameVal.length > 40) {
+    showError(error1, nameid, "Name must be between 3 and 40 characters");
+    hasError = true;
+} else if (!namePattern.test(nameVal)) {
+    showError(error1, nameid, "Only alphabets and single spaces allowed");
+    hasError = true;
+} else {
+    hideError(error1, nameid);
+}
 
         // Email validation
         const emailVal = emailid.value;
