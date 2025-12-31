@@ -91,16 +91,22 @@
                                                 <h3 class="text-lg font-semibold text-gray-900"><%= item.product.name %></h3>
                                                 <p class="text-gray-600 text-sm">Price: ₹<%= item.product.salePrice %></p>
                                             </div>
-                                            <div class="flex space-x-4">
-                                                <button class="remove-item-btn text-red-500 hover:text-red-700 font-medium text-sm flex items-center"
-                                                        data-id="<%= item.product._id %>">
-                                                    <i class="fas fa-trash mr-1"></i> Remove
-                                                </button>
-                                                <button class="add-to-cart-btn text-amber-500 hover:text-amber-700 font-medium text-sm flex items-center"
-                                                        data-id="<%= item.product._id %>">
-                                                    <i class="fas fa-cart-plus mr-1"></i> Add to Cart
-                                                </button>
-                                            </div>
+                                            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+    
+    <button
+        class="remove-item-btn text-red-500 hover:text-red-700 font-medium text-sm flex items-center w-full sm:w-auto justify-center sm:justify-start"
+        data-id="<%= item.product._id %>">
+        <i class="fas fa-trash mr-1"></i> Remove
+    </button>
+
+    <button
+        class="add-to-cart-btn text-amber-500 hover:text-amber-700 font-medium text-sm flex items-center w-full sm:w-auto justify-center sm:justify-start"
+        data-id="<%= item.product._id %>">
+        <i class="fas fa-cart-plus mr-1"></i> Add to Cart
+    </button>
+
+</div>
+
                                         </div>
                                     <% }) %>
                                 </div>
@@ -229,25 +235,6 @@
             });
 
         
-            // clearWishlistBtn?.addEventListener('click', async () => {
-            //     try {
-            //         const response = await fetch('/wishlist/clear', {
-            //             method: 'POST',
-            //             headers: { 'Content-Type': 'application/json' }
-            //         });
-            //         const data = await response.json();
-            //         if (data.success) {
-            //             document.querySelectorAll('.wishlist-item').forEach(item => item.remove());
-                        
-            //               clearWishlistBtn.style.display = 'none';
-            //         } else {
-            //             Swal.fire('Error', data.message || 'Failed to clear wishlist', 'error');
-            //         }
-            //     } catch (error) {
-            //         console.error('Error clearing wishlist:', error);
-            //         Swal.fire('Error', 'An error occurred while clearing the wishlist.', 'error');
-            //     }
-            // });
         });
     </script>
 </body>
