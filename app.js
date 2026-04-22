@@ -84,9 +84,12 @@ app.use(globalErrorHandler);
 
 
 
+const PORT = process.env.PORT || 3000;
 
-app.listen(process.env.PORT,()=>{
-    logger.info('server running')
-})
+app.listen(PORT, () => {
+    logger.info(`server running on port ${PORT}`);
+});
+
+
 
 module.exports=app;
